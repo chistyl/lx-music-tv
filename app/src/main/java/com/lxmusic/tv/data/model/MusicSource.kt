@@ -35,6 +35,11 @@ data class SearchPlatformOption(
  * 保留腳本平台 key、Action 名稱與完整 JSON，不假設各音源採用相同欄位或清單包裝。
  * 後續由各音源 adapter 將 rawData 映射為 BrowseItem / Song。
  */
+sealed class SourceBrowseActionResult {
+    data class Success(val payload: SourceBrowsePayload) : SourceBrowseActionResult()
+    data class Error(val message: String) : SourceBrowseActionResult()
+}
+
 data class SourceBrowsePayload(
     val sourceId: String,
     val platformKey: String,
