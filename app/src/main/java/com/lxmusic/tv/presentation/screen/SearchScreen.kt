@@ -105,16 +105,16 @@ fun platformShortName(platform: MusicPlatform): String {
 }
 
 /**
- * 搜索界面
- * 支持遥控器操作的音乐搜索页面
+ * 搜尋界面
+ * 支持遥控器操作的音乐搜尋页面
  *
  * 三栏布局：左键盘 + 中联想 + 右热门。
- * 搜索状态（关键词/平台/类型）由 ViewModel 持有，
- * 确认搜索后导航到独立的搜索结果页（SearchResultScreen）展示最终结果。
- * 搜索类型支持「歌曲 / 歌单」
+ * 搜尋状态（关键词/平台/类型）由 ViewModel 持有，
+ * 确认搜尋后导航到独立的搜尋结果页（SearchResultScreen）展示最终结果。
+ * 搜尋类型支持「歌曲 / 歌单」
  */
 /**
- * 搜索页熱門搜尋的接口兜底关键词（接口偶发失败时仍能呈现内容）
+ * 搜尋页熱門搜尋的接口兜底关键词（接口偶发失败时仍能呈现内容）
  */
 private val HOT_FALLBACK_KEYWORDS = listOf(
     "周杰伦", "林俊杰", "陈奕迅", "薛之谦", "邓紫棋",
@@ -135,12 +135,12 @@ private fun tryRequestFocus(requester: FocusRequester): Boolean {
 }
 
 /**
- * 支持遥控器操作的音乐搜索页面
+ * 支持遥控器操作的音乐搜尋页面
  *
  * 三栏布局：左键盘 + 中联想 + 右热门。
- * 搜索状态（关键词/平台/类型）由 ViewModel 持有，
- * 确认搜索后导航到独立的搜索结果页（SearchResultScreen）展示最终结果。
- * 搜索类型支持「歌曲 / 歌单」
+ * 搜尋状态（关键词/平台/类型）由 ViewModel 持有，
+ * 确认搜尋后导航到独立的搜尋结果页（SearchResultScreen）展示最终结果。
+ * 搜尋类型支持「歌曲 / 歌单」
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -151,16 +151,16 @@ fun SearchScreen(
     hotKeywords: List<String> = emptyList(),
     suggestions: List<String> = emptyList(),
     hotSongs: List<Song> = emptyList(),
-    // 搜索历史（输入为空时中间列展示，最多 10 条，最近在前）
+    // 搜尋历史（输入为空时中间列展示，最多 10 条，最近在前）
     searchHistory: List<String> = emptyList(),
     onSearchQueryChange: (String) -> Unit,
     onSearch: (String, MusicPlatform) -> Unit,
     onSearchPlaylist: (String, MusicPlatform) -> Unit,
     onSearchTypeChange: (SearchType) -> Unit,
     onClearSearchHistory: () -> Unit = {},
-    // 导航栏右键进入搜索页时聚焦内容首项（2.6 搜索内嵌为 tab）
+    // 导航栏右键进入搜尋页时聚焦内容首项（2.6 搜尋内嵌为 tab）
     contentEnterRequester: FocusRequester? = null,
-    // 2.9 搜索框向左导航退回侧边栏选中 tab
+    // 2.9 搜尋框向左导航退回侧边栏选中 tab
     onExitToNav: (() -> Unit)? = null,
     // 2.8 HTTP 服务器地址（扫码推送弹窗显示 /search 地址 + 二维码；null=未開啟服务器）
     serverUrl: String? = null,
@@ -174,7 +174,7 @@ fun SearchScreen(
     var showEnableServerDialog by remember { mutableStateOf(false) }
     // 2.8 是否在等待服务器启动后自动弹二维码（用户在询问弹窗点了「開啟」）
     var pendingQrAfterServerStart by remember { mutableStateOf(false) }
-    // 2.9 搜索框聚焦状态（用于外层 Compose 卡片 100% 满铺高亮渲染）
+    // 2.9 搜尋框聚焦状态（用于外层 Compose 卡片 100% 满铺高亮渲染）
     var searchBoxFocused by remember { mutableStateOf(false) }
     // 2.8 二维码推送按钮焦点状态
     var qrBtnFocused by remember { mutableStateOf(false) }
@@ -215,7 +215,7 @@ fun SearchScreen(
             showQrDialog = true
         }
     }
-    // 2.6 搜索页内嵌为 tab 后与其它页面一致：不再接管返回键，
+    // 2.6 搜尋页内嵌为 tab 后与其它页面一致：不再接管返回键，
     // 由主页统一逻辑处理（焦点回侧栏选中 tab → 再按返回弹退出确认）。
 
     // ===== 三栏跨列导航用焦点引用（显式方向键拦截，不依赖 focusGroup 的系统行为）=====
@@ -225,13 +225,13 @@ fun SearchScreen(
     val suggestionFirstRequester = remember { FocusRequester() }
     // 热门列表第一项（联想列右移 / 中间列为空时键盘右移的落点）
     val hotFirstRequester = remember { FocusRequester() }
-    // 2.9 类型选择器首项（歌曲按钮，供搜索框按「下」方向键时精准落焦）
+    // 2.9 类型选择器首项（歌曲按钮，供搜尋框按「下」方向键时精准落焦）
     val typeFirstRequester = remember { FocusRequester() }
-    // 2.9 二维码扫码按钮（供搜索框按「右」方向键时精准落焦）
+    // 2.9 二维码扫码按钮（供搜尋框按「右」方向键时精准落焦）
     val qrBtnRequester = remember { FocusRequester() }
-    // 2.9 搜索框焦点请求器（供二维码按钮按「左」或类型选择器按「上」精准回到搜索框）
+    // 2.9 搜尋框焦点请求器（供二维码按钮按「左」或类型选择器按「上」精准回到搜尋框）
     val searchBoxRequester = remember { FocusRequester() }
-    // 键盘焦点是否在右边缘键（每行最右列/搜索键）：为 true 时右键才跨列跳联想，
+    // 键盘焦点是否在右边缘键（每行最右列/搜尋键）：为 true 时右键才跨列跳联想，
     // 为 false 时右键交给焦点系统做键盘内部导航（A→B）
     var keyboardAtRightEdge by remember { mutableStateOf(false) }
     // 顶部「歌曲/歌单」类型选择器是否停留在最右侧按钮（歌单）：为 true 时右键跨列跳联想，
@@ -253,15 +253,15 @@ fun SearchScreen(
                     .weight(1f)
                     .fillMaxWidth()
             ) {
-                // ---- 左侧：搜索框 + 类型 + 平台 + 小键盘 ----
+                // ---- 左侧：搜尋框 + 类型 + 平台 + 小键盘 ----
                 Column(
                     modifier = Modifier
                         .fillMaxHeight()
                         .weight(0.4f)
                         // focusGroup：跨列导航按「键盘 → 联想 → 热门」整组跳转，
-                        // 避免焦点搜索跳过中间联想列直达右侧热门
+                        // 避免焦点搜尋跳过中间联想列直达右侧热门
                         .focusGroup()
-                        // 显式拦截右键：仅当焦点在键盘「右边缘」键（每行最右列/搜索键）、类型选择器最右键或搜索行二维码按钮时
+                        // 显式拦截右键：仅当焦点在键盘「右边缘」键（每行最右列/搜尋键）、类型选择器最右键或搜尋行二维码按钮时
                         // 才强制跳联想列；键盘内部的左右导航（如 A→B）仍交给焦点系统，
                         // 避免整个键盘只能选中最左一列
                         .onPreviewKeyEvent { event ->
@@ -285,13 +285,13 @@ fun SearchScreen(
                             }
                         }
                 ) {
-                    // 2.6 移除「搜索音乐/搜索歌单」标题
+                    // 2.6 移除「搜尋音乐/搜尋歌单」标题
 
-                    // 2.9 搜索词输入/展示框：参考 cat3399/blbl 成熟 TV 输入框双模交互架构
+                    // 2.9 搜尋词输入/展示框：参考 cat3399/blbl 成熟 TV 输入框双模交互架构
                     // 默认导航态：showSoftInputOnFocus = false，遥控器 D-Pad 获焦 100% 满铺高亮且绝不自动弹出软键盘；
                     // 唤起编辑态：按确定键（DPAD_CENTER / ENTER）或点击后，调起系统软键盘输入中文；
                     // 实时上屏：addTextChangedListener 实时同步到 searchQuery 与联想词列表；
-                    // 动作直通：软键盘“搜索/确定”（IME_ACTION_SEARCH）直接触发搜索并收起键盘；
+                    // 动作直通：软键盘“搜尋/确定”（IME_ACTION_SEARCH）直接触发搜尋并收起键盘；
                     // 焦点移出：自动退出编辑态并隐藏软键盘
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -320,7 +320,7 @@ fun SearchScreen(
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Search,
-                                    contentDescription = "搜索",
+                                    contentDescription = "搜尋",
                                     tint = if (searchBoxFocused) Color.White else LXTextPrimary,
                                     modifier = Modifier.size(20.dp)
                                 )
@@ -367,7 +367,7 @@ fun SearchScreen(
                                                             tryRequestFocus(typeFirstRequester)
                                                             return@setOnKeyListener true
                                                         }
-                                                        // 方向键左：精准移回左侧主导航栏的搜索 Tab
+                                                        // 方向键左：精准移回左侧主导航栏的搜尋 Tab
                                                         AndroidKeyEvent.KEYCODE_DPAD_LEFT -> {
                                                             onExitToNav?.invoke()
                                                             return@setOnKeyListener true
@@ -399,7 +399,7 @@ fun SearchScreen(
                                                 }
                                             }
 
-                                            // 5. 系统输入法“搜索/确定”按键直通执行搜索
+                                            // 5. 系统输入法“搜尋/确定”按键直通执行搜尋
                                             setOnEditorActionListener { v, actionId, event ->
                                                 if (actionId == EditorInfo.IME_ACTION_SEARCH ||
                                                     actionId == EditorInfo.IME_ACTION_DONE ||
@@ -472,7 +472,7 @@ fun SearchScreen(
                                     color = if (qrBtnFocused) FocusBorder else Color.Transparent,
                                     shape = RoundedCornerShape(12.dp)
                                 )
-                                // 2.9 显式按键分流：左键精确回搜索框，下键精确去类型选择器
+                                // 2.9 显式按键分流：左键精确回搜尋框，下键精确去类型选择器
                                 .onPreviewKeyEvent { event ->
                                     if (event.type == KeyEventType.KeyDown) {
                                         when (event.key) {
@@ -553,7 +553,7 @@ fun SearchScreen(
 
                     Spacer(modifier = Modifier.height(10.dp))
 
-                    // 搜索类型选择（歌曲 / 歌单，遥控器方向键 + 确认切换）
+                    // 搜尋类型选择（歌曲 / 歌单，遥控器方向键 + 确认切换）
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -605,7 +605,7 @@ fun SearchScreen(
 
                 Spacer(modifier = Modifier.width(16.dp))
 
-                // ---- 中间：搜索联想列表 ----
+                // ---- 中间：搜尋联想列表 ----
                 Column(
                     modifier = Modifier
                         .weight(0.3f)
@@ -624,12 +624,12 @@ fun SearchScreen(
                             }
                         }
                 ) {
-                    // 中间列：搜索输入为空 → 展示搜索历史（最多 10 条 + 清空按钮）；
-                    // 输入非空 → 展示搜索联想；两者皆无 → 占位提示
+                    // 中间列：搜尋输入为空 → 展示搜尋历史（最多 10 条 + 清空按钮）；
+                    // 输入非空 → 展示搜尋联想；两者皆无 → 占位提示
                     val showHistory = searchQuery.isBlank() && searchHistory.isNotEmpty()
                     val showSuggestionList = searchQuery.isNotBlank() && suggestions.isNotEmpty()
                     if (showHistory) {
-                        // ===== 搜索历史 =====
+                        // ===== 搜尋历史 =====
                         var historyHadFocus by remember { mutableStateOf(false) }
                         Box(
                             modifier = Modifier
@@ -689,7 +689,7 @@ fun SearchScreen(
                             }
                         }
                     } else if (showSuggestionList) {
-                        // ===== 搜索联想 =====
+                        // ===== 搜尋联想 =====
                         var suggestionGridHadFocus by remember { mutableStateOf(false) }
                         Box(
                             modifier = Modifier
@@ -766,7 +766,7 @@ fun SearchScreen(
                     val showHotSongs = searchPlatform == MusicPlatform.KG && hotSongs.isNotEmpty()
 
                     if (showHotSongs) {
-                        // 酷狗：用热门歌曲列表（取 TOP500 前 10 首），点击以歌名发起搜索（与其他平台一致）
+                        // 酷狗：用热门歌曲列表（取 TOP500 前 10 首），点击以歌名发起搜尋（与其他平台一致）
                         var hotListHadFocus by remember { mutableStateOf(false) }
                         Box(
                             modifier = Modifier
@@ -788,7 +788,7 @@ fun SearchScreen(
                                         keyword = song.name,
                                         focusRequester = if (index == 0) hotFirstRequester else null,
                                         onClick = {
-                                            // 与其他平台一致：点击热门歌曲→以歌名作为关键词发起搜索，跳转到搜索结果页
+                                            // 与其他平台一致：点击热门歌曲→以歌名作为关键词发起搜尋，跳转到搜尋结果页
                                             onSearchQueryChange(song.name)
                                             if (searchType == SearchType.PLAYLIST) {
                                                 onSearchPlaylist(song.name, searchPlatform)
@@ -843,7 +843,7 @@ fun SearchScreen(
 }
 
 /**
- * 搜索结果列表
+ * 搜尋结果列表
  */
 @Composable
 fun SearchResults(
@@ -854,7 +854,7 @@ fun SearchResults(
     onToggleFavorite: ((Song) -> Unit)? = null,
     onSongClick: (Song) -> Unit,
     onPlaySongStay: (Song) -> Unit,
-    // 分页续拉（酷狗歌单详情）：可选，普通搜索结果不传则无影响
+    // 分页续拉（酷狗歌单详情）：可选，普通搜尋结果不传则无影响
     onLoadMore: (() -> Unit)? = null,
     hasMore: Boolean = false,
     loadingMore: Boolean = false,
@@ -888,7 +888,7 @@ fun SearchResults(
 }
 
 /**
- * 搜索类型选择器（歌曲 / 歌单）
+ * 搜尋类型选择器（歌曲 / 歌单）
  * 电视遥控器：方向键左右切换焦点，确认键选中。
  *
  * 与收藏页 Tab 一致：采用真实焦点驱动，每个类型直接 [focusable]，
@@ -902,14 +902,14 @@ fun SearchTypeSelector(
     // 跟踪是否停留在最右按钮（歌单）：用于在 SearchScreen 中拦截右键跨列路由到联想列，
     // 与小键盘右键修复保持一致（避免右键跳过中间联想列直接跳到右侧热门）
     onFocusAtRightEdgeChange: (Boolean) -> Unit = {},
-    // 外部注入的焦点请求器（导航栏右键进入搜索页时聚焦类型选择器首项，2.6 内嵌 tab）
+    // 外部注入的焦点请求器（导航栏右键进入搜尋页时聚焦类型选择器首项，2.6 内嵌 tab）
     extraFocusRequester: FocusRequester? = null,
-    // 2.9 向上导航回到搜索框
+    // 2.9 向上导航回到搜尋框
     onUpNavigate: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     val types = listOf(SearchType.SONG, SearchType.PLAYLIST)
-    // 2.6 移除「进入时自动聚焦首项」：搜索页内嵌为 tab 后，点击 tab 时焦点应与其他 tab 一致
+    // 2.6 移除「进入时自动聚焦首项」：搜尋页内嵌为 tab 后，点击 tab 时焦点应与其他 tab 一致
     // 停留在左侧导航栏，按右键才通过 extraFocusRequester（contentEnterRequester）进入本选择器
 
     Row(
@@ -952,7 +952,7 @@ fun SearchTypeSelector(
 }
 
 /**
- * 歌单搜索结果列表
+ * 歌单搜尋结果列表
  */
 @Composable
 fun PlaylistResults(
@@ -1201,7 +1201,7 @@ fun PlaylistSongsView(
 }
 
 /**
- * 熱門搜尋快捷入口（搜索页右侧初始面板）
+ * 熱門搜尋快捷入口（搜尋页右侧初始面板）
  * 优先展示按平台从接口获取的热搜词；接口无数据时回退内置关键词
  */
 @Composable
@@ -1424,7 +1424,7 @@ fun SongItem(
             ) {
                 Icon(
                     imageVector = Icons.Default.Fullscreen,
-                    contentDescription = "播放并进入播放页",
+                    contentDescription = "播放並進入播放頁",
                     tint = LXOnCardDark,
                     modifier = Modifier.size(22.dp)
                 )
@@ -1515,7 +1515,7 @@ fun PlatformSelector(
     onPlatformSelected: (MusicPlatform) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // 只显示支持搜索的平台（名称走 platformShortName，跟随 PlatformNameConfig 别名配置）
+    // 只显示支持搜尋的平台（名称走 platformShortName，跟随 PlatformNameConfig 别名配置）
     val platforms = listOf(
         MusicPlatform.KW to platformShortName(MusicPlatform.KW),
         MusicPlatform.KG to platformShortName(MusicPlatform.KG),
@@ -1590,7 +1590,7 @@ fun PlatformChip(
 }
 
 /**
- * 搜索历史项（带历史图标，点击以该词发起搜索）
+ * 搜尋历史项（带历史图标，点击以该词发起搜尋）
  */
 @Composable
 fun SearchHistoryItem(
@@ -1638,7 +1638,7 @@ fun SearchHistoryItem(
 }
 
 /**
- * 搜索联想项
+ * 搜尋联想项
  */
 @Composable
 fun SuggestionItem(
@@ -1736,7 +1736,7 @@ fun HotSearchItem(
 
 /**
  * 2.8 掃碼推送搜尋文字弹窗：显示 /search 地址 + 二维码。
- * 手机/电脑扫码打开页面 → 输入文字 → 推送到 TV 搜索输入框（需開啟 HTTP 服务器）。
+ * 手机/电脑扫码打开页面 → 输入文字 → 推送到 TV 搜尋输入框（需開啟 HTTP 服务器）。
  */
 @Composable
 private fun SearchQrDialog(
@@ -1770,7 +1770,7 @@ private fun SearchQrDialog(
                     if (qr != null) {
                         Image(
                             bitmap = qr,
-                            contentDescription = "搜索推送二维码",
+                            contentDescription = "搜尋推送二维码",
                             modifier = Modifier.size(280.dp)
                         )
                     }
@@ -1782,7 +1782,7 @@ private fun SearchQrDialog(
                     color = LXPrimary
                 )
                 Text(
-                    text = "需先在设置中開啟 HTTP 服务器；地址为电视当前局域网 IP",
+                    text = "請先在設定中啟用 HTTP 伺服器；網址為電視目前的區域網路 IP",
                     fontSize = 12.sp,
                     color = LXTextSecondary
                 )
