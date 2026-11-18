@@ -439,6 +439,8 @@ fun LXMusicApp() {
             val searchError by viewModel.searchError.collectAsState()
             val searchQuery by viewModel.searchQuery.collectAsState()
             val searchPlatform by viewModel.searchPlatform.collectAsState()
+            val searchPlatformKey by viewModel.searchPlatformKey.collectAsState()
+            val searchPlatformOptions by viewModel.searchPlatformOptions.collectAsState()
             val searchType by viewModel.searchType.collectAsState()
             val serverUrl by viewModel.serverUrl.collectAsState()
             val searchTriggered by viewModel.searchTriggered.collectAsState()
@@ -457,6 +459,7 @@ fun LXMusicApp() {
                 searchQuery = searchQuery,
                 searchType = searchType,
                 searchPlatform = searchPlatform,
+                searchPlatformName = searchPlatformOptions.firstOrNull { it.key == searchPlatformKey }?.name,
                 searchResults = searchResults,
                 playlistResults = playlistResults,
                 playlistSongs = playlistSongs,
