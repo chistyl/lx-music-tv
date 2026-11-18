@@ -332,7 +332,7 @@ class ScriptParserTest {
                             headers: { 'User-Agent': 'test' }
                         },
                         actions: ['musicUrl'],
-                        qualitys: ['128k', 'flac']
+                        qualitys: ['128k', 'flac', 'lossless-plus']
                     }
                 }
             })
@@ -373,6 +373,8 @@ class ScriptParserTest {
         val success = result as ParseResult.Success
         assertTrue(success.declaredPlatforms.containsKey("my_custom_platform"))
         assertEquals("自訂音樂平台", success.declaredPlatforms["my_custom_platform"]?.name)
+        assertEquals(listOf("musicUrl", "lyric"), success.declaredPlatforms["my_custom_platform"]?.actions)
+        assertEquals(listOf("128k", "flac", "lossless-plus"), success.declaredPlatforms["my_custom_platform"]?.qualityKeys)
         assertFalse(success.platforms.containsKey(MusicPlatform.KW))
     }
 
