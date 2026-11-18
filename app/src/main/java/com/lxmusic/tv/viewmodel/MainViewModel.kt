@@ -322,6 +322,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         // 读取默认音乐平台设置（SharedPreferences）
         _defaultPlatform.value = loadDefaultPlatform()
         _searchPlatform.value = _defaultPlatform.value
+        _searchPlatformKey.value = _defaultPlatform.value.key
 
         // 读取偏好音质（设置页播放设置，默认 320k）
         _preferredQuality.value = loadPreferredQuality()
