@@ -31,6 +31,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lxmusic.tv.data.model.MusicSource
+import com.lxmusic.tv.data.source.ParseResult
+import com.lxmusic.tv.data.source.ScriptParser
 import com.lxmusic.tv.viewmodel.SourceImportPreview
 import com.lxmusic.tv.presentation.component.lxBackButtonFocus
 import com.lxmusic.tv.presentation.component.lxFocusBorder
@@ -419,6 +421,12 @@ fun SourceItem(
     onDelete: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val declaredPlatforms = remember(source.scriptContent) {
+        when (val parsed = ScriptParser().parse(source.scriptContent)) {
+            is ParseResult.Success -> parsed.platforms.keys.map { it.displayName }
+            is ParseResult.Error -> emptyList()
+        }
+    }
     Card(
         // 卡片自身不设焦点节点：若卡片 focusable 会拦截方向键，导致遥控器
         // 无法把焦点移入卡片内部的「启用/删除」操作（需按两次确定）。
@@ -502,9 +510,17 @@ fun SourceItem(
                             Text(text = "v$ver", fontSize = 12.sp, color = LXSuccess)
                         }
                         source.author?.let { auth ->
-                            Text(text = "by $auth", fontSize = 12.sp, color = LXOnCardDarkSecondary)
+                            Text(text = "作者：$auth", fontSize = 12.sp, color = LXOnCardDarkSecondary)
                         }
                     }
+                    Text(
+                        text = "支援平台：" + (declaredPlatforms.takeIf { it.isNotEmpty() }?.joinToString("、") ?: "未宣告"),
+                        fontSize = 12.sp,
+                        color = LXOnCardDarkSecondary,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.padding(top = 3.dp)
+                    )
                 }
 
                 Spacer(modifier = Modifier.width(8.dp))
