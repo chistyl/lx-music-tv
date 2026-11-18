@@ -97,21 +97,63 @@ class ScriptParser {
      */
     private fun parsePlatforms(scriptContent: String): Map<MusicPlatform, SourcePlatformInfo> {
         val platforms = mutableMapOf<MusicPlatform, SourcePlatformInfo>()
+        // 只解析 sources 物件本身，避免腳本其他位置的註解、字串或程式碼誤判成平台宣告。
+        val sourcesBody = extractObjectBody(scriptContent, "sources") ?: return platforms
 
-        // 检查每个平台的支持情况
         for (platform in MusicPlatform.entries) {
-            if (scriptContent.contains("sources:") && scriptContent.contains("${platform.key}:")) {
-                val platformInfo = parsePlatformInfo(scriptContent, platform)
-                if (platformInfo != null) {
-                    platforms[platform] = platformInfo
-                }
+            if (sourcesBody.contains("${platform.key}:")) {
+                val platformInfo = parsePlatformInfo(sourcesBody, platform)
+                if (platformInfo != null) platforms[platform] = platformInfo
             }
         }
-
-        // 僅接受腳本 sources metadata 明確宣告的平台；不再從關鍵字猜測平台，
-        // 避免把未支援的平台錯誤加入音源清單。
-
         return platforms
+    }
+
+    /**
+     * 取出指定 JS 物件屬性的內容，使用括號深度掃描而非單純正則，
+     * 並略過字串與註解中的大括號，避免巢狀物件截斷。
+     */
+    private fun extractObjectBody(scriptContent: String, propertyName: String): String? {
+        val propertyPattern = Regex("\\b${Regex.escape(propertyName)}\\s*:\\s*\\{")
+        val match = propertyPattern.find(scriptContent) ?: return null
+        val openBrace = match.range.last
+        var depth = 1
+        var quote: Char? = null
+        var escaped = false
+        var lineComment = false
+        var blockComment = false
+        var i = openBrace + 1
+
+        while (i < scriptContent.length) {
+            val c = scriptContent[i]
+            val next = scriptContent.getOrNull(i + 1)
+
+            if (lineComment) {
+                if (c == '\\n' || c == '\\r') lineComment = false
+            } else if (blockComment) {
+                if (c == '*' && next == '/') {
+                    blockComment = false
+                    i++
+                }
+            } else if (quote != null) {
+                if (escaped) escaped = false
+                else if (c == '\\\\') escaped = true
+                else if (c == quote) quote = null
+            } else {
+                when {
+                    c == '/' && next == '/' -> { lineComment = true; i++ }
+                    c == '/' && next == '*' -> { blockComment = true; i++ }
+                    c == '\\'' || c == '"' || c == '`' -> quote = c
+                    c == '{' -> depth++
+                    c == '}' -> {
+                        depth--
+                        if (depth == 0) return scriptContent.substring(openBrace + 1, i)
+                    }
+                }
+            }
+            i++
+        }
+        return null
     }
 
     /**
