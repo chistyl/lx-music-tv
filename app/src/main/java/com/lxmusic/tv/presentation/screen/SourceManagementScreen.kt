@@ -60,6 +60,10 @@ import com.lxmusic.tv.presentation.theme.LXTextSecondary
 fun SourceManagementScreen(
     sources: List<MusicSource>,
     declaredActions: List<SourceActionOption> = emptyList(),
+    sourceActionTestResult: String? = null,
+    sourceActionTestLoading: Boolean = false,
+    onExecuteDeclaredAction: (SourceActionOption, String) -> Unit = { _, _ -> },
+    onClearActionTestResult: () -> Unit = {},
     serverRunning: Boolean,
     serverUrl: String?,
     onToggleServer: () -> Unit,
@@ -195,6 +199,10 @@ fun SourceManagementScreen(
             item {
                 DeclaredSourceActionsCard(
                     actions = declaredActions,
+                    testResult = sourceActionTestResult,
+                    testLoading = sourceActionTestLoading,
+                    onExecute = onExecuteDeclaredAction,
+                    onClearResult = onClearActionTestResult,
                     modifier = Modifier.fillMaxWidth()
                 )
             }
@@ -274,8 +282,14 @@ fun SourceManagementScreen(
 @Composable
 private fun DeclaredSourceActionsCard(
     actions: List<SourceActionOption>,
+    testResult: String?,
+    testLoading: Boolean,
+    onExecute: (SourceActionOption, String) -> Unit,
+    onClearResult: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    var selectedAction by remember(actions) { mutableStateOf(actions.firstOrNull()) }
+    var requestJson by remember(selectedAction) { mutableStateOf("{}") }
     Card(
         modifier = modifier,
         colors = CardDefaults.cardColors(containerColor = LXCardDark),
@@ -322,21 +336,85 @@ private fun DeclaredSourceActionsCard(
                                 horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
                                 entries.forEach { entry ->
-                                    Surface(
-                                        color = LXPrimary.copy(alpha = 0.14f),
-                                        shape = RoundedCornerShape(6.dp)
+                                    val selected = selectedAction == entry
+                                    Button(
+                                        onClick = { selectedAction = entry; onClearResult() },
+                                        modifier = Modifier.lxSelectorFocus(
+                                            shape = RoundedCornerShape(8.dp),
+                                            glow = false,
+                                            animated = false
+                                        ),
+                                        colors = ButtonDefaults.buttonColors(
+                                            containerColor = if (selected) LXPrimary else LXSurfaceVariant,
+                                            contentColor = if (selected) Color.White else LXTextPrimary
+                                        ),
+                                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
                                     ) {
-                                        Text(
-                                            text = entry.action,
-                                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
-                                            fontSize = 12.sp,
-                                            color = LXTextPrimary
-                                        )
+                                        Text(entry.action, fontSize = 12.sp)
                                     }
                                 }
                             }
                         }
                     }
+
+                selectedAction?.let { selected ->
+                    Text(
+                        text = "測試 Action：${selected.action}",
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = LXOnCardDark
+                    )
+                    Text(
+                        text = "請依該音源的腳本規格輸入 info JSON；系統不會自動猜測參數。",
+                        fontSize = 12.sp,
+                        color = LXOnCardDarkSecondary
+                    )
+                    OutlinedTextField(
+                        value = requestJson,
+                        onValueChange = { requestJson = it },
+                        modifier = Modifier.fillMaxWidth()
+                            .lxSelectorFocus(shape = RoundedCornerShape(8.dp), glow = false, animated = false),
+                        label = { Text("info JSON") },
+                        minLines = 3,
+                        maxLines = 6,
+                        textStyle = androidx.compose.ui.text.TextStyle(fontSize = 14.sp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedTextColor = LXTextPrimary,
+                            unfocusedTextColor = LXTextPrimary,
+                            focusedBorderColor = LXPrimary,
+                            unfocusedBorderColor = LXBorder,
+                            focusedLabelColor = LXPrimary,
+                            unfocusedLabelColor = LXTextSecondary
+                        )
+                    )
+                    Button(
+                        onClick = { onExecute(selected, requestJson) },
+                        enabled = !testLoading,
+                        modifier = Modifier.lxSelectorFocus(
+                            shape = RoundedCornerShape(8.dp),
+                            glow = false,
+                            animated = false
+                        ),
+                        colors = ButtonDefaults.buttonColors(containerColor = LXPrimary)
+                    ) {
+                        Text(if (testLoading) "執行中…" else "執行測試")
+                    }
+                    testResult?.let { result ->
+                        Column(
+                            modifier = Modifier.fillMaxWidth()
+                                .background(LXSurfaceVariant, RoundedCornerShape(8.dp))
+                                .padding(12.dp),
+                            verticalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            Text("回傳結果", fontWeight = FontWeight.SemiBold, color = LXTextPrimary)
+                            Text(
+                                text = result,
+                                color = LXTextPrimary,
+                                fontSize = 12.sp
+                            )
+                        }
+                    }
+                }
             }
         }
     }
