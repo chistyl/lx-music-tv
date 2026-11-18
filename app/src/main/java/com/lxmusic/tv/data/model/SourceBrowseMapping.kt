@@ -16,6 +16,11 @@ data class SourceBrowseFieldMap(
     val albumPath: String? = null
 )
 
+sealed class SourceBrowseItemsResult {
+    data class Success(val items: List<SourceBrowseItem>) : SourceBrowseItemsResult()
+    data class Error(val message: String) : SourceBrowseItemsResult()
+}
+
 /**
  * 已依明確欄位對照表轉換的自訂音源瀏覽項目。
  * 以 platformKey 保留非內建平台識別，不回退成 LOCAL。
