@@ -106,7 +106,9 @@ data class MusicInfo(
     val albumId: String?,
     val picUrl: String?,
     val duration: Long?,
-    val platform: MusicPlatform
+    val platform: MusicPlatform,
+    /** 原始平台代碼；未知平台不可被轉成本地平台後遺失。 */
+    val platformKey: String = platform.key
 )
 
 /**
