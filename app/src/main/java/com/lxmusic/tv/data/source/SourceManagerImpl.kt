@@ -248,11 +248,10 @@ class SourceManagerImpl(
      * 回傳腳本明確宣告支援指定平台的啟用音源，供播放失敗時依優先級逐一切換。
      */
     fun getSourcesForPlatform(platformKey: String): List<MusicSource> {
-        val platform = MusicPlatform.values().firstOrNull { it.key == platformKey }
-            ?: return emptyList()
+        if (platformKey.isBlank()) return emptyList()
         return getEnabledSources().filter { source ->
             val result = parser.parse(source.scriptContent)
-            result is ParseResult.Success && result.platforms.containsKey(platform)
+            result is ParseResult.Success && platformKey in result.declaredPlatforms
         }
     }
 
@@ -264,7 +263,7 @@ class SourceManagerImpl(
         val source = getSourceById(id) ?: return emptySet()
         val result = parser.parse(source.scriptContent)
         return if (result is ParseResult.Success) {
-            result.platforms.keys.map { it.key }.toSet()
+            result.declaredPlatforms.keys
         } else {
             emptySet()
         }
@@ -396,18 +395,21 @@ class SourceManagerImpl(
         val executor = sourceExecutor ?: return SourceExecutionResult.Error("源执行器未初始化")
 
         // 平台必須是有效平台，且音源必須在 JS 腳本 metadata 的 sources 中明確宣告支援。
-        val platform = MusicPlatform.entries.firstOrNull { it.key == source }
-            ?: return SourceExecutionResult.Error("不支援的音樂平台：$source")
+        if (source.isBlank()) return SourceExecutionResult.Error("音樂平台代碼不可為空")
+        val platformInfo = getSourcePlatforms(sourceId ?: getEnabledSource()?.id.orEmpty())
+        if (sourceId != null && source !in platformInfo) {
+            return SourceExecutionResult.Error("指定的播放源未宣告支援平台：$source")
+        }
         val targetSource = if (sourceId != null) {
             val requestedSource = getSourceById(sourceId)
                 ?: return SourceExecutionResult.Error("指定的播放源不存在")
-            if (platform.key !in getSourcePlatforms(requestedSource.id)) {
-                return SourceExecutionResult.Error("播放源「${requestedSource.name}」未宣告支援${platform.displayName}")
+            if (source !in getSourcePlatforms(requestedSource.id)) {
+                return SourceExecutionResult.Error("播放源「${requestedSource.name}」未宣告支援平台：$source")
             }
             requestedSource
         } else {
-            getSourceForPlatform(platform.key)
-                ?: return SourceExecutionResult.Error("沒有已啟用且宣告支援${platform.displayName}的播放源")
+            getSourceForPlatform(source)
+                ?: return SourceExecutionResult.Error("沒有已啟用且宣告支援平台「$source」的播放源")
         }
 
         // 僅載入通過平台 metadata 驗證的音源，禁止回退到其他平台或任意已載入腳本。
@@ -419,7 +421,7 @@ class SourceManagerImpl(
             }
         }
 
-        return executor.getMusicUrl(musicId, quality, platform.key, songName, singer)
+        return executor.getMusicUrl(musicId, quality, source, songName, singer)
     }
 
     /**
