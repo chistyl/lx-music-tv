@@ -174,6 +174,43 @@ class MusicSearchService(
     }
 
     /**
+     * 依腳本宣告的平台 key 搜尋，供自訂平台使用；不要求平台存在於內建 enum。
+     */
+    suspend fun searchByPlatformKey(
+        keyword: String,
+        platformKey: String,
+        page: Int = 1,
+        pageSize: Int = 30,
+        sourceId: String? = null
+    ): ApiResponse<SearchResult> = withContext(Dispatchers.IO) {
+        if (keyword.isBlank() || platformKey.isBlank()) {
+            return@withContext ApiResponse.error("搜尋關鍵字或平台代碼不可為空")
+        }
+        try {
+            val result = sourceManager.searchMusicWithSource(
+                keyword = keyword, page = page, limit = pageSize,
+                platformKey = platformKey, sourceId = sourceId
+            )
+            when (result) {
+                is SourceExecutionResult.SearchSuccess -> {
+                    val songs = result.musicList.map { item ->
+                        item.copy(platform = platformKey).toSong()
+                    }
+                    ApiResponse.success(SearchResult(
+                        songs = songs, total = songs.size, page = page, pageSize = pageSize
+                    ))
+                }
+                is SourceExecutionResult.Error -> ApiResponse.error(result.message)
+                else -> ApiResponse.error("播放源未回傳有效搜尋結果")
+            }
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Log.e(TAG, "自訂平台搜尋失敗: ${e.message}", e)
+            ApiResponse.error("搜尋失敗: ${e.message}")
+        }
+    }
+    /**
      * 搜索歌单（按平台调用内置歌单搜索接口）
      *
      * 实测可用：
