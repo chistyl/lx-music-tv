@@ -79,8 +79,8 @@ class SourceBrowseItemMapper {
     }
 
     private fun JsonElement.asText(): String? = when (this) {
-        is JsonPrimitive -> if (isString) content else content
         JsonNull -> null
+        is JsonPrimitive -> content
         else -> toString()
     }
 }
