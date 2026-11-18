@@ -51,6 +51,9 @@ class SourceExecutor(
      * 3. 检查 initEventData 和 eventHandlers 判断模式
      */
     suspend fun initializeSource(scriptContent: String): SourceExecutionResult = withContext(Dispatchers.IO) {
+        // 每次切換腳本都先清除上一支腳本的平台/action metadata，避免跨腳本誤用。
+        useEventDrivenModel = false
+        sourceInfoFromInit.clear()
         try {
             Log.i(TAG, "===== 初始化播放源 =====")
             Log.i(TAG, "脚本长度: ${scriptContent.length}")
@@ -142,6 +145,7 @@ class SourceExecutor(
      * }
      */
     private fun parseInitEventData(data: org.json.JSONObject) {
+        sourceInfoFromInit.clear()
         try {
             // 提取 sources 字段
             val sources = data.optJSONObject("sources")
@@ -161,6 +165,46 @@ class SourceExecutor(
             Log.e(TAG, "解析 inited 数据失败: ${e.message}", e)
         }
     }
+
+    /**
+     * 執行音源腳本明確宣告的平台 action。
+     *
+     * 只允許 inited.sources[platformKey].actions 中實際宣告的 action，
+     * 不推測 action 名稱或 info schema；info 由呼叫端依已確認的協議提供。
+     */
+    suspend fun executeDeclaredAction(
+        platformKey: String,
+        action: String,
+        info: JSONObject
+    ): JavaScriptResult = withContext(Dispatchers.IO) {
+        if (platformKey.isBlank()) {
+            return@withContext JavaScriptResult.Error("平台代碼不可為空")
+        }
+        if (action.isBlank()) {
+            return@withContext JavaScriptResult.Error("Action 不可為空")
+        }
+        if (!useEventDrivenModel) {
+            return@withContext JavaScriptResult.Error("目前音源不是事件驅動模式")
+        }
+        val platformInfo = sourceInfoFromInit[platformKey] as? JSONObject
+            ?: return@withContext JavaScriptResult.Error("音源未宣告平台：$platformKey")
+        val actions = platformInfo.optJSONArray("actions")
+            ?: return@withContext JavaScriptResult.Error("平台未宣告任何 action：$platformKey")
+        val declared = (0 until actions.length()).any { actions.optString(it) == action }
+        if (!declared) {
+            return@withContext JavaScriptResult.Error("平台「$platformKey」未宣告 action「$action」")
+        }
+
+        val eventData = JSONObject().apply {
+            put("source", platformKey)
+            put("action", action)
+            put("info", JSONObject(info.toString()))
+        }
+        dispatchEventRequest(eventData)
+    }
+
+    private suspend fun dispatchEventRequest(eventData: JSONObject): JavaScriptResult =
+        javaScriptEngine.dispatchEvent("request", eventData)
 
     /**
      * 搜索音乐
