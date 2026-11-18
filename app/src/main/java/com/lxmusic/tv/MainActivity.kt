@@ -507,6 +507,7 @@ fun LXMusicApp() {
                 onToggleServer = { viewModel.toggleServer() },
                 onToggleSource = { sourceId, enabled -> viewModel.toggleSource(sourceId, enabled) },
                 onDeleteSource = { sourceId -> viewModel.deleteSource(sourceId) },
+                onImportSourceFromUrl = { url -> viewModel.importSourceFromUrl(url) },
                 onBack = { navController.popBackStack() },
                 // 2.8 返回按钮按右键 → 聚焦右上角悬浮播放球
                 onFocusFloatingBall = { floatingBallRequester.requestFocus() },
