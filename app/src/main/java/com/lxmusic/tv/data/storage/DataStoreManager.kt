@@ -274,10 +274,11 @@ private fun PlayHistoryEntity.toDomainModel(): PlayHistory {
         musicId = musicId,
         musicName = musicName,
         artist = artist,
-        platform = MusicPlatform.valueOf(platform),
+        platform = platform.toMusicPlatform(),
         playedAt = playedAt,
         duration = duration,
-        sourceId = sourceId
+        sourceId = sourceId,
+        platformKey = platform
     )
 }
 
@@ -286,7 +287,7 @@ private fun PlayHistory.toEntity(): PlayHistoryEntity {
         musicId = musicId,
         musicName = musicName,
         artist = artist,
-        platform = platform.name,
+        platform = platformKey,
         playedAt = playedAt,
         duration = duration,
         sourceId = sourceId
@@ -298,12 +299,13 @@ private fun FavoriteEntity.toDomainModel(): Favorite {
         musicId = musicId,
         musicName = musicName,
         artist = artist,
-        platform = MusicPlatform.valueOf(platform),
+        platform = platform.toMusicPlatform(),
         addedAt = addedAt,
         sourceId = sourceId,
         picUrl = picUrl,
         albumName = albumName,
-        duration = duration
+        duration = duration,
+        platformKey = platform
     )
 }
 
@@ -312,7 +314,7 @@ private fun Favorite.toEntity(): FavoriteEntity {
         musicId = musicId,
         musicName = musicName,
         artist = artist,
-        platform = platform.name,
+        platform = platformKey,
         addedAt = addedAt,
         sourceId = sourceId,
         picUrl = picUrl,
@@ -343,4 +345,10 @@ private fun FavoritePlaylist.toEntity(): FavoritePlaylistEntity {
         creator = creator,
         addedAt = addedAt
     )
+}
+
+/** 兼容舊版資料庫儲存的 enum 名稱與新版動態平台 key。 */
+private fun String.toMusicPlatform(): MusicPlatform {
+    return MusicPlatform.entries.firstOrNull { it.key.equals(this, ignoreCase = true) || it.name.equals(this, ignoreCase = true) }
+        ?: MusicPlatform.LOCAL
 }
