@@ -124,7 +124,8 @@ data class PlayHistory(
     val platform: MusicPlatform,
     val playedAt: Long = System.currentTimeMillis(),
     val duration: Long,
-    val sourceId: String
+    val sourceId: String,
+    val platformKey: String = platform.key
 )
 
 /**
@@ -139,7 +140,8 @@ data class Favorite(
     val sourceId: String,
     val picUrl: String? = null,
     val albumName: String? = null,
-    val duration: Long? = null
+    val duration: Long? = null,
+    val platformKey: String = platform.key
 )
 
 /**
