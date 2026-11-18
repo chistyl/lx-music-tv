@@ -97,7 +97,7 @@ private class HoldState {
  *     5 秒无操作自动收起；焦点交还主区
  *     进度条 = 菠萝风格：时间显示在进度条上方，聚焦时为可拖动白色圆环 thumb
  *     按钮排 [歌单] [⏮ ⏸ ⏭] [收藏 模式]   全部 focusable，选中圆圈高亮（无永久底色）
- * - 播放列表面板改为左侧抽屉（占屏 60% 宽，从左滑入覆盖），对齐 菠萝 风格
+ * - 播放清單面板改为左侧抽屉（占屏 60% 宽，从左滑入覆盖），对齐 菠萝 风格
  */
 @Composable
 fun PlayerScreen(
@@ -219,7 +219,7 @@ fun PlayerScreen(
             // 任何按键按下都重置自动隐藏计时（用户正在操作）
             if (ev.type == KeyEventType.KeyDown && showControls) controlsTick++
 
-            // 菜单键：唤出/收起播放列表（独立于控制栏）
+            // 菜单键：唤出/收起播放清單（独立于控制栏）
             if (ev.key == Key.Menu) {
                 if (ev.type == KeyEventType.KeyDown) {
                     if (showPlaylist) {
@@ -235,7 +235,7 @@ fun PlayerScreen(
             // 仅主区（控制栏/列表抽屉均未弹出）响应左右键手势
             if (showControls || showPlaylist) return@onPreviewKeyEvent false
 
-            // 左右键：主区未弹控制栏时，长按快进/快退、双击切换上一曲/下一曲（参考菠萝音乐）
+            // 左右键：主区未弹控制栏时，长按快进/快退、双击切换上一首/下一首（参考菠萝音乐）
             if (ev.key == Key.DirectionLeft || ev.key == Key.DirectionRight) {
                 val backward = ev.key == Key.DirectionLeft
                 val st = if (backward) leftHold else rightHold
@@ -251,7 +251,7 @@ fun PlayerScreen(
                             gestureToastTimes[slot] = nowMs
                             Toast.makeText(
                                 context,
-                                if (backward) "左键：双击上一曲 · 长按快退" else "右键：双击下一曲 · 长按快进",
+                                if (backward) "左键：双击上一首 · 长按快退" else "右键：双击下一首 · 长按快进",
                                 Toast.LENGTH_SHORT
                             ).show()
                         }
@@ -351,7 +351,7 @@ fun PlayerScreen(
                 )
             }
 
-            // 左侧抽屉式播放列表面板
+            // 左侧抽屉式播放清單面板
             if (showPlaylist) {
                 PlaylistDrawer(
                     playlist = playlist,
@@ -456,7 +456,7 @@ private fun PlayerMainContent(
             )
             Spacer(modifier = Modifier.height(22.dp))
             Text(
-                text = currentSong?.name ?: "未在播放",
+                text = currentSong?.name ?: "目前沒有播放歌曲",
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.White,
@@ -466,7 +466,7 @@ private fun PlayerMainContent(
             )
             Spacer(modifier = Modifier.height(6.dp))
             Text(
-                text = currentSong?.singer ?: "选择一首歌开始播放",
+                text = currentSong?.singer ?: "選擇一首歌曲開始播放",
                 fontSize = 15.sp,
                 color = Color.White.copy(alpha = 0.65f),
                 maxLines = 1,
@@ -575,7 +575,7 @@ private fun PlayerBottomBar(
             // LEFT: 歌单
             ControlCircleButton(
                 onClick = onShowPlaylist,
-                contentDescription = "播放列表"
+                contentDescription = "播放清單"
             ) { _ ->
                 Icon(
                     imageVector = Icons.Default.QueueMusic,
@@ -587,10 +587,10 @@ private fun PlayerBottomBar(
 
             Spacer(modifier = Modifier.weight(1f))
 
-            // CENTER: 上一曲 / 播放暂停 / 下一曲
+            // CENTER: 上一首 / 播放暂停 / 下一首
             ControlCircleButton(
                 onClick = onPrevious,
-                contentDescription = "上一曲"
+                contentDescription = "上一首"
             ) { _ ->
                 Icon(
                     imageVector = Icons.Default.SkipPrevious,
@@ -621,7 +621,7 @@ private fun PlayerBottomBar(
 
             ControlCircleButton(
                 onClick = onNext,
-                contentDescription = "下一曲"
+                contentDescription = "下一首"
             ) { _ ->
                 Icon(
                     imageVector = Icons.Default.SkipNext,
@@ -914,7 +914,7 @@ private fun ControlCircleButton(
                 // 消除中间色与边框之间的空带（点：圆形按钮边框与中间色的小间隔）
                 drawCircle(color = Color.Black.copy(alpha = 0.35f), radius = r)
                 // 外环：居中于 r - half，strokes 宽度 15px → 跨度 [r-15, r]，完整落在 Box 内。
-                // 颜色统一为黑色半透明 FocusBorder（仿播放页播放列表暗色面板，与全站焦点边框一致）
+                // 颜色统一为黑色半透明 FocusBorder（仿播放页播放清單暗色面板，与全站焦点边框一致）
                 drawCircle(
                     color = FocusBorder,
                     radius = r - half,
@@ -1065,7 +1065,7 @@ private fun PlayModeItem(
 }
 
 /**
- * 左侧抽屉式播放列表面板（仿菠萝：从左滑入，占屏 42% 宽）
+ * 左侧抽屉式播放清單面板（仿菠萝：从左滑入，占屏 42% 宽）
  */
 @Composable
 private fun PlaylistDrawer(
@@ -1091,7 +1091,7 @@ private fun PlaylistDrawer(
         modifier = Modifier
             .fillMaxSize()
             .onPreviewKeyEvent { ev ->
-                // 返回键 1 次直接关闭播放列表：TV 上焦点停在列表项时，默认返回键会先被焦点系统
+                // 返回键 1 次直接关闭播放清單：TV 上焦点停在列表项时，默认返回键会先被焦点系统
                 // 当作「取消选中」消耗，导致要按 2 次才能关——这里在预览阶段拦截消费
                 if (ev.type == KeyEventType.KeyDown && ev.key == Key.Back) {
                     onDismiss()
@@ -1117,7 +1117,7 @@ private fun PlaylistDrawer(
             // 标题
             Row(verticalAlignment = Alignment.Bottom) {
                 Text(
-                    text = "播放列表",
+                    text = "播放清單",
                     fontSize = 22.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.White
@@ -1134,7 +1134,7 @@ private fun PlaylistDrawer(
 
             if (playlist.isEmpty()) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text(text = "播放列表为空", fontSize = 16.sp, color = Color.Gray)
+                    Text(text = "播放清單为空", fontSize = 16.sp, color = Color.Gray)
                 }
             } else {
                 LazyColumn(
@@ -1195,7 +1195,7 @@ private fun DrawerSongRow(
             .padding(horizontal = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // 序号（便于核对播放列表歌曲数量，如酷狗整列表补拉是否完整）
+        // 序号（便于核对播放清單歌曲数量，如酷狗整列表补拉是否完整）
         Text(
             text = "${index + 1}",
             fontSize = 14.sp,
@@ -1374,7 +1374,7 @@ private fun GlassAlbumCover(
         if (currentSong == null) {
             Icon(
                 imageVector = Icons.Default.MusicNote,
-                contentDescription = "专辑封面",
+                contentDescription = "專輯封面",
                 tint = Color.White.copy(alpha = 0.8f),
                 modifier = Modifier.size(96.dp)
             )
@@ -1440,7 +1440,7 @@ private fun LyricPanel(
                 )
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(
-                    text = if (currentSong == null) "暂无播放" else "暂无歌词",
+                    text = if (currentSong == null) "目前沒有播放內容" else "目前沒有歌詞",
                     fontSize = 15.sp,
                     color = Color.White.copy(alpha = 0.5f)
                 )
