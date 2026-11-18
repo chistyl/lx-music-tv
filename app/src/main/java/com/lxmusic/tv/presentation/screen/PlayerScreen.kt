@@ -143,7 +143,7 @@ fun PlayerScreen(
     val latestProgress = remember { mutableStateOf(progress) }
     latestProgress.value = progress
 
-    // 焦点：主区常驻焦点（控制栏隐藏时焦点落这里）+ 进度条焦点 + 播放/暂停焦点
+    // 焦点：主区常驻焦点（控制栏隐藏时焦点落这里）+ 进度条焦点 + 播放/暫停焦点
     val mainFocusRequester = remember { FocusRequester() }
     val progressFocusRequester = remember { FocusRequester() }
     val playPauseFocusRequester = remember { FocusRequester() }
@@ -158,7 +158,7 @@ fun PlayerScreen(
         )
     }
 
-    // 弹出后稍等组合完成，再把焦点落到播放/暂停按键（用户要求默认聚焦播放暂停）
+    // 弹出后稍等组合完成，再把焦点落到播放/暫停按键（用户要求默认聚焦播放暫停）
     LaunchedEffect(showControls) {
         if (showControls) {
             delay(160)
@@ -199,7 +199,7 @@ fun PlayerScreen(
     // 弹窗打开时返回键仍先关弹窗；控制栏与列表抽屉互斥（开列表前已 hideControls）
     BackHandler(enabled = showControls) { hideControls() }
 
-    // 播放模式弹窗打开时，返回键关闭弹窗（焦点交还控制栏播放/暂停，不退出播放页）
+    // 播放模式弹窗打开时，返回键关闭弹窗（焦点交还控制栏播放/暫停，不退出播放页）
     BackHandler(enabled = showPlayModeMenu) {
         showPlayModeMenu = false
         playPauseFocusRequester.requestFocus()
@@ -587,7 +587,7 @@ private fun PlayerBottomBar(
 
             Spacer(modifier = Modifier.weight(1f))
 
-            // CENTER: 上一首 / 播放暂停 / 下一首
+            // CENTER: 上一首 / 播放暫停 / 下一首
             ControlCircleButton(
                 onClick = onPrevious,
                 contentDescription = "上一首"
@@ -604,7 +604,7 @@ private fun PlayerBottomBar(
 
             ControlCircleButton(
                 onClick = onPlayPause,
-                contentDescription = if (isPlaying) "暂停" else "播放",
+                contentDescription = if (isPlaying) "暫停" else "播放",
                 size = 68.dp,
                 iconSize = 40.dp,
                 focusRequester = playPauseFocusRequester
@@ -650,7 +650,7 @@ private fun PlayerBottomBar(
 
             ControlCircleButton(
                 onClick = onPlayModeMenuToggle,
-                contentDescription = "播放模式：${playMode.displayName}，点击选择"
+                contentDescription = "播放模式：${playMode.displayName}，按下即可選擇"
             ) { focused ->
                 Icon(
                     imageVector = modeIcon,
