@@ -349,4 +349,31 @@ class ScriptParserTest {
         assertTrue(kw.qualitys.contains(AudioQuality.FLAC))
     }
 
+
+    @Test
+    fun `test custom platform key is preserved without built in enum`() {
+        val scriptContent = """
+            /**
+             * @name 自訂平台音源
+             */
+            globalThis.lx.send('inited', {
+                sources: {
+                    my_custom_platform: {
+                        name: '自訂音樂平台',
+                        actions: ['musicUrl', 'lyric'],
+                        qualitys: ['128k', 'flac']
+                    }
+                }
+            })
+        """.trimIndent()
+
+        val result = parser.parse(scriptContent)
+
+        assertTrue(result is ParseResult.Success)
+        val success = result as ParseResult.Success
+        assertTrue(success.declaredPlatforms.containsKey("my_custom_platform"))
+        assertEquals("自訂音樂平台", success.declaredPlatforms["my_custom_platform"]?.name)
+        assertFalse(success.platforms.containsKey(MusicPlatform.KW))
+    }
+
 }
