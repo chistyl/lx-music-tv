@@ -124,7 +124,9 @@ data class SourcePlatformInfo(
     val name: String,
     val type: String = "music",
     val actions: List<String>,
-    val qualitys: List<AudioQuality>
+    val qualitys: List<AudioQuality>,
+    /** 腳本原始宣告的音質代碼，保留非內建音質選項。 */
+    val qualityKeys: List<String> = qualitys.map { it.key }
 )
 
 /**
