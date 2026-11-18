@@ -18,6 +18,13 @@ data class MusicSource(
     val enabledAt: Long? = null
 )
 
+/** 搜尋頁可選擇的平台；key 保留音源腳本宣告的原始代碼。 */
+data class SearchPlatformOption(
+    val key: String,
+    val name: String,
+    val isBuiltIn: Boolean = false
+)
+
 /**
  * 音乐源支持的平台
  */
