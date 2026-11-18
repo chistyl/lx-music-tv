@@ -83,6 +83,7 @@ fun SourceManagementScreen(
     }
     // 进入页面时把焦点落到返回按钮，避免初始无焦点导致方向键失灵
     val backFocusRequester = remember { FocusRequester() }
+    val addSourceFocusRequester = remember { FocusRequester() }
     var initialFocusRequested by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
@@ -132,7 +133,7 @@ fun SourceManagementScreen(
                             // 2.8 右键 → 聚焦右上角悬浮播放球
                             .onPreviewKeyEvent { keyEvent ->
                                 if (keyEvent.type == KeyEventType.KeyDown && keyEvent.key == Key.DirectionRight) {
-                                    onFocusFloatingBall()
+                                    addSourceFocusRequester.requestFocus()
                                     true
                                 } else false
                             }
@@ -158,8 +159,15 @@ fun SourceManagementScreen(
                     Button(
                         onClick = { showImportDialog = true },
                         modifier = Modifier
+                            .focusRequester(addSourceFocusRequester)
                             .height(48.dp)
-                            .lxSelectorFocus(shape = RoundedCornerShape(12.dp), glow = false, animated = false),
+                            .lxSelectorFocus(shape = RoundedCornerShape(12.dp), glow = false, animated = false)
+                            .onPreviewKeyEvent { keyEvent ->
+                                if (keyEvent.type == KeyEventType.KeyDown && keyEvent.key == Key.DirectionRight) {
+                                    onFocusFloatingBall()
+                                    true
+                                } else false
+                            },
                         colors = ButtonDefaults.buttonColors(containerColor = LXPrimary)
                     ) {
                         Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(20.dp))
