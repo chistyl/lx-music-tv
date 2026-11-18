@@ -1312,6 +1312,42 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun getDeclaredSourceActions(): List<SourceActionOption> =
         sourceManager.getAllDeclaredActions()
 
+    private val _sourceActionTestResult = MutableStateFlow<String?>(null)
+    val sourceActionTestResult: StateFlow<String?> = _sourceActionTestResult.asStateFlow()
+    private val _sourceActionTestLoading = MutableStateFlow(false)
+    val sourceActionTestLoading: StateFlow<Boolean> = _sourceActionTestLoading.asStateFlow()
+    private var sourceActionTestJob: Job? = null
+
+    /** 執行腳本明確宣告的 Action；請求 JSON 由使用者提供，不推測欄位。 */
+    fun executeDeclaredSourceAction(option: SourceActionOption, infoJson: String) {
+        sourceActionTestJob?.cancel()
+        sourceActionTestJob = viewModelScope.launch {
+            _sourceActionTestLoading.value = true
+            _sourceActionTestResult.value = null
+            val resultText = try {
+                val info = org.json.JSONObject(infoJson.ifBlank { "{}" })
+                when (val result = sourceManager.executeSourceAction(
+                    platformKey = option.platformKey,
+                    action = option.action,
+                    info = info,
+                    sourceId = option.sourceId
+                )) {
+                    is SourceExecutionResult.ActionSuccess -> result.result
+                    is SourceExecutionResult.Error -> "執行失敗：${result.message}"
+                    else -> "Action 回傳非預期結果"
+                }
+            } catch (e: Exception) {
+                "請求 JSON 格式錯誤或執行失敗：${e.message ?: "未知錯誤"}"
+            }
+            _sourceActionTestResult.value = resultText
+            _sourceActionTestLoading.value = false
+        }
+    }
+
+    fun clearSourceActionTestResult() {
+        sourceActionTestResult.value.let { _sourceActionTestResult.value = null }
+    }
+
     // ========== 浏览数据（发现/歌单/排行） ==========
 
     /**
