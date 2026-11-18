@@ -42,6 +42,7 @@ fun SearchResultScreen(
     searchQuery: String = "",
     searchType: SearchType = SearchType.SONG,
     searchPlatform: MusicPlatform = MusicPlatform.KW,
+    searchPlatformName: String? = null,
     searchResults: List<Song> = emptyList(),
     playlistResults: List<Playlist> = emptyList(),
     playlistSongs: List<Song>? = null,
@@ -144,7 +145,7 @@ fun SearchResultScreen(
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = platformShortName(searchPlatform),
+                            text = searchPlatformName ?: platformShortName(searchPlatform),
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Bold,
                             color = platformBrandColor(searchPlatform)
