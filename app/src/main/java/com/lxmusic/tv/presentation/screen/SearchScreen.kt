@@ -98,7 +98,7 @@ fun platformIcon(platform: MusicPlatform): ImageVector {
 }
 
 /**
- * 各平台名称（短名，走 PlatformNameConfig：开启洛雪风格后为 小秋/小芸/…）
+ * 各平台名称（短名，走 PlatformNameConfig：開啟洛雪风格后为 小秋/小芸/…）
  */
 fun platformShortName(platform: MusicPlatform): String {
     return PlatformNameConfig.shortName(platform)
@@ -114,7 +114,7 @@ fun platformShortName(platform: MusicPlatform): String {
  * 搜索类型支持「歌曲 / 歌单」
  */
 /**
- * 搜索页热门搜索的接口兜底关键词（接口偶发失败时仍能呈现内容）
+ * 搜索页熱門搜尋的接口兜底关键词（接口偶发失败时仍能呈现内容）
  */
 private val HOT_FALLBACK_KEYWORDS = listOf(
     "周杰伦", "林俊杰", "陈奕迅", "薛之谦", "邓紫棋",
@@ -162,9 +162,9 @@ fun SearchScreen(
     contentEnterRequester: FocusRequester? = null,
     // 2.9 搜索框向左导航退回侧边栏选中 tab
     onExitToNav: (() -> Unit)? = null,
-    // 2.8 HTTP 服务器地址（扫码推送弹窗显示 /search 地址 + 二维码；null=未开启服务器）
+    // 2.8 HTTP 服务器地址（扫码推送弹窗显示 /search 地址 + 二维码；null=未開啟服务器）
     serverUrl: String? = null,
-    // 2.8 HTTP 未开启时点二维码 → 询问是否启用（调用方负责启动服务器，如 viewModel.startServer）
+    // 2.8 HTTP 未開啟时点二维码 → 询问是否启用（调用方负责启动服务器，如 viewModel.startServer）
     onEnableServer: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
@@ -172,7 +172,7 @@ fun SearchScreen(
     var showQrDialog by remember { mutableStateOf(false) }
     // 2.8 HTTP 未启用询问弹窗开关
     var showEnableServerDialog by remember { mutableStateOf(false) }
-    // 2.8 是否在等待服务器启动后自动弹二维码（用户在询问弹窗点了「开启」）
+    // 2.8 是否在等待服务器启动后自动弹二维码（用户在询问弹窗点了「開啟」）
     var pendingQrAfterServerStart by remember { mutableStateOf(false) }
     // 2.9 搜索框聚焦状态（用于外层 Compose 卡片 100% 满铺高亮渲染）
     var searchBoxFocused by remember { mutableStateOf(false) }
@@ -189,7 +189,7 @@ fun SearchScreen(
     val textColorArgb = LXTextPrimary.toArgb()
     val hintColorArgb = LXTextSecondary.toArgb()
 
-    // 2.9 进入软键盘编辑模式（参考 cat3399/blbl：开启输入法响应、显示光标并显式拉起系统软键盘）
+    // 2.9 进入软键盘编辑模式（参考 cat3399/blbl：開啟输入法响应、显示光标并显式拉起系统软键盘）
     fun enterImeEditMode(editText: EditText) {
         editText.showSoftInputOnFocus = true
         editText.isCursorVisible = true
@@ -457,7 +457,7 @@ fun SearchScreen(
                         }
                         // 二维码推送按钮：扫码打开 /search 页，手机输入文字推送到输入框（解决 TV 输入困难）。
                         // 2.8 样式与小键盘按键完全一致：未聚焦灰底无边框，聚焦红底 0.35 + 3dp 焦点边框；
-                        // 未开启服务器时询问是否启用
+                        // 未開啟服务器时询问是否启用
                         Box(
                             modifier = Modifier
                                 .size(58.dp)
@@ -490,7 +490,7 @@ fun SearchScreen(
                                     if (serverUrl != null) {
                                         showQrDialog = true
                                     } else {
-                                        // 2.8 HTTP 未开启：先询问是否启用，启用成功后自动弹二维码
+                                        // 2.8 HTTP 未開啟：先询问是否启用，启用成功后自动弹二维码
                                         showEnableServerDialog = true
                                     }
                                 },
@@ -498,7 +498,7 @@ fun SearchScreen(
                         ) {
                             Icon(
                                 imageVector = Icons.Default.QrCode,
-                                contentDescription = "扫码推送搜索文字",
+                                contentDescription = "掃碼推送搜尋文字",
                                 tint = if (qrBtnFocused) Color.White else LXTextPrimary,
                                 modifier = Modifier.size(30.dp)
                             )
@@ -513,7 +513,7 @@ fun SearchScreen(
                             containerColor = LXSurfaceDialog,
                             title = {
                                 Text(
-                                    text = "开启 HTTP 服务器？",
+                                    text = "啟用 HTTP 伺服器？",
                                     fontSize = 20.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = LXTextPrimary
@@ -521,7 +521,7 @@ fun SearchScreen(
                             },
                             text = {
                                 Text(
-                                    text = "扫码推送需要 HTTP 服务器支持。开启后手机/电脑打开 /search 页面，即可输入文字推送到电视搜索框。",
+                                    text = "掃碼推送需要 HTTP 伺服器支援。啟用後可透過手機／電腦開啟 /search 頁面，輸入文字並推送至電視搜尋框。",
                                     fontSize = 14.sp,
                                     color = LXTextSecondary
                                 )
@@ -532,7 +532,7 @@ fun SearchScreen(
                                     pendingQrAfterServerStart = true
                                     onEnableServer()
                                 }) {
-                                    Text("开启", color = LXPrimary, fontWeight = FontWeight.Bold)
+                                    Text("開啟", color = LXPrimary, fontWeight = FontWeight.Bold)
                                 }
                             },
                             dismissButton = {
@@ -543,7 +543,7 @@ fun SearchScreen(
                         )
                     }
 
-                    // 2.8 扫码推送弹窗：显示 /search 地址 + 二维码（需开启 HTTP 服务器）
+                    // 2.8 扫码推送弹窗：显示 /search 地址 + 二维码（需開啟 HTTP 服务器）
                     if (showQrDialog) {
                         SearchQrDialog(
                             serverUrl = serverUrl,
@@ -571,7 +571,7 @@ fun SearchScreen(
 
                     Spacer(modifier = Modifier.height(10.dp))
 
-                    // 2.6 去除「搜索平台」说明行（平台信息在左侧栏 Logo 下方展示）
+                    // 2.6 去除「搜尋平台」说明行（平台信息在左侧栏 Logo 下方展示）
 
                     Spacer(modifier = Modifier.height(16.dp))
 
@@ -661,7 +661,7 @@ fun SearchScreen(
                                         }
                                     )
                                 }
-                                // 清空搜索记录按钮：作为列表底部一项（否则 grid 外节点遥控器焦点无法到达）
+                                // 清除搜尋紀錄按钮：作为列表底部一项（否则 grid 外节点遥控器焦点无法到达）
                                 if (searchHistory.isNotEmpty()) {
                                     item(key = "clear_history") {
                                         Spacer(modifier = Modifier.height(2.dp))
@@ -679,7 +679,7 @@ fun SearchScreen(
                                             contentAlignment = Alignment.Center
                                         ) {
                                             Text(
-                                                text = "清空搜索记录",
+                                                text = "清除搜尋紀錄",
                                                 fontSize = 14.sp,
                                                 color = LXTextSecondary
                                             )
@@ -737,7 +737,7 @@ fun SearchScreen(
 
                 Spacer(modifier = Modifier.width(16.dp))
 
-                // ---- 右侧：热门搜索列表（接口空时用 fallback 始终呈现） ----
+                // ---- 右侧：熱門搜尋列表（接口空时用 fallback 始终呈现） ----
                 Column(
                     modifier = Modifier
                         .weight(0.3f)
@@ -1085,7 +1085,7 @@ fun PlaylistItem(
             ) {
                 Icon(
                     imageVector = Icons.Default.ChevronRight,
-                    contentDescription = "进入歌单歌曲列表",
+                    contentDescription = "進入歌單歌曲清單",
                     tint = LXOnCardDark,
                     modifier = Modifier.size(22.dp)
                 )
@@ -1138,7 +1138,7 @@ fun PlaylistSongsView(
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         CircularProgressIndicator(color = LXPrimary)
                         Spacer(modifier = Modifier.height(16.dp))
-                        Text(text = "正在加载歌单歌曲...", fontSize = 16.sp, color = LXTextSecondary)
+                        Text(text = "正在載入歌單歌曲...", fontSize = 16.sp, color = LXTextSecondary)
                     }
                 }
             }
@@ -1176,7 +1176,7 @@ fun PlaylistSongsView(
                             modifier = Modifier.size(56.dp)
                         )
                         Spacer(modifier = Modifier.height(12.dp))
-                        Text(text = "歌单暂无歌曲", fontSize = 16.sp, color = LXTextSecondary)
+                        Text(text = "歌單目前沒有歌曲", fontSize = 16.sp, color = LXTextSecondary)
                     }
                 }
             }
@@ -1201,7 +1201,7 @@ fun PlaylistSongsView(
 }
 
 /**
- * 热门搜索快捷入口（搜索页右侧初始面板）
+ * 熱門搜尋快捷入口（搜索页右侧初始面板）
  * 优先展示按平台从接口获取的热搜词；接口无数据时回退内置关键词
  */
 @Composable
@@ -1221,7 +1221,7 @@ fun HotArtistsAndSongs(
         modifier = modifier.fillMaxWidth()
     ) {
         Text(
-            text = "热门搜索",
+            text = "熱門搜尋",
             fontSize = 20.sp,
             fontWeight = FontWeight.Medium,
             color = LXTextPrimary,
@@ -1472,7 +1472,7 @@ fun FavoriteButton(
 }
 
 /**
- * 热门搜索标签
+ * 熱門搜尋标签
  */
 @Composable
 fun HotSearchTag(
@@ -1526,7 +1526,7 @@ fun PlatformSelector(
 
     Column(modifier = modifier) {
         Text(
-            text = "搜索平台",
+            text = "搜尋平台",
             fontSize = 16.sp,
             fontWeight = FontWeight.Medium,
             color = LXTextPrimary,
@@ -1686,7 +1686,7 @@ fun SuggestionItem(
 }
 
 /**
- * 热门搜索项（带火焰图标）
+ * 熱門搜尋项（带火焰图标）
  */
 @Composable
 fun HotSearchItem(
@@ -1735,21 +1735,21 @@ fun HotSearchItem(
 
 
 /**
- * 2.8 扫码推送搜索文字弹窗：显示 /search 地址 + 二维码。
- * 手机/电脑扫码打开页面 → 输入文字 → 推送到 TV 搜索输入框（需开启 HTTP 服务器）。
+ * 2.8 掃碼推送搜尋文字弹窗：显示 /search 地址 + 二维码。
+ * 手机/电脑扫码打开页面 → 输入文字 → 推送到 TV 搜索输入框（需開啟 HTTP 服务器）。
  */
 @Composable
 private fun SearchQrDialog(
     serverUrl: String?,
     onDismiss: () -> Unit
 ) {
-    val pushUrl = serverUrl?.let { "$it/search" } ?: "需先开启 HTTP 服务器"
+    val pushUrl = serverUrl?.let { "$it/search" } ?: "需先開啟 HTTP 服务器"
     AlertDialog(
         onDismissRequest = onDismiss,
         containerColor = LXSurfaceDialog,
         title = {
             Text(
-                text = "扫码推送搜索文字",
+                text = "掃碼推送搜尋文字",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
                 color = LXTextPrimary
@@ -1761,7 +1761,7 @@ private fun SearchQrDialog(
                 verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
                 Text(
-                    text = "手机/电脑打开下方页面，输入文字即可推送到电视搜索框，解决遥控器输入困难",
+                    text = "使用手機／電腦開啟下方頁面，輸入文字即可推送至電視搜尋框，免去遙控器輸入的不便",
                     fontSize = 13.sp,
                     color = LXTextSecondary
                 )
@@ -1782,7 +1782,7 @@ private fun SearchQrDialog(
                     color = LXPrimary
                 )
                 Text(
-                    text = "需先在设置中开启 HTTP 服务器；地址为电视当前局域网 IP",
+                    text = "需先在设置中開啟 HTTP 服务器；地址为电视当前局域网 IP",
                     fontSize = 12.sp,
                     color = LXTextSecondary
                 )
@@ -1790,7 +1790,7 @@ private fun SearchQrDialog(
         },
         confirmButton = {
             TextButton(onClick = onDismiss) {
-                Text("关闭", color = LXTextSecondary)
+                Text("關閉", color = LXTextSecondary)
             }
         },
         dismissButton = {}
