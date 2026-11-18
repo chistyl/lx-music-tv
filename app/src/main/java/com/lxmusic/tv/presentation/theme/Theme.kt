@@ -13,17 +13,9 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 
 /**
- * LX Music TV Apple Music Edition 主题（R1；默认纯黑深色 + Apple Music 红，主题色可切换）
+ * LX Music TV 主題：依官方 LX Music 移動版預設「綠意盎然」配色適配 Android TV
  *
- * 2.5 起整体界面参照 https://github.com/hoowhoami/EchoMusic 的浅色/深色表面系统：
- * - 侧栏 #FFFFFF 纯白
- * - 主区 #F5F5F7 浅灰白
- * - 卡片/输入框 #FFFFFF 白；对话框 #F0F0F2 灰白（LXSurfaceDialog）
- * - 主文本 #1D1D1F 深色，次文本 #4B5563
- * - 边框 #E5E5EA
- * - 主题色可切换：赤焰红（默认 #E94560）/ 暮色紫 / 靛青，参考 EchoMusic 主题色预设；切换后全站强调色随之改变
- *
- * 播放页（PlayerScreen）保持原有的暗色毛玻璃风格不动。
+ * 以官方 LX Music 移動版的綠色主題為視覺基準，TV 端僅調整大螢幕所需的版面與遙控器焦點樣式。
  */
 
 // =================== 品牌色（主 / 次强调色实际取自所选主题色，定义见下方 LXPrimary / LXSecondary getter） ===================
@@ -33,7 +25,7 @@ import androidx.compose.ui.graphics.Color
 enum class LXThemeMode { LIGHT, DARK }
 
 /**
- * 主题色配置（实际生效）。赤焰红沿用 2.5 既有品牌红配置；暮色紫 / 靛青参考 EchoMusic 主题色预设。
+ * 主题色配置（实际生效）。預設主色對齊官方移動版「綠意盎然」#4DAF7C；其他既有選項暫時保留，後續依移動版主題系統逐項對齊。
  * 每个配置提供主强调色 primary、次要色 secondary，以及浅色 / 深色模式各自的
  * primaryContainer / onPrimaryContainer（Material3 容器色，由强调色推导）。
  */
@@ -46,14 +38,14 @@ data class LXThemeColorConfig(
     val onPrimaryContainerDark: Color,
 ) {
     companion object {
-        /** 赤焰红：2.5 既有品牌红（#E94560）+ 浅蓝次要色，作为默认主题色 */
+        /** 綠意盎然：對齊 LX Music 移動版預設主色 #4DAF7C */
         val CRIMSON = LXThemeColorConfig(
-            primary = Color(0xFFFA2D48),
-            secondary = Color(0xFF5AC8FA),
-            primaryContainerLight = Color(0xFFFFD9E0),
-            onPrimaryContainerLight = Color(0xFF41000C),
-            primaryContainerDark = Color(0xFF5C1020),
-            onPrimaryContainerDark = Color(0xFFFFD9E0),
+            primary = Color(0xFF4DAF7C),
+            secondary = Color(0xFF4BAED5),
+            primaryContainerLight = Color(0xFFDDF2E6),
+            onPrimaryContainerLight = Color(0xFF173F2A),
+            primaryContainerDark = Color(0xFF245B40),
+            onPrimaryContainerDark = Color(0xFFDDF2E6),
         )
         /** 暮色紫：参考 EchoMusic 紫色主题（#8B5CF6，Material3 紫罗兰），次要色取浅紫 */
         val PURPLE = LXThemeColorConfig(
@@ -76,7 +68,7 @@ data class LXThemeColorConfig(
     }
 }
 
-/** 主题色：赤焰红 / 暮色紫 / 靛青（实际生效，切换后全站强调色随之改变） */
+/** 主题色：綠意盎然 / 暮色紫 / 靛青（实际生效，切换后全站强调色随之改变） */
 enum class LXThemeColor { CRIMSON, PURPLE, INDIGO }
 
 /** 主题色对应配置（主 / 次强调色等） */
@@ -93,7 +85,7 @@ val LXThemeColor.swatch: Color get() = this.config.primary
 /** 主题色中文名 */
 val LXThemeColor.label: String
     get() = when (this) {
-        LXThemeColor.CRIMSON -> "赤焰红"
+        LXThemeColor.CRIMSON -> "綠意盎然"
         LXThemeColor.PURPLE -> "暮色紫"
         LXThemeColor.INDIGO -> "靛青"
     }
@@ -132,18 +124,18 @@ data class LXThemeColors(
     val focusFill: Color,
 ) {
     companion object {
-        /** 浅色令牌（2.5 默认；仿 EchoMusic 浅色表面系统）；主强调色取自所选主题色的 primary */
+        /** 淺色令牌；主強調色取自所選主題色 */
         fun light(cfg: LXThemeColorConfig) = LXThemeColors(
             primary = cfg.primary,
             secondary = cfg.secondary,
             primaryContainer = cfg.primaryContainerLight,
             onPrimaryContainer = cfg.onPrimaryContainerLight,
             surfaceSidebar = Color(0xFFFFFFFF),
-            surfaceMain = Color(0xFFF5F5F7),
+            surfaceMain = Color(0xFFFFFFFF),
             surfaceCard = Color(0xFFFFFFFF),
             surfaceDialog = Color(0xFFF0F0F2),
             surfaceVariant = Color(0xFFF0F0F2),
-            background = Color(0xFFF5F5F7),
+            background = Color(0xFFFFFFFF),
             surface = Color(0xFFFFFFFF),
             onPrimary = Color.White,
             onBackground = Color(0xFF1D1D1F),
@@ -172,7 +164,7 @@ data class LXThemeColors(
             focusFill = Color(0xFF1D1D1F).copy(alpha = 0.05f),
         )
 
-        /** 深色令牌（参考 EchoMusic 暗色表面系统：深底 + 浅字 + 强调色）；主强调色取自所选主题色 */
+        /** 深色令牌；主強調色取自所選主題色 */
         fun dark(cfg: LXThemeColorConfig) = LXThemeColors(
             primary = cfg.primary,
             secondary = cfg.secondary,
@@ -234,7 +226,7 @@ fun resolvedLXTheme(mode: LXThemeMode, color: LXThemeColor): LXThemeColors {
  *
  * 仍保留全局 var 形式，以便非组合上下文（drawWithContent 等绘制回调）也能读到当前主题色。
  */
-var currentLXTheme: LXThemeColors by mutableStateOf(resolvedLXTheme(LXThemeMode.DARK, LXThemeColor.CRIMSON))
+var currentLXTheme: LXThemeColors by mutableStateOf(resolvedLXTheme(LXThemeMode.LIGHT, LXThemeColor.CRIMSON))
 
 // =================== 主题模式/主题色全局状态（单一数据源） ===================
 // 主题模式不能只放在 ViewModel：NavHost 目的地内的 viewModel() 解析到的是「返回栈条目作用域」
@@ -245,7 +237,7 @@ var currentLXTheme: LXThemeColors by mutableStateOf(resolvedLXTheme(LXThemeMode.
 const val LX_THEME_PREFS = "lx_settings"   // 与 MainViewModel 共用持久化文件名
 
 /** 全局当前主题模式（浅色/深色；MainActivity 读取、界面设置页写入）；默认深色 */
-var currentThemeMode: LXThemeMode by mutableStateOf(LXThemeMode.DARK)
+var currentThemeMode: LXThemeMode by mutableStateOf(LXThemeMode.LIGHT)
 
 /** 全局当前主题色（赤焰红/暮色紫/靛青；实际生效，切换后全站强调色随之改变） */
 var currentThemeColor: LXThemeColor by mutableStateOf(LXThemeColor.CRIMSON)
@@ -254,7 +246,7 @@ var currentThemeColor: LXThemeColor by mutableStateOf(LXThemeColor.CRIMSON)
 fun initThemeState(context: Context) {
     val prefs = context.getSharedPreferences(LX_THEME_PREFS, Context.MODE_PRIVATE)
     currentThemeMode = runCatching {
-        LXThemeMode.valueOf(prefs.getString("theme_mode", LXThemeMode.DARK.name) ?: LXThemeMode.DARK.name)
+        LXThemeMode.valueOf(prefs.getString("theme_mode", LXThemeMode.LIGHT.name) ?: LXThemeMode.LIGHT.name)
     }.getOrDefault(LXThemeMode.DARK)
     currentThemeColor = runCatching {
         LXThemeColor.valueOf(prefs.getString("theme_color", LXThemeColor.CRIMSON.name) ?: LXThemeColor.CRIMSON.name)
@@ -317,11 +309,11 @@ val LXTextDisabled: Color get() = currentLXTheme.textDisabled
 val LXBorder: Color get() = currentLXTheme.border
 val LXDivider: Color get() = currentLXTheme.divider
 
-// =================== 主区顶部氛围渐变（仿 EchoMusic .layout-accent-gradient） ===================
+// =================== 主區頂部氛圍漸層 ===================
 // 实色主区 #F5F5F7 之上叠加，覆盖顶部约 50%：品牌红由 0.2 渐隐到透明
 val LXAccentGradientBrush: Brush get() = currentLXTheme.accentGradient
 
-// =================== 侧栏顶部氛围渐变（点1：侧栏也要渐变，与主区略有差别） ===================
+// =================== 側欄頂部氛圍漸層 ===================
 // 侧栏基底为纯白 #FFFFFF（比主区灰 #F5F5F7 更亮），这里用略轻柔的品牌红氛围渐变，
 // 让左侧同样有渐变、又因基底白而比右侧（灰底）稍亮，形成 EchoMusic 式的轻微色差。
 val LXSidebarGradientBrush: Brush get() = currentLXTheme.sidebarGradient
@@ -343,7 +335,7 @@ val LXInfo = Color(0xFF2196F3)
 val FocusBorder: Color get() = currentLXTheme.focusBorder
 val LXFocusFill: Color get() = currentLXTheme.focusFill
 
-// =================== 阴影（EchoMusic 风格：极轻） ===================
+// =================== 陰影 ===================
 val LXShadowCard: Color get() = currentLXTheme.shadowCard
 
 /**
