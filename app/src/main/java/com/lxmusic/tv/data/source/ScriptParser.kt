@@ -196,10 +196,8 @@ class ScriptParser {
      * - 注册调用可能是字面量 send(...) / EVENT_NAMES.inited，也可能在混淆后被包装（send 作为实参传入、EVENT_NAMES 用计算下标访问）。
      */
     private fun validateScript(scriptContent: String): Boolean {
-        // 1. 必须有 @name 元数据（洛雪音源标识）
-        if (!scriptContent.contains("@name")) return false
-
-        // 2. 必须引用洛雪宿主 API 对象 globalThis.lx（兼容点号与方括号两种写法）
+        // 1. 必须引用洛雪宿主 API 对象 globalThis.lx（兼容点号与方括号两种写法）。
+        //    @name 是可选元数据；缺少时由 parseMetadata() 使用「未知源」作为默认名称。
         val referencesLxApi = scriptContent.contains("globalThis.lx")
             || scriptContent.contains("globalThis['lx']")
             || scriptContent.contains("globalThis[\"lx\"]")
