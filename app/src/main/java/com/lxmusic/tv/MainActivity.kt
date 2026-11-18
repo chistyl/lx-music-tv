@@ -505,6 +505,7 @@ fun LXMusicApp() {
             val serverRunning by viewModel.serverRunning.collectAsState()
             val serverUrl by viewModel.serverUrl.collectAsState()
             val sourceImportPreview by viewModel.sourceImportPreview.collectAsState()
+            val declaredSourceActions = remember(sources) { viewModel.getDeclaredSourceActions() }
             val context = LocalContext.current
             // 2.9 播放失败尝试切换平台开关状态（Compose state 驱动 UI 即时刷新，见下方注释）
             val platformSwitchState = remember {
@@ -516,6 +517,7 @@ fun LXMusicApp() {
 
             SourceManagementScreen(
                 sources = sources,
+                declaredActions = declaredSourceActions,
                 serverRunning = serverRunning,
                 serverUrl = serverUrl,
                 onToggleServer = { viewModel.toggleServer() },
