@@ -43,6 +43,7 @@ fun SearchResultScreen(
     searchType: SearchType = SearchType.SONG,
     searchPlatform: MusicPlatform = MusicPlatform.KW,
     searchPlatformName: String? = null,
+    searchPlatformIsBuiltIn: Boolean = true,
     searchResults: List<Song> = emptyList(),
     playlistResults: List<Playlist> = emptyList(),
     playlistSongs: List<Song>? = null,
@@ -137,13 +138,15 @@ fun SearchResultScreen(
                     Spacer(modifier = Modifier.height(4.dp))
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(text = "搜索平台：", fontSize = 13.sp, color = LXTextSecondary)
-                        Icon(
-                            imageVector = platformIcon(searchPlatform),
-                            contentDescription = null,
-                            tint = platformBrandColor(searchPlatform),
-                            modifier = Modifier.size(14.dp)
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
+                        if (searchPlatformIsBuiltIn) {
+                            Icon(
+                                imageVector = platformIcon(searchPlatform),
+                                contentDescription = null,
+                                tint = platformBrandColor(searchPlatform),
+                                modifier = Modifier.size(14.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                        }
                         Text(
                             text = searchPlatformName ?: platformShortName(searchPlatform),
                             fontSize = 13.sp,
