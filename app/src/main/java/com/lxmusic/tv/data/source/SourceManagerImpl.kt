@@ -425,17 +425,30 @@ class SourceManagerImpl(
      */
     suspend fun getLyricWithSource(
         musicId: String,
-        // 2.8 补平台/歌名/歌手（JS 源歌词需要）
         source: String = "kw",
         songName: String = "",
-        singer: String = ""
+        singer: String = "",
+        sourceId: String? = null
     ): SourceExecutionResult {
         val executor = sourceExecutor ?: return SourceExecutionResult.Error("源执行器未初始化")
+        if (source.isBlank()) return SourceExecutionResult.Error("音樂平台代碼不可為空")
 
-        // 未加载源时自动加载
-        val loadError = autoLoadEnabledSource()
-        if (loadError != null) return loadError
+        val targetSource = if (sourceId != null) {
+            val requested = getSourceById(sourceId)
+                ?: return SourceExecutionResult.Error("指定的播放源不存在")
+            if (source !in getSourcePlatforms(requested.id)) {
+                return SourceExecutionResult.Error("播放源「${requested.name}」未宣告支援平台：$source")
+            }
+            requested
+        } else {
+            getSourceForPlatform(source)
+                ?: return SourceExecutionResult.Error("沒有已啟用且宣告支援平台「$source」的播放源")
+        }
 
+        if (currentScriptContent != targetSource.scriptContent) {
+            val loadResult = loadAndExecuteSource(targetSource.id)
+            if (loadResult is SourceExecutionResult.Error) return loadResult
+        }
         return executor.getLyric(musicId, source, songName, singer)
     }
 
