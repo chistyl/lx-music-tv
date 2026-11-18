@@ -278,7 +278,7 @@ private fun PlayHistoryEntity.toDomainModel(): PlayHistory {
         playedAt = playedAt,
         duration = duration,
         sourceId = sourceId,
-        platformKey = platform
+        platformKey = platform.toCanonicalPlatformKey()
     )
 }
 
@@ -305,7 +305,7 @@ private fun FavoriteEntity.toDomainModel(): Favorite {
         picUrl = picUrl,
         albumName = albumName,
         duration = duration,
-        platformKey = platform
+        platformKey = platform.toCanonicalPlatformKey()
     )
 }
 
@@ -351,4 +351,8 @@ private fun FavoritePlaylist.toEntity(): FavoritePlaylistEntity {
 private fun String.toMusicPlatform(): MusicPlatform {
     return MusicPlatform.entries.firstOrNull { it.key.equals(this, ignoreCase = true) || it.name.equals(this, ignoreCase = true) }
         ?: MusicPlatform.LOCAL
+}
+
+private fun String.toCanonicalPlatformKey(): String {
+    return MusicPlatform.entries.firstOrNull { it.key.equals(this, ignoreCase = true) || it.name.equals(this, ignoreCase = true) }?.key ?: this
 }
