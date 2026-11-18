@@ -481,6 +481,49 @@ class SourceManagerImpl(
     }
 
     /**
+     * 執行已宣告的瀏覽 Action，並將 JSON 原始回傳值封裝成通用資料。
+     *
+     * 不推測 Action 名稱或欄位結構；呼叫端必須提供腳本實際宣告的 action。
+     */
+    suspend fun executeSourceBrowseAction(
+        platformKey: String,
+        action: String,
+        info: org.json.JSONObject = org.json.JSONObject(),
+        sourceId: String? = null
+    ): SourceBrowseActionResult {
+        val targetSourceId = if (sourceId != null) {
+            val source = getSourceById(sourceId)
+                ?: return SourceBrowseActionResult.Error("指定的播放源不存在")
+            if (!source.isEnabled) {
+                return SourceBrowseActionResult.Error("指定的播放源尚未啟用")
+            }
+            val declared = getDeclaredActionsForPlatform(platformKey)
+                .any { it.sourceId == sourceId && it.action == action }
+            if (!declared) {
+                return SourceBrowseActionResult.Error("指定的播放源未宣告此平台 Action")
+            }
+            sourceId
+        } else {
+            getDeclaredActionsForPlatform(platformKey)
+                .firstOrNull { it.action == action }?.sourceId
+                ?: return SourceBrowseActionResult.Error(
+                    "沒有已啟用且宣告支援平台「$platformKey」及 action「$action」的播放源"
+                )
+        }
+
+        return when (val result = executeSourceAction(platformKey, action, info, targetSourceId)) {
+            is SourceExecutionResult.ActionSuccess -> SourceBrowsePayloadParser().parse(
+                sourceId = targetSourceId,
+                platformKey = platformKey,
+                action = action,
+                rawJson = result.result
+            )
+            is SourceExecutionResult.Error -> SourceBrowseActionResult.Error(result.message)
+            else -> SourceBrowseActionResult.Error("瀏覽 Action 回傳了非預期結果")
+        }
+    }
+
+    /**
      * 获取音乐播放URL
      * @param musicId 歌曲ID
      * @param quality 音质
