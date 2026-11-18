@@ -73,6 +73,14 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     // ========== 浏览数据状态（发现/歌单/排行） ==========
     private val _browseItems = MutableStateFlow<List<BrowseItem>>(emptyList())
     val browseItems: StateFlow<List<BrowseItem>> = _browseItems.asStateFlow()
+
+    // 自訂音源瀏覽資料：獨立於內建平台 BrowseDataService，保留來源與動態平台資訊。
+    private val _sourceBrowseItems = MutableStateFlow<List<SourceBrowseItem>>(emptyList())
+    val sourceBrowseItems: StateFlow<List<SourceBrowseItem>> = _sourceBrowseItems.asStateFlow()
+    private val _sourceBrowseError = MutableStateFlow<String?>(null)
+    val sourceBrowseError: StateFlow<String?> = _sourceBrowseError.asStateFlow()
+    private var sourceBrowseJob: Job? = null
+    private var sourceBrowseRequestId = 0
     private val _browseSongs = MutableStateFlow<List<Song>>(emptyList())
     val browseSongs: StateFlow<List<Song>> = _browseSongs.asStateFlow()
     private val _browseLoading = MutableStateFlow(false)
@@ -1299,6 +1307,59 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     // ========== 浏览数据（发现/歌单/排行） ==========
+
+    /**
+     * 使用音源明確宣告的 Action 載入自訂瀏覽項目。
+     * info 與欄位路徑由音源整合設定提供；此入口不猜測 action 參數或 JSON schema。
+     */
+    fun loadSourceBrowseItems(
+        platformKey: String,
+        action: String,
+        info: org.json.JSONObject,
+        fields: SourceBrowseFieldMap,
+        sourceId: String? = null
+    ) {
+        sourceBrowseJob?.cancel()
+        val requestId = ++sourceBrowseRequestId
+        sourceBrowseJob = viewModelScope.launch {
+            _sourceBrowseItems.value = emptyList()
+            _sourceBrowseError.value = null
+            _browseLoading.value = true
+            val result = try {
+                withTimeoutOrNull(BROWSE_TIMEOUT_MS) {
+                    sourceManager.executeSourceBrowseItems(
+                        platformKey = platformKey,
+                        action = action,
+                        info = info,
+                        fields = fields,
+                        sourceId = sourceId
+                    )
+                }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Log.e("LX-MainViewModel", "載入自訂音源瀏覽資料失敗: ${e.message}", e)
+                SourceBrowseItemsResult.Error(e.message ?: "載入自訂音源瀏覽資料失敗")
+            }
+
+            if (requestId == sourceBrowseRequestId) {
+                when (result) {
+                    is SourceBrowseItemsResult.Success -> _sourceBrowseItems.value = result.items
+                    is SourceBrowseItemsResult.Error -> _sourceBrowseError.value = result.message
+                    null -> _sourceBrowseError.value = "音源回應逾時，請稍後重試"
+                }
+                _browseLoading.value = false
+            }
+        }
+    }
+
+    fun clearSourceBrowseItems() {
+        sourceBrowseJob?.cancel()
+        sourceBrowseRequestId++
+        _sourceBrowseItems.value = emptyList()
+        _sourceBrowseError.value = null
+        _browseLoading.value = false
+    }
 
     // 浏览列表分页状态
     private var browsePage = 0
