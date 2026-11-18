@@ -257,6 +257,20 @@ class SourceManagerImpl(
     }
 
     /**
+     * 取得單一音源腳本宣告支援的平台 key。
+     * 僅讀取腳本 metadata，不保存或恢復任何手動平台綁定。
+     */
+    fun getSourcePlatforms(id: String): Set<String> {
+        val source = getSourceById(id) ?: return emptySet()
+        val result = parser.parse(source.scriptContent)
+        return if (result is ParseResult.Success) {
+            result.platforms.keys.map { it.key }.toSet()
+        } else {
+            emptySet()
+        }
+    }
+
+    /**
      * 依照音源腳本宣告的平台取得音源（包含尚未啟用者，供管理/診斷使用）。
      */
     fun getSourcesByPlatform(platform: MusicPlatform): List<MusicSource> {
