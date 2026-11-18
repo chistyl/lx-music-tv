@@ -408,6 +408,50 @@ class SourceManagerImpl(
     }
 
     /**
+     * 執行指定音源已宣告的平台 action。
+     *
+     * 音源選擇遵循啟用順序；指定 sourceId 時仍要求該音源已啟用。
+     * action 必須同時存在於靜態解析 metadata 與腳本執行後的 inited 宣告。
+     */
+    suspend fun executeSourceAction(
+        platformKey: String,
+        action: String,
+        info: org.json.JSONObject = org.json.JSONObject(),
+        sourceId: String? = null
+    ): SourceExecutionResult {
+        val executor = sourceExecutor
+            ?: return SourceExecutionResult.Error("源執行器未初始化")
+        if (platformKey.isBlank()) return SourceExecutionResult.Error("平台代碼不可為空")
+        if (action.isBlank()) return SourceExecutionResult.Error("Action 不可為空")
+
+        val candidates = if (sourceId != null) {
+            listOf(
+                getSourceById(sourceId)?.takeIf { it.isEnabled }
+                    ?: return SourceExecutionResult.Error("指定的播放源不存在或未啟用")
+            )
+        } else {
+            getEnabledSources()
+        }
+        val targetSource = candidates.firstOrNull { source ->
+            val parsed = parser.parse(source.scriptContent)
+            parsed is ParseResult.Success &&
+                parsed.declaredPlatforms[platformKey]?.actions?.contains(action) == true
+        } ?: return SourceExecutionResult.Error(
+            "沒有已啟用且宣告支援平台「$platformKey」及 action「$action」的播放源"
+        )
+
+        if (currentScriptContent != targetSource.scriptContent) {
+            val loadResult = loadAndExecuteSource(targetSource.id)
+            if (loadResult is SourceExecutionResult.Error) return loadResult
+        }
+
+        return when (val result = executor.executeDeclaredAction(platformKey, action, info)) {
+            is JavaScriptResult.Success -> SourceExecutionResult.ActionSuccess(result.resultString)
+            is JavaScriptResult.Error -> SourceExecutionResult.Error(result.message)
+        }
+    }
+
+    /**
      * 获取音乐播放URL
      * @param musicId 歌曲ID
      * @param quality 音质
