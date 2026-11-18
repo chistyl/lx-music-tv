@@ -26,6 +26,18 @@ data class SearchPlatformOption(
 )
 
 /**
+ * 音源可執行的自訂 Action 選項。
+ * 只反映腳本明確宣告的能力，不推測 Action 名稱或參數格式。
+ */
+data class SourceActionOption(
+    val sourceId: String,
+    val sourceName: String,
+    val platformKey: String,
+    val platformName: String,
+    val action: String
+)
+
+/**
  * 音乐源支持的平台
  */
 enum class MusicPlatform(val key: String, val defaultDisplayName: String) {
