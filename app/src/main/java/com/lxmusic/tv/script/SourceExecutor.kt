@@ -175,11 +175,14 @@ class SourceExecutor(
             val searchResult = if (useEventDrivenModel) {
                 // LX 標準事件模式：只對腳本已宣告 search action 的平台派發搜尋請求。
                 val sourceKey = sourceInfoFromInit.entries.firstOrNull { (key, value) ->
-                    (platformKey == null || key == platformKey) &&
-                    val item = value as? org.json.JSONObject
-                    item?.optJSONArray("actions")?.let { actions ->
-                        (0 until actions.length()).any { actions.optString(it) == "search" }
-                    } == true
+                    if (platformKey != null && key != platformKey) {
+                        false
+                    } else {
+                        val item = value as? org.json.JSONObject
+                        item?.optJSONArray("actions")?.let { actions ->
+                            (0 until actions.length()).any { actions.optString(it) == "search" }
+                        } == true
+                    }
                 }?.key
                 if (sourceKey == null) {
                     return@withContext SourceExecutionResult.Error("此播放源未宣告 search action")
