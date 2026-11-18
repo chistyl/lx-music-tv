@@ -29,7 +29,10 @@ class ScriptParser {
             val metadata = parseMetadata(scriptContent)
 
             // 2. 解析支持的平台和音质（用解码后的内容：混淆源里 kw:/sources:/音质 也是编码的）
-            val platforms = parsePlatforms(decoded)
+            val declaredPlatforms = parseDeclaredPlatforms(decoded)
+            val platforms = declaredPlatforms.mapNotNull { (key, info) ->
+                MusicPlatform.entries.firstOrNull { it.key == key }?.let { it to info }
+            }.toMap()
 
             // 3. 验证脚本格式（用解码后的内容，否则 globalThis['\x6c\x78'] 匹配不上字面量）
             if (!validateScript(decoded)) {
@@ -39,6 +42,7 @@ class ScriptParser {
             ParseResult.Success(
                 metadata = metadata,
                 platforms = platforms,
+                declaredPlatforms = declaredPlatforms,
                 scriptContent = scriptContent
             )
         } catch (e: Exception) {
@@ -90,6 +94,63 @@ class ScriptParser {
         } else {
             null
         }
+    }
+
+    /**
+     * 解析 sources 內所有平台宣告，不限制於應用程式內建平台清單。
+     */
+    private fun parseDeclaredPlatforms(scriptContent: String): Map<String, SourcePlatformInfo> {
+        val result = linkedMapOf<String, SourcePlatformInfo>()
+        val sourcesBody = extractObjectBody(scriptContent, "sources") ?: return result
+        val keyPattern = Regex("""(?:^|,)\s*([A-Za-z_$][A-Za-z0-9_$-]*)\s*:\s*\{""")
+        for (match in keyPattern.findAll(sourcesBody)) {
+            val key = match.groupValues[1]
+            val openBrace = sourcesBody.indexOf('{', match.range.first)
+            val body = extractBalancedBody(sourcesBody, openBrace) ?: continue
+            val nameMatch = Regex("""name\s*:\s*['"]([^'"]+)['"]""").find(body)
+            val name = nameMatch?.groupValues?.get(1) ?: key
+            val actions = listOf("musicUrl", "lyric", "pic").filter { action ->
+                Regex("['\"]" + Regex.escape(action) + "['\"]").containsMatchIn(body)
+            }
+            val qualitys = AudioQuality.entries.filter { quality ->
+                Regex("['\"]" + Regex.escape(quality.key) + "['\"]").containsMatchIn(body)
+            }
+            result[key] = SourcePlatformInfo(name = name, actions = actions, qualitys = qualitys)
+        }
+        return result
+    }
+
+    private fun extractBalancedBody(source: String, openBrace: Int): String? {
+        if (openBrace !in source.indices || source[openBrace] != '{') return null
+        var depth = 1
+        var quote: Char? = null
+        var escaped = false
+        var lineComment = false
+        var blockComment = false
+        var i = openBrace + 1
+        while (i < source.length) {
+            val ch = source[i]
+            val next = source.getOrNull(i + 1)
+            when {
+                lineComment -> if (ch == '\n' || ch == '\r') lineComment = false
+                blockComment -> if (ch == '*' && next == '/') { blockComment = false; i++ }
+                quote != null -> {
+                    if (escaped) escaped = false
+                    else if (ch == '\\') escaped = true
+                    else if (ch == quote) quote = null
+                }
+                ch == '/' && next == '/' -> { lineComment = true; i++ }
+                ch == '/' && next == '*' -> { blockComment = true; i++ }
+                ch == '\'' || ch == '"' -> quote = ch
+                ch == '{' -> depth++
+                ch == '}' -> {
+                    depth--
+                    if (depth == 0) return source.substring(openBrace + 1, i)
+                }
+            }
+            i++
+        }
+        return null
     }
 
     /**
@@ -232,6 +293,7 @@ sealed class ParseResult {
     data class Success(
         val metadata: ScriptMetadata,
         val platforms: Map<MusicPlatform, SourcePlatformInfo>,
+        val declaredPlatforms: Map<String, SourcePlatformInfo>,
         val scriptContent: String
     ) : ParseResult()
 
