@@ -168,12 +168,14 @@ class SourceExecutor(
     suspend fun searchMusic(
         keyword: String,
         page: Int = 1,
-        limit: Int = 30
+        limit: Int = 30,
+        platformKey: String? = null
     ): SourceExecutionResult = withContext(Dispatchers.IO) {
         try {
             val searchResult = if (useEventDrivenModel) {
                 // LX 標準事件模式：只對腳本已宣告 search action 的平台派發搜尋請求。
-                val sourceKey = sourceInfoFromInit.entries.firstOrNull { (_, value) ->
+                val sourceKey = sourceInfoFromInit.entries.firstOrNull { (key, value) ->
+                    (platformKey == null || key == platformKey) &&
                     val item = value as? org.json.JSONObject
                     item?.optJSONArray("actions")?.let { actions ->
                         (0 until actions.length()).any { actions.optString(it) == "search" }
