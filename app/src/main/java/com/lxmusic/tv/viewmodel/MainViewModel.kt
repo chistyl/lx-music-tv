@@ -32,6 +32,17 @@ import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 
+data class SourceImportPreview(
+    val name: String,
+    val description: String?,
+    val version: String?,
+    val author: String?,
+    val homepage: String?,
+    val supportedPlatforms: List<String>,
+    val scriptContent: String,
+    val fileName: String
+)
+
 /**
  * 主ViewModel
  * 连接UI和数据层，管理所有应用状态
@@ -86,6 +97,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     // ========== 播放源状态 ==========
     private val _sources = MutableStateFlow<List<MusicSource>>(emptyList())
     val sources: StateFlow<List<MusicSource>> = _sources.asStateFlow()
+    private val _sourceImportPreview = MutableStateFlow<SourceImportPreview?>(null)
+    val sourceImportPreview: StateFlow<SourceImportPreview?> = _sourceImportPreview.asStateFlow()
 
     // ========== HTTP服务器状态 ==========
     private var httpServer: HttpServer? = null
@@ -398,13 +411,14 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     /**
-     * 透過洛雪音源 JS 直連網址匯入播放源。
-     * 限制只接受 HTTP(S)，設定連線逾時及 2 MB 大小上限，避免 TV 端無限下載。
+     * 下載並預覽洛雪音源 JS，確認後才寫入音源清單。
      */
-    fun importSourceFromUrl(sourceUrl: String) {
+    fun previewSourceFromUrl(sourceUrl: String) {
+        _sourceImportPreview.value = null
+        _toastMessage.value = "正在讀取音源資訊…"
         viewModelScope.launch(Dispatchers.IO) {
             var connection: java.net.HttpURLConnection? = null
-            val resultMessage = try {
+            try {
                 val parsedUrl = java.net.URL(sourceUrl.trim())
                 require(parsedUrl.protocol.equals("http", true) || parsedUrl.protocol.equals("https", true)) {
                     "只支援 HTTP 或 HTTPS 音源網址"
@@ -436,31 +450,71 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                     }
                 }
                 val script = output.toString(Charsets.UTF_8.name())
+                val parsed = com.lxmusic.tv.data.source.ScriptParser().parse(script)
+                if (parsed !is com.lxmusic.tv.data.source.ParseResult.Success) {
+                    val reason = (parsed as? com.lxmusic.tv.data.source.ParseResult.Error)?.message
+                        ?: "腳本格式不正確"
+                    throw IllegalArgumentException("音源解析失敗：$reason")
+                }
                 val fileName = parsedUrl.path.substringAfterLast('/').ifBlank { "remote-source.js" }
-                when (val imported = sourceManager.importSourceFile(script, fileName)) {
-                    is SourceManagerImpl.ImportResult.Success -> {
-                        val allSources = sourceManager.getAllSources()
-                        if (allSources.size == 1) {
-                            sourceManager.setSourceEnabled(allSources[0].id, true)
-                            val execution = sourceManager.loadAndExecuteSource(allSources[0].id)
-                            if (execution is SourceExecutionResult.Error) {
-                                "音源已匯入，但啟用失敗：${execution.message}"
-                            } else imported.message
-                        } else imported.message
-                    }
-                    is SourceManagerImpl.ImportResult.Error -> imported.message
+                val preview = SourceImportPreview(
+                    name = parsed.metadata.name,
+                    description = parsed.metadata.description,
+                    version = parsed.metadata.version,
+                    author = parsed.metadata.author,
+                    homepage = parsed.metadata.homepage,
+                    supportedPlatforms = parsed.platforms.keys.map { it.displayName },
+                    scriptContent = script,
+                    fileName = fileName
+                )
+                withContext(Dispatchers.Main) {
+                    _sourceImportPreview.value = preview
+                    _toastMessage.value = "音源資訊解析完成，請確認後匯入"
                 }
             } catch (e: kotlin.coroutines.cancellation.CancellationException) {
                 throw e
             } catch (e: Exception) {
-                "匯入失敗：${e.message ?: "請確認網址及網路連線"}"
+                withContext(Dispatchers.Main) {
+                    _toastMessage.value = "音源讀取失敗：${e.message ?: "請確認網址及網路連線"}"
+                }
             } finally {
                 connection?.disconnect()
             }
-            withContext(Dispatchers.Main) {
-                _toastMessage.value = resultMessage
+        }
+    }
+
+    /** 確認匯入目前預覽的音源。 */
+    fun confirmImportSourcePreview() {
+        val preview = _sourceImportPreview.value ?: return
+        viewModelScope.launch(Dispatchers.IO) {
+            when (val result = sourceManager.importSourceFile(preview.scriptContent, preview.fileName)) {
+                is SourceManagerImpl.ImportResult.Success -> {
+                    val allSources = sourceManager.getAllSources()
+                    if (allSources.size == 1) {
+                        sourceManager.setSourceEnabled(allSources[0].id, true)
+                        val execution = sourceManager.loadAndExecuteSource(allSources[0].id)
+                        withContext(Dispatchers.Main) {
+                            _toastMessage.value = if (execution is SourceExecutionResult.Error) {
+                                "音源已匯入，但啟用失敗：${execution.message}"
+                            } else result.message
+                            _sourceImportPreview.value = null
+                        }
+                    } else {
+                        withContext(Dispatchers.Main) {
+                            _toastMessage.value = result.message
+                            _sourceImportPreview.value = null
+                        }
+                    }
+                }
+                is SourceManagerImpl.ImportResult.Error -> withContext(Dispatchers.Main) {
+                    _toastMessage.value = result.message
+                }
             }
         }
+    }
+
+    fun cancelSourceImportPreview() {
+        _sourceImportPreview.value = null
     }
 
     /**
