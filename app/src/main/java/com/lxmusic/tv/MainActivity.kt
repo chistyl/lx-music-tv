@@ -213,6 +213,8 @@ fun LXMusicApp() {
             // 搜索页状态（2.6 搜索内嵌为 tab，在 main 路由内 collect 并透传给 MainScreen）
             val searchQuery by viewModel.searchQuery.collectAsState()
             val searchPlatform by viewModel.searchPlatform.collectAsState()
+            val searchPlatformKey by viewModel.searchPlatformKey.collectAsState()
+            val searchPlatformOptions by viewModel.searchPlatformOptions.collectAsState()
             val searchType by viewModel.searchType.collectAsState()
             val serverUrl by viewModel.serverUrl.collectAsState()
             val hotKeywords by viewModel.hotKeywords.collectAsState()
@@ -374,6 +376,13 @@ fun LXMusicApp() {
                 // ===== 搜索页内嵌参数（2.6）=====
                 searchQuery = searchQuery,
                 searchPlatform = searchPlatform,
+                searchPlatformKey = searchPlatformKey,
+                searchPlatformOptions = searchPlatformOptions,
+                onSearchPlatformChange = { viewModel.setSearchPlatformKey(it) },
+                onSearchByPlatformKey = { keyword, key ->
+                    viewModel.searchByPlatformKey(keyword, key)
+                    navController.navigate("search_result")
+                },
                 searchType = searchType,
                 hotKeywords = hotKeywords,
                 suggestions = suggestions,
