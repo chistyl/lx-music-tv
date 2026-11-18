@@ -438,7 +438,7 @@ class MusicSearchService(
 
         // 按优先级遍历启用的 JS 源（先启用/先加载的优先级最高），
         // 当前源获取失败时自动切换到下一个源尝试（传入 source.id，逐个真正尝试）
-        val sourceCode = song.platform.key
+        val sourceCode = song.platformKey
         // 先过滤本轮已失败源，得到实际要尝试的候选列表（保持导入顺序），便于取「下一个源」名称。
         // 2.8 双保险：getSourcesForPlatform 可能因源 id 变化/平台配置缺失把不支持平台的源误判为全平台，
         // 遍历时再显式校验一次「必須明確宣告支援目前平台」，避免未勾选平台的源被尝试
@@ -515,14 +515,14 @@ class MusicSearchService(
     ): MusicPlayResult? {
         // 目标平台：源配置平台 - 当前平台 - 咪咕，按优先级排序
         val configured = sourceManager.getSourcePlatforms(source.id)
-        val curKey = song.platform.key
+        val curKey = song.platformKey
         val targets = PLATFORM_SWITCH_PRIORITY.filter { p ->
             p.key != curKey && configured.contains(p.key)
         }
         if (targets.isEmpty()) return null
 
         // 换源版本内存缓存（防同一首歌反复内置搜索触发风控；suspend 上下文需显式读写）
-        val cacheKey = "${song.platform.key}|${song.id}"
+        val cacheKey = "${song.platformKey}|${song.id}"
         val versions = platformSwitchCache[cacheKey] ?: findOtherPlatformVersions(song, targets).also {
             platformSwitchCache[cacheKey] = it
         }
@@ -594,10 +594,10 @@ class MusicSearchService(
     suspend fun getLyrics(song: Song): ApiResponse<LyricsInfo> = withContext(Dispatchers.IO) {
         try {
             // 先尝试通过自定义源获取（按优先级遍历，失败自动切换下一个源）
-            for (source in sourceManager.getSourcesForPlatform(song.platform.key)) {
+            for (source in sourceManager.getSourcesForPlatform(song.platformKey)) {
                 // 2.8 传平台/歌名/歌手：JS 源歌词此前缺 name 且 source 硬编码，全部失败
                 val result = sourceManager.getLyricWithSource(
-                    song.id, song.platform.key, song.name, song.singer
+                    song.id, song.platformKey, song.name, song.singer, source.id
                 )
                 when (result) {
                     is SourceExecutionResult.LyricSuccess -> {
