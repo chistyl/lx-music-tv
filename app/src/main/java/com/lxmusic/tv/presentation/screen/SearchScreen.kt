@@ -15,6 +15,8 @@ import androidx.compose.foundation.focusable
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusGroup
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -147,6 +149,10 @@ private fun tryRequestFocus(requester: FocusRequester): Boolean {
 fun SearchScreen(
     searchQuery: String = "",
     searchPlatform: MusicPlatform = MusicPlatform.KW,
+    searchPlatformKey: String = searchPlatform.key,
+    searchPlatformOptions: List<com.lxmusic.tv.data.model.SearchPlatformOption> = emptyList(),
+    onSearchPlatformChange: (String) -> Unit = {},
+    onSearchByPlatformKey: (String, String) -> Unit = { _, _ -> },
     searchType: SearchType = SearchType.SONG,
     hotKeywords: List<String> = emptyList(),
     suggestions: List<String> = emptyList(),
@@ -183,6 +189,10 @@ fun SearchScreen(
     val currentSearchQuery = rememberUpdatedState(searchQuery)
     val currentSearchType = rememberUpdatedState(searchType)
     val currentSearchPlatform = rememberUpdatedState(searchPlatform)
+    val currentSearchPlatformKey = rememberUpdatedState(searchPlatformKey)
+    val currentSearchPlatforms = rememberUpdatedState(searchPlatformOptions)
+    val currentOnSearchPlatformChange = rememberUpdatedState(onSearchPlatformChange)
+    val currentOnSearchByPlatformKey = rememberUpdatedState(onSearchByPlatformKey)
     val currentOnSearch = rememberUpdatedState(onSearch)
     val currentOnSearchPlaylist = rememberUpdatedState(onSearchPlaylist)
     val currentOnSearchQueryChange = rememberUpdatedState(onSearchQueryChange)
@@ -571,7 +581,27 @@ fun SearchScreen(
 
                     Spacer(modifier = Modifier.height(10.dp))
 
-                    // 2.6 去除「搜尋平台」说明行（平台信息在左侧栏 Logo 下方展示）
+                    // 動態平台選擇：內建平台維持原搜尋流程，自訂平台依音源腳本宣告的 search action 顯示。
+                    val visibleSearchPlatforms = if (searchType == SearchType.PLAYLIST) {
+                        currentSearchPlatforms.value.filter { it.isBuiltIn }
+                    } else {
+                        currentSearchPlatforms.value
+                    }
+                    if (visibleSearchPlatforms.isNotEmpty()) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            visibleSearchPlatforms.forEach { option ->
+                                PlatformChip(
+                                    displayName = option.name,
+                                    isSelected = currentSearchPlatformKey.value == option.key,
+                                    onClick = { currentOnSearchPlatformChange.value(option.key) },
+                                    modifier = Modifier.widthIn(min = 76.dp)
+                                )
+                            }
+                        }
+                    }
 
                     Spacer(modifier = Modifier.height(16.dp))
 
@@ -588,6 +618,8 @@ fun SearchScreen(
                             if (searchQuery.isNotBlank()) {
                                 if (searchType == SearchType.PLAYLIST) {
                                     onSearchPlaylist(searchQuery, searchPlatform)
+                                } else if (currentSearchPlatformKey.value !in MusicPlatform.entries.map { it.key }) {
+                                    currentOnSearchByPlatformKey.value(searchQuery, currentSearchPlatformKey.value)
                                 } else {
                                     onSearch(searchQuery, searchPlatform)
                                 }
@@ -655,6 +687,8 @@ fun SearchScreen(
                                             onSearchQueryChange(keyword)
                                             if (searchType == SearchType.PLAYLIST) {
                                                 onSearchPlaylist(keyword, searchPlatform)
+                                            } else if (currentSearchPlatformKey.value !in MusicPlatform.entries.map { it.key }) {
+                                                currentOnSearchByPlatformKey.value(keyword, currentSearchPlatformKey.value)
                                             } else {
                                                 onSearch(keyword, searchPlatform)
                                             }
@@ -715,6 +749,8 @@ fun SearchScreen(
                                             onSearchQueryChange(suggestion)
                                             if (searchType == SearchType.PLAYLIST) {
                                                 onSearchPlaylist(suggestion, searchPlatform)
+                                            } else if (currentSearchPlatformKey.value !in MusicPlatform.entries.map { it.key }) {
+                                                currentOnSearchByPlatformKey.value(suggestion, currentSearchPlatformKey.value)
                                             } else {
                                                 onSearch(suggestion, searchPlatform)
                                             }
@@ -792,6 +828,8 @@ fun SearchScreen(
                                             onSearchQueryChange(song.name)
                                             if (searchType == SearchType.PLAYLIST) {
                                                 onSearchPlaylist(song.name, searchPlatform)
+                                            } else if (currentSearchPlatformKey.value !in MusicPlatform.entries.map { it.key }) {
+                                                currentOnSearchByPlatformKey.value(song.name, currentSearchPlatformKey.value)
                                             } else {
                                                 onSearch(song.name, searchPlatform)
                                             }
