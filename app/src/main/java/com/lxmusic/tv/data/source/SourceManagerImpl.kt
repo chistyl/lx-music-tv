@@ -524,6 +524,25 @@ class SourceManagerImpl(
     }
 
     /**
+     * 執行自訂音源瀏覽 Action，並依明確欄位對照表轉成通用瀏覽項目。
+     * Action 名稱、請求 info 與欄位路徑均由呼叫端提供，不猜測音源協議。
+     */
+    suspend fun executeSourceBrowseItems(
+        platformKey: String,
+        action: String,
+        info: org.json.JSONObject,
+        fields: SourceBrowseFieldMap,
+        sourceId: String? = null
+    ): SourceBrowseItemsResult {
+        return when (val result = executeSourceBrowseAction(platformKey, action, info, sourceId)) {
+            is SourceBrowseActionResult.Success -> SourceBrowseItemsResult.Success(
+                SourceBrowseItemMapper().map(result.payload, fields)
+            )
+            is SourceBrowseActionResult.Error -> SourceBrowseItemsResult.Error(result.message)
+        }
+    }
+
+    /**
      * 获取音乐播放URL
      * @param musicId 歌曲ID
      * @param quality 音质
