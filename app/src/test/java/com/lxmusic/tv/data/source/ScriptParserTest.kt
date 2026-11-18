@@ -361,7 +361,7 @@ class ScriptParserTest {
                     my_custom_platform: {
                         name: '自訂音樂平台',
                         actions: ['musicUrl', 'lyric'],
-                        qualitys: ['128k', 'flac']
+                        qualitys: ['128k', 'flac', 'lossless-plus']
                     }
                 }
             })
