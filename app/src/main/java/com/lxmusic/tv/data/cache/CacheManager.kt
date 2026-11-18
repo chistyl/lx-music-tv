@@ -72,7 +72,7 @@ object CacheManager {
     private fun lyricKey(song: Song): String {
         // QQ 旧接口缓存没有翻译，切换接口后使用新 key 重新获取原文及翻译。
         val version = if (song.platform == MusicPlatform.TX) "|translation-v2" else ""
-        return md5("${song.platform.key}|${song.id}$version")
+        return md5("${song.platformKey}|${song.id}$version")
     }
 
     /**
@@ -80,7 +80,7 @@ object CacheManager {
      * JS 源返回的播放 URL 会变化，但 key 不含 URL——URL 变了照样命中同一份缓存，不重新下载。
      */
     fun songCacheKey(song: Song, quality: AudioQuality): String =
-        "${song.platform.key}|${song.id}|${quality.name}"
+        "${song.platformKey}|${song.id}|${quality.name}"
 
     // ==================== 音频缓存（ExoPlayer SimpleCache，播放时自动边播边缓存） ====================
 
