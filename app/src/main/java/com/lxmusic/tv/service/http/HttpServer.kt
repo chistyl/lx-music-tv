@@ -108,8 +108,6 @@ class HttpServer(
             // 因此以下两个 handler 直接接收 session，在内部解析参数
             uri == "/api/sources/delete" && method == Method.POST -> handleSourceDelete(session)
             uri == "/api/sources/enable" && method == Method.POST -> handleSourceEnable(session)
-            uri == "/api/sources/platforms" && method == Method.GET -> handleGetSourcePlatforms(params)
-            uri == "/api/sources/platforms" && method == Method.POST -> handleSetSourcePlatforms(session)
             // Web 端添加收藏歌单（输入歌单链接）
             uri == "/api/playlists/add" && method == Method.POST -> handleAddPlaylist(session)
             // 2.8 Web 端扫码推送搜索文字（/search 页提交）→ 推送到 TV 搜索输入框
@@ -322,20 +320,6 @@ class HttpServer(
                     </footer>
                 </div>
 
-                <!-- 平台配置弹窗 -->
-                <div class="modal-overlay" id="platform-modal">
-                    <div class="modal">
-                        <h3>平台配置</h3>
-                        <div class="modal-sub" id="platform-modal-source"></div>
-                        <div class="modal-sub">勾选该播放源生效的平台；全部不勾选 = 对所有平台生效</div>
-                        <div id="platform-list"></div>
-                        <div class="modal-actions">
-                            <button class="btn btn-secondary" onclick="closePlatformModal()">取消</button>
-                            <button class="btn btn-primary" onclick="savePlatforms()">保存</button>
-                        </div>
-                    </div>
-                </div>
-
                 <script>
                     document.addEventListener('DOMContentLoaded', function() {
                         loadSources();
@@ -373,14 +357,6 @@ class HttpServer(
                                 sourceList.style.display = 'block';
                                 emptyState.style.display = 'none';
                                 sourceList.innerHTML = sources.map(function(s) {
-                                    var platformTags = '';
-                                    if (s.platforms && s.platforms.length > 0) {
-                                        s.platforms.forEach(function(p) {
-                                            platformTags += '<span class="platform-tag">' + platformNames[p] + '</span>';
-                                        });
-                                    } else {
-                                        platformTags = '<span class="platform-tag">全部平台</span>';
-                                    }
                                     return '<li class="source-item">' +
                                         '<div class="source-info">' +
                                         '<div class="source-name">' + s.name + '</div>' +
@@ -389,11 +365,8 @@ class HttpServer(
                                         (s.version ? ' v' + s.version : '') +
                                         (s.author ? ' by ' + s.author : '') +
                                         '</div>' +
-                                        '<div style="margin-top: 6px;">' + platformTags + '</div>' +
                                         '</div>' +
                                         '<div class="source-actions">' +
-                                        '<button class="btn btn-platform" data-action="platform" data-id="' + s.id + '" ' +
-                                        'data-name="' + escapeAttr(s.name) + '" data-platforms="' + escapeAttr(JSON.stringify(s.platforms || [])) + '">平台</button>' +
                                         '<button class="btn ' + (s.isEnabled ? 'btn-secondary' : 'btn-primary') + '" ' +
                                         'data-action="toggle" data-id="' + s.id + '" data-enable="' + (!s.isEnabled) + '">' +
                                         (s.isEnabled ? '已启用' : '启用') + '</button>' +
@@ -472,79 +445,7 @@ class HttpServer(
                             toggleSource(id, btn.getAttribute('data-enable') === 'true');
                         } else if (action === 'delete') {
                             deleteSource(id);
-                        } else if (action === 'platform') {
-                            var platforms = [];
-                            try { platforms = JSON.parse(btn.getAttribute('data-platforms') || '[]'); } catch (err) {}
-                            openPlatformModal(id, btn.getAttribute('data-name') || '', platforms);
                         }
-                    });
-
-                    // ===== 平台配置 =====
-                    var platformNames = { kw: '酷我', kg: '酷狗', tx: 'QQ音乐', wy: '网易云', mg: '咪咕' };
-                    var platformKeys = ['kw', 'kg', 'tx', 'wy', 'mg'];
-                    var currentPlatformSourceId = null;
-                    var currentPlatformSelection = [];
-
-                    function openPlatformModal(id, name, platforms) {
-                        currentPlatformSourceId = id;
-                        currentPlatformSelection = (platforms || []).slice();
-                        document.getElementById('platform-modal-source').textContent = name;
-                        renderPlatformList();
-                        document.getElementById('platform-modal').classList.add('show');
-                    }
-
-                    function closePlatformModal() {
-                        document.getElementById('platform-modal').classList.remove('show');
-                    }
-
-                    function renderPlatformList() {
-                        var html = '';
-                        platformKeys.forEach(function(key) {
-                            var checked = currentPlatformSelection.indexOf(key) >= 0;
-                            html += '<div class="platform-check' + (checked ? ' checked' : '') + '" ' +
-                                'onclick="togglePlatform(\'' + key + '\')">' +
-                                '<div class="checkbox">' + (checked ? '✓' : '') + '</div>' +
-                                '<span>' + platformNames[key] + '</span></div>';
-                        });
-                        document.getElementById('platform-list').innerHTML = html;
-                    }
-
-                    function togglePlatform(key) {
-                        var idx = currentPlatformSelection.indexOf(key);
-                        if (idx >= 0) currentPlatformSelection.splice(idx, 1);
-                        else currentPlatformSelection.push(key);
-                        renderPlatformList();
-                    }
-
-                    async function savePlatforms() {
-                        if (!currentPlatformSourceId) {
-                            alert('请先选择要配置的播放源');
-                            return;
-                        }
-                        try {
-                            var response = await fetch('/api/sources/platforms', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                                body: 'id=' + encodeURIComponent(currentPlatformSourceId) +
-                                      '&platforms=' + encodeURIComponent(currentPlatformSelection.join(','))
-                            });
-                            var result = await response.json();
-                            if (result.success) {
-                                closePlatformModal();
-                                loadSources();
-                                alert('平台配置已保存');
-                            } else {
-                                alert('保存失败: ' + result.message);
-                            }
-                        } catch (error) { alert('保存失败: ' + error.message); }
-                    }
-
-                    // 点击遮罩层关闭
-                    document.addEventListener('DOMContentLoaded', function() {
-                        var overlay = document.getElementById('platform-modal');
-                        overlay.addEventListener('click', function(e) {
-                            if (e.target === overlay) closePlatformModal();
-                        });
                     });
 
                     // ===== 添加收藏歌单 =====
@@ -604,9 +505,7 @@ class HttpServer(
                 "version" to source.version,
                 "author" to source.author,
                 "homepage" to source.homepage,
-                "isEnabled" to source.isEnabled,
-                // 平台配置：空 = 全部平台
-                "platforms" to (sourceManager?.getSourcePlatforms(source.id) ?: emptySet<String>()).toList()
+                "isEnabled" to source.isEnabled
             )
         }.let { com.lxmusic.tv.util.JsonUtil.toJson(it) }
 
@@ -697,40 +596,6 @@ class HttpServer(
             createSuccessResponse(if (enable) "已启用" else "已禁用")
         } else {
             Log.w(TAG, "启用/禁用播放源失败: id=$id enable=$enable, 结果=$result")
-            createErrorResponse("操作失败，播放源不存在")
-        }
-    }
-
-    /**
-     * 获取播放源平台配置（GET /api/sources/platforms?id=xxx）
-     */
-    private fun handleGetSourcePlatforms(params: Map<String, String>): Response {
-        val id = params["id"] ?: return createErrorResponse("缺少播放源ID")
-        val platforms = sourceManager?.getSourcePlatforms(id) ?: emptySet()
-        val json = com.lxmusic.tv.util.JsonUtil.toJson(mapOf("platforms" to platforms.toList()))
-        return newFixedLengthResponse(Response.Status.OK, "application/json", json)
-    }
-
-    /**
-     * 设置播放源平台配置（POST /api/sources/platforms，body: id=xxx&platforms=kw,kg,tx）
-     */
-    private fun handleSetSourcePlatforms(session: IHTTPSession): Response {
-        val params = parsePostParams(session)
-        val id = params["id"] ?: run {
-            Log.w(TAG, "设置平台配置失败: 缺少播放源ID, 解析参数=$params, sourceManager为空=${sourceManager == null}")
-            return createErrorResponse("缺少播放源ID")
-        }
-        val platforms = (params["platforms"] ?: "")
-            .split(",")
-            .map { it.trim() }
-            .filter { it.isNotEmpty() }
-            .toSet()
-        Log.d(TAG, "设置平台配置: id=$id platforms=$platforms, sourceManager为空=${sourceManager == null}")
-        val result = sourceManager?.setSourcePlatforms(id, platforms)
-        return if (result == true) {
-            createSuccessResponse("平台配置已保存")
-        } else {
-            Log.w(TAG, "设置平台配置失败: id=$id platforms=$platforms, 结果=$result")
             createErrorResponse("操作失败，播放源不存在")
         }
     }
@@ -941,15 +806,6 @@ interface SourceManager {
     fun setSourceEnabled(id: String, enabled: Boolean): Boolean
     fun getEnabledSource(): MusicSource?
 
-    /**
-     * 获取播放源启用的平台 key 集合（空 = 全部平台）
-     */
-    fun getSourcePlatforms(id: String): Set<String>
-
-    /**
-     * 设置播放源启用的平台 key 集合（空 = 全部平台）
-     */
-    fun setSourcePlatforms(id: String, platforms: Set<String>): Boolean
 }
 
 /**

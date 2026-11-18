@@ -235,66 +235,34 @@ class SourceManagerImpl(
             .sortedWith(compareBy { it.enabledAt ?: it.updatedAt })
     }
 
-    // ========== 播放源平台配置 ==========
-    // 每个源可配置对哪些平台生效（SharedPreferences 存逗号分隔的 platform key；空 = 全部平台）
-    // 例：源1 配置 "tx,wy" → 只对 QQ/网易云生效；源2 未配置 → 对所有平台生效
-
-    private fun sourcePlatformsPrefs() =
-        context.getSharedPreferences("source_platforms", Context.MODE_PRIVATE)
+    // ========== 依照音源腳本宣告的平台選擇播放源 ==========
 
     /**
-     * 获取源启用的平台 key 集合（空集合 = 全部平台）
+     * 依照腳本 platforms 宣告，取得該平台可用的啟用音源。
+     * 優先級仍依啟用順序排列；未宣告支援該平台的音源不會被錯誤呼叫。
      */
-    override fun getSourcePlatforms(sourceId: String): Set<String> {
-        val raw = sourcePlatformsPrefs().getString(sourceId, "") ?: ""
-        return raw.split(",").map { it.trim() }.filter { it.isNotEmpty() }.toSet()
-    }
+    fun getSourceForPlatform(platformKey: String): MusicSource? =
+        getSourcesForPlatform(platformKey).firstOrNull()
 
     /**
-     * 设置源启用的平台 key 集合（空集合 = 全部平台）
-     */
-    override fun setSourcePlatforms(sourceId: String, platforms: Set<String>): Boolean {
-        sourcePlatformsPrefs().edit().putString(sourceId, platforms.joinToString(",")).apply()
-        return true
-    }
-
-    /**
-     * 根据平台 key 选择应使用的启用播放源：
-     * 1. 优先：配置了该平台的源
-     * 2. 其次：未配置平台（全平台生效）的启用源
-     */
-    fun getSourceForPlatform(platformKey: String): MusicSource? {
-        return getSourcesForPlatform(platformKey).firstOrNull()
-    }
-
-    /**
-     * 根据平台 key 返回按优先级排序的启用源列表。
-     * 优先级 = 启用顺序（先启用的高优先级，见 getEnabledSources）；
-     * **平台配置只做过滤，不改变优先级顺序**：
-     * 仅返回「配置了该平台」或「未配置平台（全平台生效）」的启用源。
-     * 播放失败时按此顺序逐个尝试下一个源（自动切换）。
+     * 回傳腳本明確宣告支援指定平台的啟用音源，供播放失敗時依優先級逐一切換。
      */
     fun getSourcesForPlatform(platformKey: String): List<MusicSource> {
-        val enabled = getEnabledSources()
-        if (enabled.isEmpty()) return emptyList()
-        // 保持 sources 导入顺序，仅过滤出对该平台生效的源（配置了该平台 或 未配置=全平台）
-        return enabled.filter {
-            val platforms = getSourcePlatforms(it.id)
-            platforms.isEmpty() || platforms.contains(platformKey)
+        val platform = MusicPlatform.values().firstOrNull { it.key == platformKey }
+            ?: return emptyList()
+        return getEnabledSources().filter { source ->
+            val result = parser.parse(source.scriptContent)
+            result is ParseResult.Success && result.platforms.containsKey(platform)
         }
     }
 
     /**
-     * 根据平台获取播放源
+     * 依照音源腳本宣告的平台取得音源（包含尚未啟用者，供管理/診斷使用）。
      */
     fun getSourcesByPlatform(platform: MusicPlatform): List<MusicSource> {
         return sources.filter { source ->
-            val parseResult = parser.parse(source.scriptContent)
-            if (parseResult is ParseResult.Success) {
-                parseResult.platforms.containsKey(platform)
-            } else {
-                false
-            }
+            val result = parser.parse(source.scriptContent)
+            result is ParseResult.Success && result.platforms.containsKey(platform)
         }
     }
 

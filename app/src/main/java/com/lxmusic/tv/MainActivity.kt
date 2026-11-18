@@ -510,10 +510,6 @@ fun LXMusicApp() {
                 onBack = { navController.popBackStack() },
                 // 2.8 返回按钮按右键 → 聚焦右上角悬浮播放球
                 onFocusFloatingBall = { floatingBallRequester.requestFocus() },
-                onGetSourcePlatforms = { sourceId -> viewModel.getSourcePlatforms(sourceId) },
-                onSetSourcePlatforms = { sourceId, platforms ->
-                    viewModel.setSourcePlatforms(sourceId, platforms)
-                },
                 // 2.9 播放失败尝试切换平台开关（lx_settings 持久化，默认启用；与 MainViewModel 共用 key）
                 // 状态提升为 Compose state：点击立即更新 UI（只写 prefs 不触发重组）；NavHost 进出该页重建 remember → 每次进入重新读持久化值
                 platformSwitchEnabled = platformSwitchState.value,

@@ -935,22 +935,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         _playMode.value = mode
     }
 
-    // ========== 播放源平台配置 ==========
-
-    /**
-     * 获取播放源启用的平台 key 集合（空 = 全部平台）
-     */
-    fun getSourcePlatforms(sourceId: String): Set<String> {
-        return sourceManager.getSourcePlatforms(sourceId)
-    }
-
-    /**
-     * 设置播放源启用的平台 key 集合（空 = 全部平台）
-     */
-    fun setSourcePlatforms(sourceId: String, platforms: Set<String>) {
-        sourceManager.setSourcePlatforms(sourceId, platforms)
-    }
-
     /**
      * 读取持久化的默认音乐平台
      */

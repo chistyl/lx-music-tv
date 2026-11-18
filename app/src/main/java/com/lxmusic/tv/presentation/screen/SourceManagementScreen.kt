@@ -30,8 +30,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
-import com.lxmusic.tv.data.model.MusicPlatform
 import com.lxmusic.tv.data.model.MusicSource
 import com.lxmusic.tv.presentation.component.lxBackButtonFocus
 import com.lxmusic.tv.presentation.component.lxFocusBorder
@@ -65,16 +63,12 @@ fun SourceManagementScreen(
     onBack: () -> Unit,
     // 2.8 返回按钮按「右键」→ 聚焦右上角悬浮播放球（悬浮层空间焦点导航不可达，需显式桥接）
     onFocusFloatingBall: () -> Unit = {},
-    onGetSourcePlatforms: (String) -> Set<String> = { emptySet() },
-    onSetSourcePlatforms: (String, Set<String>) -> Unit = { _, _ -> },
     // 2.9 播放失败尝试切换平台开关（默认启用；开启后 JS 源解析失败时自动用同一源尝试其他平台版本）
     platformSwitchEnabled: Boolean = true,
     onTogglePlatformSwitch: (Boolean) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     var showDeleteDialog by remember { mutableStateOf<MusicSource?>(null) }
-    // 平台配置弹窗状态：当前配置的源 + 平台选择集合
-    var platformConfigSource by remember { mutableStateOf<MusicSource?>(null) }
     // 播放源排序：启用的源按「启用顺序」排前面（优先级从高到低，先启用优先），未启用的按导入顺序排后面
     val orderedSources = remember(sources) {
         val enabled = sources.filter { it.isEnabled }
@@ -197,7 +191,6 @@ fun SourceManagementScreen(
                         priority = if (source.isEnabled) index + 1 else null,
                         onToggleEnabled = { enabled -> onToggleSource(source.id, enabled) },
                         onDelete = { showDeleteDialog = source },
-                        onConfigurePlatforms = { platformConfigSource = source },
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
@@ -216,18 +209,6 @@ fun SourceManagementScreen(
             )
         }
 
-        // 平台配置对话框
-        platformConfigSource?.let { source ->
-            PlatformConfigDialog(
-                sourceName = source.name,
-                selectedPlatforms = onGetSourcePlatforms(source.id),
-                onConfirm = { platforms ->
-                    onSetSourcePlatforms(source.id, platforms)
-                    platformConfigSource = null
-                },
-                onDismiss = { platformConfigSource = null }
-            )
-        }
         }
 }
 
@@ -393,7 +374,6 @@ fun SourceItem(
     priority: Int? = null,
     onToggleEnabled: (Boolean) -> Unit,
     onDelete: () -> Unit,
-    onConfigurePlatforms: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -503,152 +483,18 @@ fun SourceItem(
                 )
             }
 
-            // 第二行：平台配置 + 删除（2.8 改为缓存管理-清除全部同款大按钮，并排等宽）
+            // 音源支援平台由 JS 脚本 platforms 自行宣告；此处仅保留删除操作。
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 8.dp),
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    .padding(top = 8.dp)
             ) {
-                CacheActionButton(
-                    text = "平台配置",
-                    hint = "设置生效平台",
-                    onClick = onConfigurePlatforms,
-                    modifier = Modifier.weight(1f)
-                )
                 CacheActionButton(
                     text = "删除",
                     hint = "移除该播放源",
                     onClick = onDelete,
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.fillMaxWidth()
                 )
-            }
-        }
-    }
-}
-
-/**
- * 播放源平台配置对话框
- * 勾选该源对哪些平台生效；全部不勾 = 对所有平台生效
- */
-@Composable
-fun PlatformConfigDialog(
-    sourceName: String,
-    selectedPlatforms: Set<String>,
-    onConfirm: (Set<String>) -> Unit,
-    onDismiss: () -> Unit
-) {
-    // 可选平台（对应 MusicPlatform.key；名称走 displayName，跟随 PlatformNameConfig 别名配置）
-    val platforms = listOf(
-        MusicPlatform.KW.key to MusicPlatform.KW.displayName,
-        MusicPlatform.KG.key to MusicPlatform.KG.displayName,
-        MusicPlatform.TX.key to MusicPlatform.TX.displayName,
-        MusicPlatform.WY.key to MusicPlatform.WY.displayName,
-        MusicPlatform.MG.key to MusicPlatform.MG.displayName
-    )
-    var selected by remember { mutableStateOf(selectedPlatforms) }
-
-    Dialog(onDismissRequest = onDismiss) {
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .fillMaxHeight(0.75f),
-            // 2.5 浅色主题：灰白底对话框（LXSurfaceDialog #F0F0F2）+ 浅边框
-            colors = CardDefaults.cardColors(containerColor = LXSurfaceDialog),
-            shape = RoundedCornerShape(16.dp),
-            border = BorderStroke(1.dp, LXBorder)
-        ) {
-            Column(modifier = Modifier.fillMaxSize().padding(20.dp)) {
-                Text(
-                    text = "平台配置",
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.Bold,
-                    // 2.5 浅色主题：白底深色标题
-                    color = LXTextPrimary
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = sourceName,
-                    fontSize = 14.sp,
-                    color = LXTextSecondary,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "勾选该源生效的平台；全部不勾选 = 对所有平台生效",
-                    fontSize = 12.sp,
-                    color = LXTextSecondary.copy(alpha = 0.7f)
-                )
-                Spacer(modifier = Modifier.height(12.dp))
-
-                // 平台开关列表（遥控器：方向键 + 确认切换）
-                // 用 verticalScroll 保证小屏/高度不足时可滚动看到全部平台与按钮
-                Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .verticalScroll(rememberScrollState())
-                ) {
-                    platforms.forEach { (key, name) ->
-                        val isChecked = selected.contains(key)
-                        // 2.8 样式对齐默认音乐平台弹窗（PlatformSelectDialog）：选中=浅红填充+加粗+右侧勾选，
-                        // 未选中=透明；lxSelectorFocus 焦点样式（无发光无动画，避免密集列表切换鬼畜）
-                        Surface(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 3.dp)
-                                .lxSelectorFocus(shape = RoundedCornerShape(8.dp), glow = false, animated = false)
-                                .clickable {
-                                    selected = if (isChecked) selected - key else selected + key
-                                },
-                            color = if (isChecked) LXPrimary.copy(alpha = 0.12f) else Color.Transparent,
-                            shape = RoundedCornerShape(8.dp)
-                        ) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    text = name,
-                                    fontSize = 16.sp,
-                                    fontWeight = if (isChecked) FontWeight.Bold else FontWeight.Normal,
-                                    color = LXTextPrimary
-                                )
-                                // 选中项右侧勾选
-                                if (isChecked) {
-                                    Spacer(modifier = Modifier.weight(1f))
-                                    Icon(
-                                        imageVector = Icons.Default.Check,
-                                        contentDescription = null,
-                                        tint = LXPrimary,
-                                        modifier = Modifier.size(18.dp)
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                // 操作按钮（2.8 与主页「退出应用」弹窗样式统一：无背景文本按钮，红字/普通字区分主次）
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    TextButton(
-                        onClick = onDismiss,
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text(text = "取消", fontSize = 15.sp, color = LXTextPrimary)
-                    }
-                    TextButton(
-                        onClick = { onConfirm(selected) },
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text(text = "保存", fontSize = 15.sp, color = LXPrimary)
-                    }
-                }
             }
         }
     }
