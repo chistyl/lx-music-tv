@@ -289,4 +289,32 @@ class ScriptParserTest {
         assertTrue(success.platforms.isEmpty())
     }
 
+
+    @Test
+    fun `test platform-like code outside sources metadata is ignored`() {
+        val scriptContent = """
+            /**
+             * @name 僅宣告酷我平台
+             */
+            globalThis.lx.send('inited', {
+                sources: {
+                    kw: {
+                        name: '酷我音樂',
+                        type: 'music',
+                        actions: ['musicUrl'],
+                        qualitys: ['128k']
+                    }
+                }
+            })
+            // kg: { name: '不應辨識的假平台', actions: ['musicUrl'] }
+        """.trimIndent()
+
+        val result = parser.parse(scriptContent)
+
+        assertTrue(result is ParseResult.Success)
+        val success = result as ParseResult.Success
+        assertTrue(success.platforms.containsKey(MusicPlatform.KW))
+        assertFalse(success.platforms.containsKey(MusicPlatform.KG))
+    }
+
 }
