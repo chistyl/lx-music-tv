@@ -866,6 +866,8 @@ fun SearchScreen(
                                             onSearchQueryChange(keyword)
                                             if (searchType == SearchType.PLAYLIST) {
                                                 onSearchPlaylist(keyword, searchPlatform)
+                                            } else if (currentSearchPlatformKey.value !in MusicPlatform.entries.map { it.key }) {
+                                                currentOnSearchByPlatformKey.value(keyword, currentSearchPlatformKey.value)
                                             } else {
                                                 onSearch(keyword, searchPlatform)
                                             }
