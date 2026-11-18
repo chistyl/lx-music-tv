@@ -101,10 +101,10 @@ class ScriptParser {
         val sourcesBody = extractObjectBody(scriptContent, "sources") ?: return platforms
 
         for (platform in MusicPlatform.entries) {
-            if (sourcesBody.contains("${platform.key}:")) {
-                val platformInfo = parsePlatformInfo(sourcesBody, platform)
-                if (platformInfo != null) platforms[platform] = platformInfo
-            }
+            // 以括號深度擷取完整平台物件，避免平台設定含巢狀物件時被第一個 } 截斷。
+            val platformBody = extractObjectBody(sourcesBody, platform.key) ?: continue
+            val platformInfo = parsePlatformInfo(platformBody, platform)
+            if (platformInfo != null) platforms[platform] = platformInfo
         }
         return platforms
     }
@@ -159,14 +159,7 @@ class ScriptParser {
     /**
      * 解析单个平台信息
      */
-    private fun parsePlatformInfo(scriptContent: String, platform: MusicPlatform): SourcePlatformInfo? {
-        // 查找平台配置块
-        val platformPattern = Pattern.compile("${platform.key}:\\s*\\{([^}]+)\\}")
-        val matcher = platformPattern.matcher(scriptContent)
-
-        if (!matcher.find()) return null
-
-        val platformBlock = matcher.group(1) ?: return null
+    private fun parsePlatformInfo(platformBlock: String, platform: MusicPlatform): SourcePlatformInfo? {
 
         // 解析actions
         val actions = mutableListOf<String>()
