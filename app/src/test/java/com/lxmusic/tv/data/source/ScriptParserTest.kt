@@ -105,7 +105,14 @@ class ScriptParserTest {
             
             const { EVENT_NAMES, request, on, send } = globalThis.lx
             send(EVENT_NAMES.inited, {
-                sources: {}
+                sources: {
+                    kw: {
+                        name: '酷我音乐',
+                        type: 'music',
+                        actions: ['musicUrl'],
+                        qualitys: ['128k', '320k']
+                    }
+                }
             })
         """.trimIndent()
 
