@@ -129,7 +129,7 @@ class ScriptParser {
             val next = scriptContent.getOrNull(i + 1)
 
             if (lineComment) {
-                if (c == '\\n' || c == '\\r') lineComment = false
+                if (c == '\n' || c == '\r') lineComment = false
             } else if (blockComment) {
                 if (c == '*' && next == '/') {
                     blockComment = false
@@ -137,13 +137,13 @@ class ScriptParser {
                 }
             } else if (quote != null) {
                 if (escaped) escaped = false
-                else if (c == '\\\\') escaped = true
+                else if (c == '\\') escaped = true
                 else if (c == quote) quote = null
             } else {
                 when {
                     c == '/' && next == '/' -> { lineComment = true; i++ }
                     c == '/' && next == '*' -> { blockComment = true; i++ }
-                    c == '\\'' || c == '"' || c == '`' -> quote = c
+                    c == '\'' || c == '"' || c == '`' -> quote = c
                     c == '{' -> depth++
                     c == '}' -> {
                         depth--
