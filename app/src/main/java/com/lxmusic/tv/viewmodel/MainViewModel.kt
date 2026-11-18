@@ -398,6 +398,72 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     /**
+     * 透過洛雪音源 JS 直連網址匯入播放源。
+     * 限制只接受 HTTP(S)，設定連線逾時及 2 MB 大小上限，避免 TV 端無限下載。
+     */
+    fun importSourceFromUrl(sourceUrl: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            var connection: java.net.HttpURLConnection? = null
+            val resultMessage = try {
+                val parsedUrl = java.net.URL(sourceUrl.trim())
+                require(parsedUrl.protocol.equals("http", true) || parsedUrl.protocol.equals("https", true)) {
+                    "只支援 HTTP 或 HTTPS 音源網址"
+                }
+                connection = (parsedUrl.openConnection() as? java.net.HttpURLConnection)
+                    ?: throw IllegalArgumentException("不支援的網址連線類型")
+                connection.connectTimeout = 15_000
+                connection.readTimeout = 20_000
+                connection.instanceFollowRedirects = true
+                connection.requestMethod = "GET"
+                connection.setRequestProperty("User-Agent", "LX-Music-TV/1.0")
+                val status = connection.responseCode
+                require(status in 200..299) { "下載音源失敗（HTTP $status）" }
+                require(connection.url.protocol.equals("http", true) || connection.url.protocol.equals("https", true)) {
+                    "重新導向網址不是 HTTP(S)"
+                }
+                val length = connection.contentLengthLong
+                require(length <= 2L * 1024 * 1024 || length < 0) { "音源檔案超過 2 MB 上限" }
+                val output = java.io.ByteArrayOutputStream()
+                connection.inputStream.use { input ->
+                    val buffer = ByteArray(8192)
+                    var total = 0
+                    while (true) {
+                        val count = input.read(buffer)
+                        if (count < 0) break
+                        total += count
+                        require(total <= 2 * 1024 * 1024) { "音源檔案超過 2 MB 上限" }
+                        output.write(buffer, 0, count)
+                    }
+                }
+                val script = output.toString(Charsets.UTF_8.name())
+                val fileName = parsedUrl.path.substringAfterLast('/').ifBlank { "remote-source.js" }
+                when (val imported = sourceManager.importSourceFile(script, fileName)) {
+                    is SourceManagerImpl.ImportResult.Success -> {
+                        val allSources = sourceManager.getAllSources()
+                        if (allSources.size == 1) {
+                            sourceManager.setSourceEnabled(allSources[0].id, true)
+                            val execution = sourceManager.loadAndExecuteSource(allSources[0].id)
+                            if (execution is SourceExecutionResult.Error) {
+                                "音源已匯入，但啟用失敗：${execution.message}"
+                            } else imported.message
+                        } else imported.message
+                    }
+                    is SourceManagerImpl.ImportResult.Error -> imported.message
+                }
+            } catch (e: kotlin.coroutines.cancellation.CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                "匯入失敗：${e.message ?: "請確認網址及網路連線"}"
+            } finally {
+                connection?.disconnect()
+            }
+            withContext(Dispatchers.Main) {
+                _toastMessage.value = resultMessage
+            }
+        }
+    }
+
+    /**
      * 切换播放源启用状态
      * 启用时加载脚本，失败则自动恢复关闭状态
      */
