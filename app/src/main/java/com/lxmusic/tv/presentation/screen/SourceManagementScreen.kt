@@ -31,6 +31,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lxmusic.tv.data.model.MusicSource
+import com.lxmusic.tv.viewmodel.SourceImportPreview
 import com.lxmusic.tv.presentation.component.lxBackButtonFocus
 import com.lxmusic.tv.presentation.component.lxFocusBorder
 import com.lxmusic.tv.presentation.component.lxSelectorFocus
@@ -60,7 +61,10 @@ fun SourceManagementScreen(
     onToggleServer: () -> Unit,
     onToggleSource: (String, Boolean) -> Unit,
     onDeleteSource: (String) -> Unit,
-    onImportSourceFromUrl: (String) -> Unit = {},
+    onPreviewSourceFromUrl: (String) -> Unit = {},
+    sourceImportPreview: SourceImportPreview? = null,
+    onConfirmImportSource: () -> Unit = {},
+    onCancelImportPreview: () -> Unit = {},
     onBack: () -> Unit,
     // 2.8 返回按钮按「右键」→ 聚焦右上角悬浮播放球（悬浮层空间焦点导航不可达，需显式桥接）
     onFocusFloatingBall: () -> Unit = {},
@@ -213,10 +217,18 @@ fun SourceManagementScreen(
         if (showImportDialog) {
             ImportSourceDialog(
                 onImport = { url ->
-                    onImportSourceFromUrl(url)
+                    onPreviewSourceFromUrl(url)
                     showImportDialog = false
                 },
                 onDismiss = { showImportDialog = false }
+            )
+        }
+
+        sourceImportPreview?.let { preview ->
+            SourceImportPreviewDialog(
+                preview = preview,
+                onConfirm = onConfirmImportSource,
+                onDismiss = onCancelImportPreview
             )
         }
 
@@ -673,4 +685,80 @@ fun ImportSourceDialog(
         titleContentColor = LXTextPrimary,
         textContentColor = LXTextPrimary
     )
+}
+
+@Composable
+fun SourceImportPreviewDialog(
+    preview: SourceImportPreview,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    val confirmFocusRequester = remember { FocusRequester() }
+    LaunchedEffect(Unit) {
+        confirmFocusRequester.requestFocus()
+    }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text("確認導入音源", fontWeight = FontWeight.Bold, color = LXTextPrimary)
+        },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(9.dp)) {
+                Text(
+                    text = preview.name,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = LXTextPrimary
+                )
+                preview.description?.takeIf { it.isNotBlank() }?.let {
+                    Text(it, fontSize = 13.sp, color = LXTextSecondary, maxLines = 3, overflow = TextOverflow.Ellipsis)
+                }
+                ImportMetadataRow("版本", preview.version ?: "未提供")
+                ImportMetadataRow("作者", preview.author ?: "未提供")
+                ImportMetadataRow("平台", preview.supportedPlatforms.takeIf { it.isNotEmpty() }?.joinToString("、") ?: "未辨識")
+                preview.homepage?.takeIf { it.isNotBlank() }?.let {
+                    ImportMetadataRow("首頁", it)
+                }
+                Text(
+                    "確認後才會將這個 JS 音源加入清單；平台支援依腳本宣告自動辨識。",
+                    fontSize = 12.sp,
+                    color = LXTextSecondary
+                )
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = onConfirm,
+                modifier = Modifier
+                    .focusRequester(confirmFocusRequester)
+                    .lxSelectorFocus(shape = RoundedCornerShape(10.dp), glow = false, animated = false),
+                colors = ButtonDefaults.buttonColors(containerColor = LXPrimary)
+            ) {
+                Text("確認導入")
+            }
+        },
+        dismissButton = {
+            OutlinedButton(
+                onClick = onDismiss,
+                modifier = Modifier.lxSelectorFocus(shape = RoundedCornerShape(10.dp), glow = false, animated = false)
+            ) {
+                Text("取消", color = LXTextPrimary)
+            }
+        },
+        containerColor = LXSurfaceDialog,
+        titleContentColor = LXTextPrimary,
+        textContentColor = LXTextPrimary
+    )
+}
+
+@Composable
+private fun ImportMetadataRow(label: String, value: String) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.Top
+    ) {
+        Text(label, color = LXTextSecondary, fontSize = 13.sp, modifier = Modifier.width(52.dp))
+        Text(value, color = LXTextPrimary, fontSize = 13.sp, modifier = Modifier.weight(1f))
+    }
 }
