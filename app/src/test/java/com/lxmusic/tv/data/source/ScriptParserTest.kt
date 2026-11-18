@@ -270,4 +270,23 @@ class ScriptParserTest {
             assertEquals("1.0.0", success.metadata.version)
         }
     }
+
+    @Test
+    fun `test platform keywords without sources metadata are not inferred`() {
+        val scriptContent = """
+            /**
+             * @name 僅含平台關鍵字的音源
+             */
+            globalThis.lx.send('inited', {
+                description: 'kw: kg: tx: wy: mg:'
+            })
+        """.trimIndent()
+
+        val result = parser.parse(scriptContent)
+
+        assertTrue(result is ParseResult.Success)
+        val success = result as ParseResult.Success
+        assertTrue(success.platforms.isEmpty())
+    }
+
 }
