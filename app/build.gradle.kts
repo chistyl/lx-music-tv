@@ -12,10 +12,10 @@ android {
 
     defaultConfig {
         applicationId = "com.lxmusic.tv"
-        minSdk = 23
+        minSdk = 28 // Android 9 (API 28) 起
         targetSdk = 37
-        versionCode = 268
-        versionName = "2.9.202610241701"
+        versionCode = 269
+        versionName = "1.0.0-r1-apple-music"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
