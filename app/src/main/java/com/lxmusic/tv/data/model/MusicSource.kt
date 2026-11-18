@@ -29,6 +29,19 @@ data class SearchPlatformOption(
  * 音源可執行的自訂 Action 選項。
  * 只反映腳本明確宣告的能力，不推測 Action 名稱或參數格式。
  */
+/**
+ * 音源 Action 的原始瀏覽資料封包。
+ *
+ * 保留腳本平台 key、Action 名稱與完整 JSON，不假設各音源採用相同欄位或清單包裝。
+ * 後續由各音源 adapter 將 rawData 映射為 BrowseItem / Song。
+ */
+data class SourceBrowsePayload(
+    val sourceId: String,
+    val platformKey: String,
+    val action: String,
+    val rawData: kotlinx.serialization.json.JsonElement
+)
+
 data class SourceActionOption(
     val sourceId: String,
     val sourceName: String,
