@@ -399,7 +399,7 @@ fun NavigationSidebar(
         modifier = modifier
             // 2.6 侧栏焦点组：与内容区 focusGroup 组成「双组边界」，双向禁止方向键跨组移动。
             // 效果（参考 blbl 原生 View 行为）：内容区列表到底按「下」时，焦点空间搜索无法跨入
-            // 本组（侧栏）→ 焦点停留原地，不会跳到底部播放/暂停按钮。
+            // 本组（侧栏）→ 焦点停留原地，不会跳到底部播放/暫停按钮。
             // 跨组导航（左键回 tab / 右键进内容）均为显式 requestFocus，不受 focusGroup 限制。
             .focusGroup()
             // 上报侧栏是否持有焦点（子节点聚焦时祖先 onFocusChanged 也会报告 hasFocus=true）
@@ -536,7 +536,7 @@ fun NavigationSidebar(
 
         Spacer(modifier = Modifier.weight(1f))
 
-        // 正在播放控制条（常驻，窄栏版：封面进播放页 + 播放/暂停）
+        // 正在播放控制条（常驻，窄栏版：封面进播放页 + 播放/暫停）
         if (currentSong != null) {
             NowPlayingBar(
                 song = currentSong,
@@ -566,7 +566,7 @@ fun DiscCoverButton(
     Box(
         modifier = modifier
             .size(50.dp)
-            // 播放旋转 / 暂停归 0（黑胶整盘旋转；graphicsLayer 默认以中心为旋转轴）
+            // 播放旋转 / 暫停归 0（黑胶整盘旋转；graphicsLayer 默认以中心为旋转轴）
             .graphicsLayer { rotationZ = rotation }
             .onFocusChanged { focused = it.isFocused }
             .clip(CircleShape)
@@ -587,7 +587,7 @@ fun DiscCoverButton(
 
 /**
  * 正在播放控制条（导航栏底部常驻入口，2.6 窄栏版）
- * 窄栏只放 1 个图标宽：封面（点击进播放页）+ 播放/暂停按钮；
+ * 窄栏只放 1 个图标宽：封面（点击进播放页）+ 播放/暫停按钮；
  * 上一曲/下一曲等完整控制在播放页控制栏里操作
  */
 @Composable
@@ -602,7 +602,7 @@ fun NowPlayingBar(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // 2.8 封面旋转动画：播放中缓慢匀速旋转（8s/圈，黑胶/光盘感），暂停停止并平滑归 0
+        // 2.8 封面旋转动画：播放中缓慢匀速旋转（8s/圈，黑胶/光盘感），暫停停止并平滑归 0
         val coverRotation = remember { Animatable(0f) }
         LaunchedEffect(isPlaying) {
             if (isPlaying) {
@@ -660,7 +660,7 @@ fun NowPlayingBar(
 
         Spacer(modifier = Modifier.height(6.dp))
 
-        // 播放/暂停按钮（遥控器必须可聚焦操作）
+        // 播放/暫停按钮（遥控器必须可聚焦操作）
         Box(
             modifier = Modifier
                 .requiredSize(50.dp)
@@ -671,7 +671,7 @@ fun NowPlayingBar(
         ) {
             Icon(
                 imageVector = if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
-                contentDescription = if (isPlaying) "暂停" else "播放",
+                contentDescription = if (isPlaying) "暫停" else "播放",
                 // 2.5 浅色主题：白底深色图标
                 tint = LXTextPrimary,
                 modifier = Modifier.size(22.dp)
@@ -832,7 +832,7 @@ fun MainContent(
     Box(
         modifier = modifier
             // 2.6 内容区焦点组：与侧栏 focusGroup 组成「双组边界」（见 NavigationSidebar 注释），
-            // 双向禁止方向键跨组移动 → 列表到底按「下」不会经空间搜索跳到侧栏播放/暂停按钮（用户实测参考 blbl）
+            // 双向禁止方向键跨组移动 → 列表到底按「下」不会经空间搜索跳到侧栏播放/暫停按钮（用户实测参考 blbl）
             .focusGroup()
     ) {
         // 主区顶部氛围渐变（实色基底由外层 Row 的 #F5F5F7 提供，仿 EchoMusic .layout-accent-gradient）：
@@ -1837,7 +1837,7 @@ Text(
             ) {
                 Icon(
                     imageVector = Icons.Default.Fullscreen,
-                    contentDescription = "播放并进入播放页",
+                    contentDescription = "播放並進入播放頁",
                     tint = LXOnCardDark,
                     modifier = Modifier.size(22.dp)
                 )
@@ -2071,7 +2071,7 @@ fun SettingsScreen(
             )
 
             SettingsItem(
-                title = "关于",
+                title = "關於",
                 subtitle = "版本號、說明等",
                 icon = Icons.Default.Info,
                 onClick = { showAboutDialog = true },
@@ -2152,7 +2152,7 @@ fun SettingsScreen(
             },
             text = {
                 Text(
-                    text = "異常記錄需要 HTTP 服务器支持。開啟后手机/电脑浏览器打开 /log 页面，即可查看并导出应用崩溃记录与运行日志。",
+                    text = "異常記錄需要 HTTP 伺服器支援。開啟后手機／電腦瀏覽器開啟 /log 页面，即可查看並匯出應用程式當機記錄與執行日誌。",
                     fontSize = 14.sp,
                     color = LXTextSecondary
                 )
@@ -2210,7 +2210,7 @@ fun LogExportDialog(
                 verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
                 Text(
-                    text = "開啟 HTTP 服务器后，用手机/电脑浏览器打开下方地址，可查看并导出应用異常記錄（崩溃记录 + 运行日志）。加 ?download=1 可直接下载日志文件。",
+                    text = "開啟 HTTP 服务器后，用手機／電腦瀏覽器開啟下方地址，即可查看並匯出應用程式異常記錄（當機記錄＋執行日誌）。網址加上 ?download=1 可直接下載日誌檔案。",
                     fontSize = 13.sp,
                     color = LXTextSecondary
                 )
@@ -2232,7 +2232,7 @@ fun LogExportDialog(
                     }
                 }
                 Text(
-                    text = "需先在设置中開啟 HTTP 服务器；地址为电视当前局域网 IP",
+                    text = "請先在設定中啟用 HTTP 伺服器；網址為電視目前的區域網路 IP",
                     fontSize = 12.sp,
                     color = LXTextSecondary
                 )
@@ -2402,10 +2402,10 @@ fun AboutDialog(onDismiss: () -> Unit) {
         onDismissRequest = onDismiss,
         // 弹窗背景统一灰白（LXSurfaceDialog），与其它弹窗一致
         containerColor = LXSurfaceDialog,
-        title = { Text("关于 LX Music TV", fontSize = 20.sp, color = LXTextPrimary) },
+        title = { Text("關於 LX Music TV", fontSize = 20.sp, color = LXTextPrimary) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text("洛雪音乐 TV 版 · 音乐播放器", fontSize = 15.sp, color = LXTextPrimary)
+                Text("洛雪音樂 TV 版 · 音樂播放器", fontSize = 15.sp, color = LXTextPrimary)
                 Text(
                     text = "版本號：v$versionName",
                     fontSize = 16.sp,
@@ -2482,7 +2482,7 @@ fun LyricsSettingsDialog(
                 }
                 Spacer(modifier = Modifier.height(6.dp))
                 Text(
-                    text = "開啟后，播放页歌词下方显示翻译（需音源/接口返回翻译歌词）",
+                    text = "啟用後，播放頁歌詞下方會顯示翻譯（需音源／介面回傳翻譯歌詞）",
                     fontSize = 12.sp,
                     color = LXTextSecondary
                 )
@@ -2855,7 +2855,7 @@ private fun MusicCacheToggleCard(
                     color = LXOnCardDark
                 )
                 Text(
-                    text = "開啟后播放的歌曲边播边缓存到本地，下次播放免流量",
+                    text = "啟用後，播放歌曲時會同步快取至本機，下次播放即可離線收聽",
                     fontSize = 12.sp,
                     color = LXOnCardDarkSecondary
                 )
@@ -3067,7 +3067,7 @@ fun PlatformSelectDialog(
         containerColor = LXSurfaceDialog,
         title = {
             Text(
-                text = "选择預設音樂平台",
+                text = "選擇預設音樂平台",
                 fontSize = 22.sp,
                 fontWeight = FontWeight.Bold,
                 // 灰白底深色标题
