@@ -378,4 +378,67 @@ class ScriptParserTest {
         assertFalse(success.platforms.containsKey(MusicPlatform.KW))
     }
 
+
+    @Test
+    fun `test custom platform exposes only explicitly declared actions`() {
+        val scriptContent = """
+            /**
+             * @name 自訂瀏覽平台音源
+             */
+            globalThis.lx.send('inited', {
+                sources: {
+                    tv_music_hub: {
+                        name: 'TV 音樂庫',
+                        type: 'music',
+                        actions: ['search', 'musicUrl', 'getBoards', 'getSongList'],
+                        qualitys: ['128k', 'lossless-plus']
+                    }
+                }
+            })
+        """.trimIndent()
+
+        val result = parser.parse(scriptContent)
+
+        assertTrue(result is ParseResult.Success)
+        val success = result as ParseResult.Success
+        val platform = success.declaredPlatforms["tv_music_hub"]
+        assertNotNull(platform)
+        assertEquals("TV 音樂庫", platform!!.name)
+        assertEquals(
+            listOf("search", "musicUrl", "getBoards", "getSongList"),
+            platform.actions
+        )
+        assertEquals(listOf("128k", "lossless-plus"), platform.qualityKeys)
+        assertFalse(success.declaredPlatforms.containsKey("kw"))
+    }
+
+    @Test
+    fun `test undeclared browse actions are not inferred from platform metadata`() {
+        val scriptContent = """
+            /**
+             * @name 僅搜尋音源
+             */
+            globalThis.lx.send('inited', {
+                sources: {
+                    custom_search: {
+                        name: '自訂搜尋',
+                        type: 'music',
+                        actions: ['search', 'musicUrl'],
+                        qualitys: []
+                    }
+                }
+            })
+        """.trimIndent()
+
+        val result = parser.parse(scriptContent)
+
+        assertTrue(result is ParseResult.Success)
+        val platform = (result as ParseResult.Success).declaredPlatforms["custom_search"]
+        assertNotNull(platform)
+        assertTrue(platform!!.actions.contains("search"))
+        assertTrue(platform.actions.contains("musicUrl"))
+        assertFalse(platform.actions.contains("getBoards"))
+        assertFalse(platform.actions.contains("getSongList"))
+    }
+
 }
