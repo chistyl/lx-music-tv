@@ -776,6 +776,10 @@ fun MainContent(
     // ===== 搜索页内嵌参数（2.6：tab 内容区直接渲染搜索页，保留左侧导航栏）=====
     searchQuery: String = "",
     searchPlatform: MusicPlatform = MusicPlatform.KW,
+    searchPlatformKey: String = searchPlatform.key,
+    searchPlatformOptions: List<com.lxmusic.tv.data.model.SearchPlatformOption> = emptyList(),
+    onSearchPlatformChange: (String) -> Unit = {},
+    onSearchByPlatformKey: (String, String) -> Unit = { _, _ -> },
     searchType: SearchType = SearchType.SONG,
     hotKeywords: List<String> = emptyList(),
     suggestions: List<String> = emptyList(),
@@ -855,6 +859,10 @@ fun MainContent(
                 // 2.6 搜索页内嵌为 tab（保留左侧导航栏），不再跳转独立页面；2.9 调整至 Logo 下方（索引 0）
                 searchQuery = searchQuery,
                 searchPlatform = searchPlatform,
+                searchPlatformKey = searchPlatformKey,
+                searchPlatformOptions = searchPlatformOptions,
+                onSearchPlatformChange = onSearchPlatformChange,
+                onSearchByPlatformKey = onSearchByPlatformKey,
                 searchType = searchType,
                 hotKeywords = hotKeywords,
                 suggestions = suggestions,
