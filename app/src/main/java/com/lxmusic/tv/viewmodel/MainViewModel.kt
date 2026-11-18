@@ -79,6 +79,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val sourceBrowseItems: StateFlow<List<SourceBrowseItem>> = _sourceBrowseItems.asStateFlow()
     private val _sourceBrowseError = MutableStateFlow<String?>(null)
     val sourceBrowseError: StateFlow<String?> = _sourceBrowseError.asStateFlow()
+    private val _sourceBrowseLoading = MutableStateFlow(false)
+    val sourceBrowseLoading: StateFlow<Boolean> = _sourceBrowseLoading.asStateFlow()
     private var sourceBrowseJob: Job? = null
     private var sourceBrowseRequestId = 0
     private val _browseSongs = MutableStateFlow<List<Song>>(emptyList())
@@ -1324,7 +1326,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         sourceBrowseJob = viewModelScope.launch {
             _sourceBrowseItems.value = emptyList()
             _sourceBrowseError.value = null
-            _browseLoading.value = true
+            _sourceBrowseLoading.value = true
             val result = try {
                 withTimeoutOrNull(BROWSE_TIMEOUT_MS) {
                     sourceManager.executeSourceBrowseItems(
@@ -1348,7 +1350,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                     is SourceBrowseItemsResult.Error -> _sourceBrowseError.value = result.message
                     null -> _sourceBrowseError.value = "音源回應逾時，請稍後重試"
                 }
-                _browseLoading.value = false
+                _sourceBrowseLoading.value = false
             }
         }
     }
@@ -1358,7 +1360,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         sourceBrowseRequestId++
         _sourceBrowseItems.value = emptyList()
         _sourceBrowseError.value = null
-        _browseLoading.value = false
+        _sourceBrowseLoading.value = false
     }
 
     // 浏览列表分页状态
