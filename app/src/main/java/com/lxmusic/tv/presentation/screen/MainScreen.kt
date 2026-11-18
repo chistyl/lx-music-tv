@@ -159,6 +159,10 @@ fun MainScreen(
     // ===== 搜索页（2.6 起内嵌为 tab，保留左侧导航栏，不再跳转独立页面）=====
     searchQuery: String = "",
     searchPlatform: MusicPlatform = MusicPlatform.KW,
+    searchPlatformKey: String = searchPlatform.key,
+    searchPlatformOptions: List<com.lxmusic.tv.data.model.SearchPlatformOption> = emptyList(),
+    onSearchPlatformChange: (String) -> Unit = {},
+    onSearchByPlatformKey: (String, String) -> Unit = { _, _ -> },
     searchType: SearchType = SearchType.SONG,
     hotKeywords: List<String> = emptyList(),
     suggestions: List<String> = emptyList(),
@@ -297,6 +301,10 @@ fun MainScreen(
                 // 搜索页内嵌参数（2.6）
                 searchQuery = searchQuery,
                 searchPlatform = searchPlatform,
+                searchPlatformKey = searchPlatformKey,
+                searchPlatformOptions = searchPlatformOptions,
+                onSearchPlatformChange = onSearchPlatformChange,
+                onSearchByPlatformKey = onSearchByPlatformKey,
                 searchType = searchType,
                 hotKeywords = hotKeywords,
                 suggestions = suggestions,
