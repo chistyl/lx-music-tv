@@ -1326,16 +1326,22 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             _sourceActionTestResult.value = null
             val resultText = try {
                 val info = org.json.JSONObject(infoJson.ifBlank { "{}" })
-                when (val result = sourceManager.executeSourceAction(
-                    platformKey = option.platformKey,
-                    action = option.action,
-                    info = info,
-                    sourceId = option.sourceId
-                )) {
-                    is SourceExecutionResult.ActionSuccess -> result.result
-                    is SourceExecutionResult.Error -> "執行失敗：${result.message}"
+                val execution = withTimeoutOrNull(BROWSE_TIMEOUT_MS) {
+                    sourceManager.executeSourceAction(
+                        platformKey = option.platformKey,
+                        action = option.action,
+                        info = info,
+                        sourceId = option.sourceId
+                    )
+                }
+                when (execution) {
+                    is SourceExecutionResult.ActionSuccess -> execution.result
+                    is SourceExecutionResult.Error -> "執行失敗：${execution.message}"
+                    null -> "音源 Action 執行逾時，請稍後重試"
                     else -> "Action 回傳非預期結果"
                 }
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 "請求 JSON 格式錯誤或執行失敗：${e.message ?: "未知錯誤"}"
             }
@@ -1345,7 +1351,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun clearSourceActionTestResult() {
-        sourceActionTestResult.value.let { _sourceActionTestResult.value = null }
+        _sourceActionTestResult.value = null
     }
 
     // ========== 浏览数据（发现/歌单/排行） ==========
