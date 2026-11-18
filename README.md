@@ -4,7 +4,7 @@
 ![downloads](https://img.shields.io/github/downloads/bmizhou/lx-music-tv/total)
 ![platform](https://img.shields.io/badge/platform-Android_TV-green)
 ![Kotlin](https://img.shields.io/badge/Kotlin-Compose_for_TV-purple)
-![minSdk](https://img.shields.io/badge/minSdk-23-blue)
+![minSdk](https://img.shields.io/badge/minSdk-28-blue)
 ![license](https://img.shields.io/github/license/bmizhou/lx-music-tv)
 
 说明：本项目由AI开发，如果使用过程中遇到问题可以尝试用ai解决，以下内容也是大部分由AI生成的说明，不一定准确。
