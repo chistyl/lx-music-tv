@@ -9,24 +9,28 @@
 
 说明：本项目由AI开发，如果使用过程中遇到问题可以尝试用ai解决，以下内容也是大部分由AI生成的说明，不一定准确。
 
-一款专为 Android TV 设计的音乐播放器，完美支持遥控器操作，参考洛雪音乐（lx-music）功能设计，支持导入洛雪 JS 播放源。
+一款以官方 LX Music 移动版的完整功能、视觉語言與操作流程為主要基準，適配 Android TV 及遙控器操作的音樂播放器，支援匯入 LX Music JS 播放源。TV 版不另創品牌視覺；只針對 16:9 大螢幕重新配置版面、字級、間距與焦點導航。
 
 ---
 
 ## 📚 参考项目
 
-本项目在功能、交互与视觉上参考了以下开源项目，在此致谢：
+本项目以官方 LX Music 移动版作為功能與視覺主基準。其他專案僅作為協定或技術實作參考，不作為 TV 版視覺風格來源：
 
 | 项目 | 说明 | 地址 |
 | --- | --- | --- |
 | LX Music（LX Music 桌面版） | 核心功能参考：JS 播放源 / 多平台搜索 / 音源 SDK | https://github.com/lyswhut/lx-music-desktop |
 | lxserver（LX Music Sync Server） | JS 音源协议与 SDK 参考 | https://github.com/XCQ0607/lxserver |
-| lx-music-mobile（LX Music 移动版） | 缓存机制参考（播放缓存 / 缓存管理） | https://github.com/lyswhut/lx-music-mobile |
-| music-tv（菠萝音乐） | 播放页毛玻璃布局参考 | https://github.com/boluofan/music-tv |
-| Echo Music | 整体主题风格（深色 + 强调色）参考 | https://github.com/hoowhoami/EchoMusic |
-| blbl | 侧栏交互、焦点驱动分页等参考 | https://github.com/cat3399/blbl |
+| lx-music-mobile（LX Music 移动版） | **主要基準：完整功能、視覺語言、色彩、圖示、資訊架構與操作流程** | https://github.com/lyswhut/lx-music-mobile |
+| music-tv（菠萝音乐） | 僅作為技術案例研究，不沿用其視覺設計 | https://github.com/boluofan/music-tv |
+| Echo Music | 僅作為技術案例研究，不沿用其主題風格 | https://github.com/hoowhoami/EchoMusic |
+| blbl | 僅作為焦點導航技術參考，不沿用其介面風格 | https://github.com/cat3399/blbl |
 
 ---
+
+## 📐 R3 TV 適配基準
+
+R3 以官方 [LX Music 移動版](https://github.com/lyswhut/lx-music-mobile) 為唯一主要視覺與功能基準。不得沿用舊版 TV 自訂主題或 Apple Music／Apple TV 風格。詳細適配規格見 [`docs/R3-MOBILE-UI-TV-ADAPTATION.md`](docs/R3-MOBILE-UI-TV-ADAPTATION.md)。
 
 ## 📸 截图
 
@@ -64,10 +68,9 @@
 
 ### 1. 播放源管理
 - **洛雪 JS 播放源**：支持导入 lx-music 格式的 JS 播放源
-- **Web 端管理**：TV 端启动 HTTP 服务器，手机/电脑浏览器打开地址即可上传、删除播放源，并配置平台生效范围
+- **Web 端管理**：TV 端启动 HTTP 服务器，手机/电脑浏览器打开地址即可上传、删除播放源；平台能力依音源腳本自行宣告
 - **多源优先级**：启用顺序即优先级（越靠前越高），播放失败自动切换到下一个可用源；重启后优先级保持不变
-- **自动切换平台**：可以设置是否开启js源播放失败切换到其他平台进行尝试
-- **平台配置**：每个源可精确指定对哪些音乐平台生效，全部不勾选 = 全平台生效
+- **音源平台判定**：不提供人工平台綁定、白名單或平台限定；每個 JS 音源只依腳本宣告的平台能力生效。同一平台有多個可用音源時，依音源優先順序逐一嘗試
 
 ### 2. 音乐搜索
 - **多平台搜索**：内置 API
@@ -99,7 +102,7 @@
 - 启动设置里的Http服务器后可通过Web端将各平台歌单导入到收藏歌单列表
 
 ### 6. TV 交互细节
-- **统一焦点指示**：全界面亮红边框 + 发光，遥控器焦点一目了然（无深蓝底看不清问题）
+- **焦點指示**：保留 LX Music 移動版的視覺語言，針對 TV 遙控器提供清楚且一致的焦點狀態；不另採用舊版自訂紅框發光主題
 - **退出确认**：首页返回键弹窗三选（取消/退出/后台播放）
 - **屏幕常亮**：播放页抑制屏保与自动锁屏
 - **播放历史**：Room 持久化最近播放
