@@ -510,4 +510,5 @@ sealed class SourceExecutionResult {
     data class UrlSuccess(val url: String) : SourceExecutionResult()
     data class LyricSuccess(val lyric: String) : SourceExecutionResult()
     data class PicSuccess(val picUrl: String) : SourceExecutionResult()
+    data class ActionSuccess(val result: String) : SourceExecutionResult()
 }
