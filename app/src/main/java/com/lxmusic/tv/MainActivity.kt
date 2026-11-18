@@ -460,6 +460,7 @@ fun LXMusicApp() {
                 searchType = searchType,
                 searchPlatform = searchPlatform,
                 searchPlatformName = searchPlatformOptions.firstOrNull { it.key == searchPlatformKey }?.name,
+                searchPlatformIsBuiltIn = searchPlatformOptions.firstOrNull { it.key == searchPlatformKey }?.isBuiltIn ?: true,
                 searchResults = searchResults,
                 playlistResults = playlistResults,
                 playlistSongs = playlistSongs,
