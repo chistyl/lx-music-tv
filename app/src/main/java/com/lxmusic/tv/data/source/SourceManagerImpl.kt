@@ -365,15 +365,28 @@ class SourceManagerImpl(
     suspend fun searchMusicWithSource(
         keyword: String,
         page: Int = 1,
-        limit: Int = 30
+        limit: Int = 30,
+        platformKey: String? = null,
+        sourceId: String? = null
     ): SourceExecutionResult {
         val executor = sourceExecutor ?: return SourceExecutionResult.Error("源执行器未初始化")
-
-        // 未加载源时自动加载（App 重启后 currentScriptContent 为空）
-        val loadError = autoLoadEnabledSource()
-        if (loadError != null) return loadError
-
-        return executor.searchMusic(keyword, page, limit)
+        val targetSource = if (sourceId != null) {
+            getSourceById(sourceId)?.takeIf { it.isEnabled }
+                ?: return SourceExecutionResult.Error("指定的播放源不存在或未啟用")
+        } else if (!platformKey.isNullOrBlank()) {
+            getSourceForPlatform(platformKey)
+                ?: return SourceExecutionResult.Error("沒有已啟用且宣告支援平台「$platformKey」的播放源")
+        } else {
+            getEnabledSource() ?: return SourceExecutionResult.Error("沒有啟用的播放源")
+        }
+        if (!platformKey.isNullOrBlank() && platformKey !in getSourcePlatforms(targetSource.id)) {
+            return SourceExecutionResult.Error("播放源「${targetSource.name}」未宣告支援平台：$platformKey")
+        }
+        if (currentScriptContent != targetSource.scriptContent) {
+            val loadResult = loadAndExecuteSource(targetSource.id)
+            if (loadResult is SourceExecutionResult.Error) return loadResult
+        }
+        return executor.searchMusic(keyword, page, limit, platformKey)
     }
 
     /**
