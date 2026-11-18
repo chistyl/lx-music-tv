@@ -270,6 +270,24 @@ class SourceManagerImpl(
     }
 
     /**
+     * 取得已啟用音源所宣告、且具備 search action 的平台。
+     * 同一平台由多個音源支援時，依啟用優先順序保留第一個顯示名稱。
+     */
+    fun getSearchablePlatformOptions(): List<SearchPlatformOption> {
+        val options = linkedMapOf<String, SearchPlatformOption>()
+        getEnabledSources().forEach { source ->
+            val result = parser.parse(source.scriptContent)
+            if (result is ParseResult.Success) {
+                result.declaredPlatforms.forEach { (key, info) ->
+                    if (key.isNotBlank() && "search" in info.actions && key !in options) {
+                        options[key] = SearchPlatformOption(key = key, name = info.name)
+                    }
+                }
+            }
+        }
+        return options.values.toList()
+    }
+    /**
      * 依照音源腳本宣告的平台取得音源（包含尚未啟用者，供管理/診斷使用）。
      */
     fun getSourcesByPlatform(platform: MusicPlatform): List<MusicSource> {
