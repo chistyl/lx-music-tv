@@ -171,16 +171,30 @@ class SourceExecutor(
         limit: Int = 30
     ): SourceExecutionResult = withContext(Dispatchers.IO) {
         try {
-            if (useEventDrivenModel) {
-                return@withContext SourceExecutionResult.Error(
-                    "当前播放源不支持搜索功能（仅支持获取播放地址），请使用内置搜索"
-                )
+            val searchResult = if (useEventDrivenModel) {
+                // LX 標準事件模式：只對腳本已宣告 search action 的平台派發搜尋請求。
+                val sourceKey = sourceInfoFromInit.entries.firstOrNull { (_, value) ->
+                    val item = value as? org.json.JSONObject
+                    item?.optJSONArray("actions")?.let { actions ->
+                        (0 until actions.length()).any { actions.optString(it) == "search" }
+                    } == true
+                }?.key
+                if (sourceKey == null) {
+                    return@withContext SourceExecutionResult.Error("此播放源未宣告 search action")
+                }
+                val eventData = JSONObject().apply {
+                    put("source", sourceKey)
+                    put("action", "search")
+                    put("info", JSONObject().apply {
+                        put("keyword", keyword)
+                        put("page", page)
+                        put("limit", limit)
+                    })
+                }
+                javaScriptEngine.dispatchEvent("request", eventData)
+            } else {
+                javaScriptEngine.callFunction("search", arrayOf(keyword, page, limit))
             }
-
-            val searchResult = javaScriptEngine.callFunction(
-                "search",
-                arrayOf(keyword, page, limit)
-            )
 
             when (searchResult) {
                 is JavaScriptResult.Success -> {
