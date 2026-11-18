@@ -350,13 +350,15 @@ class JavaScriptEngine {
                 }
                 if (done) {
                     val value = onEngineThread { holder.getProperty("value") }
+                    val valueString = onEngineThread { holder.getProperty("valueString") }
                     val error = onEngineThread { holder.getProperty("error") }
                     val errorStr = error?.toString()
                     if (errorStr != null && errorStr.isNotBlank() && errorStr != "null") {
                         Log.e(TAG, "[dispatchEvent] handler 返回错误: $errorStr")
                         result = JavaScriptResult.Error(errorStr)
                     } else {
-                        val v = value?.toString() ?: ""
+                        // 新版 preload 為物件／陣列提供 JSON；舊腳本或舊 holder 則回退原始 toString。
+                        val v = valueString?.toString() ?: value?.toString() ?: ""
                         Log.d(TAG, "[dispatchEvent] handler 返回: ${v.take(200)}")
                         result = JavaScriptResult.Success(result = value, resultString = v)
                     }
