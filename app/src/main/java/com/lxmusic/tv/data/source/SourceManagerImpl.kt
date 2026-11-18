@@ -395,28 +395,31 @@ class SourceManagerImpl(
     ): SourceExecutionResult {
         val executor = sourceExecutor ?: return SourceExecutionResult.Error("源执行器未初始化")
 
-        // 按平台选择应使用的播放源（支持多源按平台配置）；
-        // 指定了 sourceId 时（多源切换）直接尝试该源，否则取平台最优源
-        val targetSource = sourceId?.let { getSourceById(it) } ?: getSourceForPlatform(source)
-        if (targetSource != null) {
-            // 选中的源与当前已加载的源不同 → 切换加载
-            if (currentScriptContent != targetSource.scriptContent) {
-                val loadResult = loadAndExecuteSource(targetSource.id)
-                if (loadResult is SourceExecutionResult.Error) {
-                    // 2.8 目标源脚本加载失败：直接判为失败返回（上层回调失败信息并切下一个源）。
-                    // 原「回退当前源」会拿旧脚本假扮该源执行 → 返回同一 URL、无失败提示、
-                    // 播放反复失败（多源切换时后几个源全部无效）
-                    Log.w(TAG, "播放源 ${targetSource.name} 加载失败，判为失败: ${loadResult.message}")
-                    return loadResult
-                }
+        // 平台必須是有效平台，且音源必須在 JS 腳本 metadata 的 sources 中明確宣告支援。
+        val platform = MusicPlatform.entries.firstOrNull { it.key == source }
+            ?: return SourceExecutionResult.Error("不支援的音樂平台：$source")
+        val targetSource = if (sourceId != null) {
+            val requestedSource = getSourceById(sourceId)
+                ?: return SourceExecutionResult.Error("指定的播放源不存在")
+            if (platform.key !in getSourcePlatforms(requestedSource.id)) {
+                return SourceExecutionResult.Error("播放源「${requestedSource.name}」未宣告支援${platform.displayName}")
             }
+            requestedSource
         } else {
-            // 没有匹配的源，回退到当前已加载的源
-            val loadError = autoLoadEnabledSource()
-            if (loadError != null) return loadError
+            getSourceForPlatform(platform.key)
+                ?: return SourceExecutionResult.Error("沒有已啟用且宣告支援${platform.displayName}的播放源")
         }
 
-        return executor.getMusicUrl(musicId, quality, source, songName, singer)
+        // 僅載入通過平台 metadata 驗證的音源，禁止回退到其他平台或任意已載入腳本。
+        if (currentScriptContent != targetSource.scriptContent) {
+            val loadResult = loadAndExecuteSource(targetSource.id)
+            if (loadResult is SourceExecutionResult.Error) {
+                Log.w(TAG, "播放源 ${targetSource.name} 載入失敗: ${loadResult.message}")
+                return loadResult
+            }
+        }
+
+        return executor.getMusicUrl(musicId, quality, platform.key, songName, singer)
     }
 
     /**
