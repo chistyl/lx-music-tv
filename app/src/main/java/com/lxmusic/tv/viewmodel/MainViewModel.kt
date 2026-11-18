@@ -1632,6 +1632,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                         musicName = song.name,
                         artist = song.singer,
                         platform = song.platform,
+                        platformKey = song.platformKey,
                         duration = song.duration ?: 0L,
                         sourceId = sourceManager.getEnabledSource()?.id ?: ""
                     )
@@ -1935,6 +1936,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                             musicName = song.name,
                             artist = song.singer,
                             platform = song.platform,
+                            platformKey = song.platformKey,
                             sourceId = sourceManager.getEnabledSource()?.id ?: "",
                             // 保存封面/专辑/时长，收藏页歌曲列表才能显示封面
                             picUrl = song.picUrl,
@@ -2307,6 +2309,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 put("picUrl", song.picUrl ?: "")
                 put("duration", song.duration ?: 0L)
                 put("platform", song.platform.name)
+                put("platformKey", song.platformKey)
             }.toString()
             // 同时保存当前播放队列：后台播放进程重建后恢复播放列表（下一曲/上一曲可用）
             val listJson = org.json.JSONArray().apply {
@@ -2320,6 +2323,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                         put("picUrl", s.picUrl ?: "")
                         put("duration", s.duration ?: 0L)
                         put("platform", s.platform.name)
+                        put("platformKey", s.platformKey)
                     })
                 }
             }.toString()
@@ -2349,8 +2353,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 albumId = json.optString("albumId").ifBlank { null },
                 picUrl = json.optString("picUrl").ifBlank { null },
                 duration = json.optLong("duration", 0L).takeIf { it > 0 },
-                platform = runCatching { MusicPlatform.valueOf(json.getString("platform")) }
-                    .getOrDefault(MusicPlatform.KW)
+                platform = MusicPlatform.entries.firstOrNull { it.key.equals(json.optString("platformKey", json.optString("platform")), true) || it.name.equals(json.optString("platform"), true) } ?: MusicPlatform.LOCAL,
+                platformKey = json.optString("platformKey").ifBlank { json.optString("platform").lowercase() }
             )
         } catch (e: kotlin.coroutines.cancellation.CancellationException) { throw e } catch (e: Exception) {
             Log.e("LX-MainViewModel", "恢复当前歌曲失败: ${e.message}", e)
@@ -2377,8 +2381,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                         albumId = j.optString("albumId").ifBlank { null },
                         picUrl = j.optString("picUrl").ifBlank { null },
                         duration = j.optLong("duration", 0L).takeIf { it > 0 },
-                        platform = runCatching { MusicPlatform.valueOf(j.getString("platform")) }
-                            .getOrDefault(MusicPlatform.KW)
+                        platform = MusicPlatform.entries.firstOrNull { it.key.equals(j.optString("platformKey", j.optString("platform")), true) || it.name.equals(j.optString("platform"), true) } ?: MusicPlatform.LOCAL,
+                        platformKey = j.optString("platformKey").ifBlank { j.optString("platform").lowercase() }
                     )
                 }.getOrNull()
             }
