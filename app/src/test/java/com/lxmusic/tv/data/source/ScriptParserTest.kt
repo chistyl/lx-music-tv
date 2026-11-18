@@ -317,4 +317,36 @@ class ScriptParserTest {
         assertFalse(success.platforms.containsKey(MusicPlatform.KG))
     }
 
+
+    @Test
+    fun `test parse platform metadata with nested objects`() {
+        val scriptContent = """
+            /**
+             * @name 巢狀設定測試
+             */
+            globalThis.lx.send('inited', {
+                sources: {
+                    kw: {
+                        name: '酷我音樂',
+                        config: {
+                            headers: { 'User-Agent': 'test' }
+                        },
+                        actions: ['musicUrl'],
+                        qualitys: ['128k', 'flac']
+                    }
+                }
+            })
+        """.trimIndent()
+
+        val result = parser.parse(scriptContent)
+
+        assertTrue(result is ParseResult.Success)
+        val success = result as ParseResult.Success
+        val kw = success.platforms[MusicPlatform.KW]
+        assertNotNull(kw)
+        assertTrue(kw!!.actions.contains("musicUrl"))
+        assertTrue(kw.qualitys.contains(AudioQuality.QUALITY_128K))
+        assertTrue(kw.qualitys.contains(AudioQuality.FLAC))
+    }
+
 }
