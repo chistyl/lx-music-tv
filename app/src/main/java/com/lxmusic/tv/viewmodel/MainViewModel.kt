@@ -1308,6 +1308,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         _searchError.value = null
     }
 
+    /** 已啟用音源所宣告的全部 Action，供音源管理介面呈現能力清單。 */
+    fun getDeclaredSourceActions(): List<SourceActionOption> =
+        sourceManager.getAllDeclaredActions()
+
     // ========== 浏览数据（发现/歌单/排行） ==========
 
     /**
