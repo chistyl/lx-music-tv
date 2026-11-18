@@ -39,7 +39,9 @@ data class Song(
     val picUrl: String?,
     val duration: Long?,
     val platform: MusicPlatform,
-    val quality: List<AudioQuality> = emptyList()
+    val quality: List<AudioQuality> = emptyList(),
+    /** 原始平台 key，支援非內建平台並維持舊 enum API 相容。 */
+    val platformKey: String = platform.key
 ) {
     /**
      * 转换为MusicInfo
@@ -53,7 +55,8 @@ data class Song(
             albumId = albumId,
             picUrl = picUrl,
             duration = duration,
-            platform = platform
+            platform = platform,
+            platformKey = platformKey
         )
     }
 }
