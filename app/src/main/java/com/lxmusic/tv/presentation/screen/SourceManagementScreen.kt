@@ -31,6 +31,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lxmusic.tv.data.model.MusicSource
+import com.lxmusic.tv.data.model.SourceActionOption
 import com.lxmusic.tv.data.source.ParseResult
 import com.lxmusic.tv.data.source.ScriptParser
 import com.lxmusic.tv.viewmodel.SourceImportPreview
@@ -58,6 +59,7 @@ import com.lxmusic.tv.presentation.theme.LXTextSecondary
 @Composable
 fun SourceManagementScreen(
     sources: List<MusicSource>,
+    declaredActions: List<SourceActionOption> = emptyList(),
     serverRunning: Boolean,
     serverUrl: String?,
     onToggleServer: () -> Unit,
@@ -189,6 +191,14 @@ fun SourceManagementScreen(
                 )
             }
 
+            // 已啟用音源明確宣告的 Action 能力清單；不預設任何平台或 Action 名稱。
+            item {
+                DeclaredSourceActionsCard(
+                    actions = declaredActions,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
             // 2.9 播放失败尝试切换平台开关（开启后 JS 源解析失败时自动用同一源尝试其他平台版本）
             item {
                 PlatformSwitchCard(
@@ -255,6 +265,81 @@ fun SourceManagementScreen(
         }
 
         }
+}
+
+/**
+ * 顯示目前已啟用音源明確宣告的 Action。
+ * 此處只呈現能力，不推測請求參數或直接執行未知 Action。
+ */
+@Composable
+private fun DeclaredSourceActionsCard(
+    actions: List<SourceActionOption>,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier,
+        colors = CardDefaults.cardColors(containerColor = LXCardDark),
+        shape = RoundedCornerShape(12.dp)
+    ) {
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            Text(
+                text = "音源擴充能力",
+                fontSize = 19.sp,
+                fontWeight = FontWeight.Bold,
+                color = LXOnCardDark
+            )
+            Text(
+                text = "以下只列出音源腳本實際宣告的 Action；不同音源可支援不同功能。",
+                fontSize = 13.sp,
+                color = LXOnCardDarkSecondary
+            )
+            if (actions.isEmpty()) {
+                Text(
+                    text = "目前沒有已啟用音源宣告可用的 Action",
+                    fontSize = 14.sp,
+                    color = LXOnCardDarkSecondary
+                )
+            } else {
+                actions.groupBy { Triple(it.sourceId, it.sourceName, it.platformKey to it.platformName) }
+                    .forEach { (group, entries) ->
+                        Column(
+                            modifier = Modifier.fillMaxWidth()
+                                .background(LXSurfaceVariant, RoundedCornerShape(8.dp))
+                                .padding(12.dp),
+                            verticalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            Text(
+                                text = "${group.second} · ${group.third.second} (${group.third.first})",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = LXTextPrimary
+                            )
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                entries.forEach { entry ->
+                                    Surface(
+                                        color = LXPrimary.copy(alpha = 0.14f),
+                                        shape = RoundedCornerShape(6.dp)
+                                    ) {
+                                        Text(
+                                            text = entry.action,
+                                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                                            fontSize = 12.sp,
+                                            color = LXTextPrimary
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+            }
+        }
+    }
 }
 
 /**
