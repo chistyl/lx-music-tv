@@ -396,10 +396,6 @@ class SourceManagerImpl(
 
         // 平台必須是有效平台，且音源必須在 JS 腳本 metadata 的 sources 中明確宣告支援。
         if (source.isBlank()) return SourceExecutionResult.Error("音樂平台代碼不可為空")
-        val platformInfo = getSourcePlatforms(sourceId ?: getEnabledSource()?.id.orEmpty())
-        if (sourceId != null && source !in platformInfo) {
-            return SourceExecutionResult.Error("指定的播放源未宣告支援平台：$source")
-        }
         val targetSource = if (sourceId != null) {
             val requestedSource = getSourceById(sourceId)
                 ?: return SourceExecutionResult.Error("指定的播放源不存在")
