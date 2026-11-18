@@ -441,7 +441,7 @@ class MusicSearchService(
         val sourceCode = song.platform.key
         // 先过滤本轮已失败源，得到实际要尝试的候选列表（保持导入顺序），便于取「下一个源」名称。
         // 2.8 双保险：getSourcesForPlatform 可能因源 id 变化/平台配置缺失把不支持平台的源误判为全平台，
-        // 遍历时再显式校验一次「空配置=全平台 或 含当前平台」，避免未勾选平台的源被尝试
+        // 遍历时再显式校验一次「必須明確宣告支援目前平台」，避免未勾选平台的源被尝试
         val candidates = sourceManager.getSourcesForPlatform(sourceCode)
             .filter { it.id !in excludeSourceIds }
             .filter { source ->
@@ -450,7 +450,7 @@ class MusicSearchService(
                 } catch (e: kotlin.coroutines.cancellation.CancellationException) { throw e } catch (e: Exception) {
                     emptySet()
                 }
-                platforms.isEmpty() || platforms.contains(sourceCode)
+                platforms.contains(sourceCode)
             }
         candidates.forEachIndexed { index, source ->
             // 2.8 开始尝试前回调（UI 展示「正在尝试源 X」，避免聚合源长等待无反馈）
@@ -501,7 +501,7 @@ class MusicSearchService(
 
     /**
      * 2.9 平台切换：JS 源对当前平台解析失败后，用同一源尝试解析该歌曲在其他平台的版本。
-     * 目标平台 = 该源配置的平台（getSourcePlatforms，空集合=全部）- 当前平台 - 咪咕（禁用），
+     * 目標平台 = 該源明確宣告支援的平台 - 當前平台 - 咪咕（禁用），
      * 按优先级 QQ > 网易云 > 酷狗 > 酷我。用内置搜索按「歌名 歌手」找目标平台同名版本
      * （必须取该平台自己的歌曲 id，否则源拿错平台的 id 去解析必然失败），再调同一 JS 源解析。
      * 成功时 URL 缓存写原歌曲 key（平台|歌曲id|音质）——缓存锚定歌曲身份，平台切换不分裂缓存。
@@ -517,7 +517,7 @@ class MusicSearchService(
         val configured = sourceManager.getSourcePlatforms(source.id)
         val curKey = song.platform.key
         val targets = PLATFORM_SWITCH_PRIORITY.filter { p ->
-            p.key != curKey && (configured.isEmpty() || configured.contains(p.key))
+            p.key != curKey && configured.contains(p.key)
         }
         if (targets.isEmpty()) return null
 
