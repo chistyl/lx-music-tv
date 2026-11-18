@@ -491,6 +491,7 @@ fun LXMusicApp() {
             val sources by viewModel.sources.collectAsState()
             val serverRunning by viewModel.serverRunning.collectAsState()
             val serverUrl by viewModel.serverUrl.collectAsState()
+            val sourceImportPreview by viewModel.sourceImportPreview.collectAsState()
             val context = LocalContext.current
             // 2.9 播放失败尝试切换平台开关状态（Compose state 驱动 UI 即时刷新，见下方注释）
             val platformSwitchState = remember {
@@ -507,7 +508,10 @@ fun LXMusicApp() {
                 onToggleServer = { viewModel.toggleServer() },
                 onToggleSource = { sourceId, enabled -> viewModel.toggleSource(sourceId, enabled) },
                 onDeleteSource = { sourceId -> viewModel.deleteSource(sourceId) },
-                onImportSourceFromUrl = { url -> viewModel.importSourceFromUrl(url) },
+                onPreviewSourceFromUrl = { url -> viewModel.previewSourceFromUrl(url) },
+                sourceImportPreview = sourceImportPreview,
+                onConfirmImportSource = { viewModel.confirmImportSourcePreview() },
+                onCancelImportPreview = { viewModel.cancelSourceImportPreview() },
                 onBack = { navController.popBackStack() },
                 // 2.8 返回按钮按右键 → 聚焦右上角悬浮播放球
                 onFocusFloatingBall = { floatingBallRequester.requestFocus() },
