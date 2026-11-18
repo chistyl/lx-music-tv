@@ -288,6 +288,35 @@ class SourceManagerImpl(
         return options.values.toList()
     }
     /**
+     * 取得指定平台所有已啟用音源明確宣告的 Action。
+     * 不將排行榜、歌單等功能名稱硬編碼成必備能力；由呼叫端依實際 Action 名稱處理。
+     */
+    fun getDeclaredActionsForPlatform(platformKey: String): List<SourceActionOption> {
+        if (platformKey.isBlank()) return emptyList()
+        val options = mutableListOf<SourceActionOption>()
+        getEnabledSources().forEach { source ->
+            val parsed = parser.parse(source.scriptContent)
+            if (parsed is ParseResult.Success) {
+                val platform = parsed.declaredPlatforms[platformKey] ?: return@forEach
+                platform.actions.distinct().forEach { action ->
+                    if (action.isNotBlank()) {
+                        options.add(
+                            SourceActionOption(
+                                sourceId = source.id,
+                                sourceName = source.name,
+                                platformKey = platformKey,
+                                platformName = platform.name,
+                                action = action
+                            )
+                        )
+                    }
+                }
+            }
+        }
+        return options
+    }
+
+    /**
      * 依照音源腳本宣告的平台取得音源（包含尚未啟用者，供管理/診斷使用）。
      */
     fun getSourcesByPlatform(platform: MusicPlatform): List<MusicSource> {
