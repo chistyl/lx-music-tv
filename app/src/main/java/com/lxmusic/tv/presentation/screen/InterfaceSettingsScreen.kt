@@ -77,7 +77,7 @@ fun InterfaceSettingsScreen(
                 }
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "界面设置",
+                    text = "介面設定",
                     fontSize = 28.sp,
                     fontWeight = FontWeight.Bold,
                     color = LXTextPrimary
@@ -243,7 +243,7 @@ private fun ThemeColorCard(
             if (selected) {
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
-                    text = "已选择",
+                    text = "已選擇",
                     fontSize = 11.sp,
                     color = LXOnCardDarkSecondary
                 )
