@@ -22,3 +22,9 @@
 - Build debug and release APKs.
 - Verify API 28 install/launch and remote focus navigation on an Android 9 TV.
 - Verify audio playback, background service, lyric sync, and search/source flows.
+
+
+## R1 source and update policy
+- Remove per-source manual platform binding from the TV UI and HTTP source manager.
+- Resolve enabled source candidates only from the platforms declared by each source script; keep enabled-order fallback priority.
+- The R1 source tree contains no app-update checker, update notification, or in-app update-download flow. Keep the APK version metadata required by Android; do not show update prompts.

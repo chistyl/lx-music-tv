@@ -205,8 +205,6 @@ class HttpServer(
                     .btn-secondary { background: rgba(255, 255, 255, 0.2); color: white; }
                     .btn-danger { background: #e74c3c; color: white; }
                     .btn-danger:hover { background: #c0392b; }
-                    .btn-platform { background: rgba(79, 195, 247, 0.25); color: #4fc3f7; }
-                    .btn-platform:hover { background: rgba(79, 195, 247, 0.4); }
                     .platform-tag {
                         display: inline-block; padding: 2px 8px; margin-right: 6px;
                         border-radius: 10px; font-size: 0.78em;
@@ -227,12 +225,10 @@ class HttpServer(
                         display: flex; align-items: center; gap: 12px; padding: 12px 14px; margin-bottom: 8px;
                         background: rgba(255, 255, 255, 0.06); border-radius: 8px; cursor: pointer; user-select: none;
                     }
-                    .platform-check:hover { background: rgba(255, 255, 255, 0.12); }
                     .platform-check .checkbox {
                         width: 20px; height: 20px; border-radius: 4px; border: 2px solid #666; flex-shrink: 0;
                         display: flex; align-items: center; justify-content: center; font-size: 13px; color: white;
                     }
-                    .platform-check.checked .checkbox { background: #ff6b6b; border-color: #ff6b6b; }
                     .modal-actions { display: flex; gap: 12px; margin-top: 18px; }
                     .modal-actions .btn { flex: 1; padding: 10px; }
                     .status-bar {
