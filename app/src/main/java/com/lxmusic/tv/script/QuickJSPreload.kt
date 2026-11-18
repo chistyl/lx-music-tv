@@ -324,7 +324,12 @@ object QuickJSPreload {
       holder.done = true;
       holder.value = value;
       // 字串維持原值（播放 URL／歌詞相容）；物件與陣列轉成 JSON，供瀏覽資料層解析。
-      var serialized = (typeof value === 'string') ? value : JSON.stringify(value);
+      var serialized;
+      try {
+        serialized = (typeof value === 'string') ? value : JSON.stringify(value);
+      } catch (e) {
+        serialized = String(value);
+      }
       holder.valueString = (serialized === undefined) ? String(value) : serialized;
       holder.error = error;
     }
