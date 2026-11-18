@@ -60,6 +60,7 @@ fun SourceManagementScreen(
     onToggleServer: () -> Unit,
     onToggleSource: (String, Boolean) -> Unit,
     onDeleteSource: (String) -> Unit,
+    onImportSourceFromUrl: (String) -> Unit = {},
     onBack: () -> Unit,
     // 2.8 返回按钮按「右键」→ 聚焦右上角悬浮播放球（悬浮层空间焦点导航不可达，需显式桥接）
     onFocusFloatingBall: () -> Unit = {},
@@ -69,6 +70,7 @@ fun SourceManagementScreen(
     modifier: Modifier = Modifier
 ) {
     var showDeleteDialog by remember { mutableStateOf<MusicSource?>(null) }
+    var showImportDialog by remember { mutableStateOf(false) }
     // 播放源排序：启用的源按「启用顺序」排前面（优先级从高到低，先启用优先），未启用的按导入顺序排后面
     val orderedSources = remember(sources) {
         val enabled = sources.filter { it.isEnabled }
@@ -143,12 +145,23 @@ fun SourceManagementScreen(
                     Spacer(modifier = Modifier.width(16.dp))
 
                     Text(
-                        text = "播放源管理",
+                        text = "音源管理",
                         fontSize = 28.sp,
                         fontWeight = FontWeight.Bold,
-                        // 2.5 浅色主题：浅底深色标题
                         color = LXTextPrimary
                     )
+                    Spacer(modifier = Modifier.weight(1f))
+                    Button(
+                        onClick = { showImportDialog = true },
+                        modifier = Modifier
+                            .height(48.dp)
+                            .lxSelectorFocus(shape = RoundedCornerShape(12.dp), glow = false, animated = false),
+                        colors = ButtonDefaults.buttonColors(containerColor = LXPrimary)
+                    ) {
+                        Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(20.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("新增音源", fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
+                    }
                 }
             }
 
@@ -197,7 +210,17 @@ fun SourceManagementScreen(
             }
         }
 
-        // 删除确认对话框
+        if (showImportDialog) {
+            ImportSourceDialog(
+                onImport = { url ->
+                    onImportSourceFromUrl(url)
+                    showImportDialog = false
+                },
+                onDismiss = { showImportDialog = false }
+            )
+        }
+
+        // 刪除確認對話框
         showDeleteDialog?.let { source ->
             DeleteConfirmDialog(
                 sourceName = source.name,
@@ -560,6 +583,92 @@ fun DeleteConfirmDialog(
             }
         },
         // 2.5 浅色主题：灰白底对话框（LXSurfaceDialog #F0F0F2）+ 深色文字
+        containerColor = LXSurfaceDialog,
+        titleContentColor = LXTextPrimary,
+        textContentColor = LXTextPrimary
+    )
+}
+
+/**
+ * 洛雪音源匯入對話框：以遙控器可操作的單一網址欄位完成匯入。
+ * 文字欄位優先取得焦點，確認/取消均可使用方向鍵切換。
+ */
+@Composable
+fun ImportSourceDialog(
+    onImport: (String) -> Unit,
+    onDismiss: () -> Unit
+) {
+    var sourceUrl by remember { mutableStateOf("") }
+    val urlFocusRequester = remember { FocusRequester() }
+
+    LaunchedEffect(Unit) {
+        urlFocusRequester.requestFocus()
+    }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = "導入洛雪音源",
+                fontWeight = FontWeight.Bold,
+                color = LXTextPrimary
+            )
+        },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text(
+                    text = "輸入音源 JS 腳本的直連網址。匯入後會自動解析音源名稱、版本、作者及支援平台。",
+                    color = LXTextSecondary,
+                    fontSize = 14.sp
+                )
+                OutlinedTextField(
+                    value = sourceUrl,
+                    onValueChange = { sourceUrl = it },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .focusRequester(urlFocusRequester),
+                    singleLine = true,
+                    label = { Text("音源網址") },
+                    placeholder = { Text("https://.../source.js") },
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = LXPrimary,
+                        cursorColor = LXPrimary
+                    )
+                )
+                Text(
+                    text = "也可啟動下方 HTTP 伺服器，再用手機或電腦上傳 JS 音源檔。",
+                    color = LXTextSecondary,
+                    fontSize = 12.sp
+                )
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = { onImport(sourceUrl.trim()) },
+                enabled = sourceUrl.trim().startsWith("https://", true) ||
+                    sourceUrl.trim().startsWith("http://", true),
+                modifier = Modifier.lxSelectorFocus(
+                    shape = RoundedCornerShape(10.dp),
+                    glow = false,
+                    animated = false
+                ),
+                colors = ButtonDefaults.buttonColors(containerColor = LXPrimary)
+            ) {
+                Text("匯入音源")
+            }
+        },
+        dismissButton = {
+            OutlinedButton(
+                onClick = onDismiss,
+                modifier = Modifier.lxSelectorFocus(
+                    shape = RoundedCornerShape(10.dp),
+                    glow = false,
+                    animated = false
+                )
+            ) {
+                Text("取消", color = LXTextPrimary)
+            }
+        },
         containerColor = LXSurfaceDialog,
         titleContentColor = LXTextPrimary,
         textContentColor = LXTextPrimary
