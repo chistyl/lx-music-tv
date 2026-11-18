@@ -105,7 +105,7 @@ fun MainScreen(
     onNavigateToSettings: () -> Unit,
     onNavigateToSourceManagement: () -> Unit,
     onNavigateToInterfaceSettings: () -> Unit = {},
-    // 2.8 缓存管理独立子页面
+    // 2.8 快取管理独立子页面
     onNavigateToCacheManage: () -> Unit = {},
     onNavigateToPlayer: () -> Unit = {},
     currentSong: com.lxmusic.tv.data.model.Song? = null,
@@ -115,7 +115,7 @@ fun MainScreen(
     onDefaultPlatformChange: (MusicPlatform) -> Unit = {},
     preferredQuality: AudioQuality = AudioQuality.FLAC,
     onPreferredQualityChange: (AudioQuality) -> Unit = {},
-    // 2.8 歌词设置：是否显示翻译歌词
+    // 2.8 歌詞設定：是否顯示翻譯歌詞
     lyricTranslationEnabled: Boolean = true,
     onLyricTranslationEnabledChange: (Boolean) -> Unit = {},
     browseItems: List<BrowseItem> = emptyList(),
@@ -153,7 +153,7 @@ fun MainScreen(
     cachedSongsLoading: Boolean = false,
     onPlayCachedSong: (com.lxmusic.tv.data.cache.CacheManager.CachedSongItem) -> Unit = {},
     onDeleteCachedSong: (com.lxmusic.tv.data.cache.CacheManager.CachedSongItem) -> Unit = {},
-    // 2.9 启动默认页面（0搜索/1歌单/2排行/3收藏/4本地/5设置），默认选择歌单(1)
+    // 2.9 啟動預設頁面（0搜索/1歌单/2排行/3收藏/4本地/5设置），默认选择歌单(1)
     defaultStartupTab: Int = 1,
     onDefaultStartupTabChange: (Int) -> Unit = {},
     // ===== 搜索页（2.6 起内嵌为 tab，保留左侧导航栏，不再跳转独立页面）=====
@@ -169,9 +169,9 @@ fun MainScreen(
     onSearchPlaylist: (String, MusicPlatform) -> Unit = { _, _ -> },
     onSearchTypeChange: (SearchType) -> Unit = {},
     onClearSearchHistory: () -> Unit = {},
-    // 2.8 HTTP 服务器地址（搜索页扫码推送弹窗用；null=未开启服务器）
+    // 2.8 HTTP 服务器地址（搜索页扫码推送弹窗用；null=未開啟服务器）
     serverUrl: String? = null,
-    // 2.8 HTTP 未开启时点二维码 → 询问是否启用（调用方负责启动服务器）
+    // 2.8 HTTP 未開啟时点二维码 → 询问是否启用（调用方负责启动服务器）
     onEnableServer: () -> Unit = {},
     // 当前选中 tab（由外部持有，导航子页面后返回时保持 tab 不重置，默认歌单 1）
     selectedTab: Int = 1,
@@ -190,7 +190,7 @@ fun MainScreen(
     // 2.9 共 6 个 tab（0歌单/1排行/2收藏/3本地/4搜索/5设置）
     val navRequesters = remember { List(6) { FocusRequester() } }
     val contentEnterRequester = remember { FocusRequester() }
-    // rememberSaveable：从子路由（播放源管理/界面设置等）返回时 main 重新组合，
+    // rememberSaveable：从子路由（音源管理/介面設定等）返回时 main 重新组合，
     // 若用普通 remember 会重置导致 LaunchedEffect 再次抢焦点到「歌单」tab
     var navInitialFocusRequested by rememberSaveable { mutableStateOf(false) }
     // 从子路由返回的信号：递增后通知当前 tab 页面恢复内容焦点（如设置页回到点击的卡片）
@@ -227,7 +227,7 @@ fun MainScreen(
                 markAttempted = { navInitialFocusRequested = true }
             )
         } else {
-            // 从子路由返回（播放页/设置二级页/缓存管理等）：
+            // 从子路由返回（播放页/设置二级页/快取管理等）：
             // 立即聚焦当前选中 tab，消除「重新组合后焦点空白 → 按键从侧栏 logo 乱跳」的问题；
             // 设置页等有内容恢复逻辑的 tab 会随后经 contentRestoreTick 抢回内容焦点
             contentRestoreTick++
@@ -258,9 +258,9 @@ fun MainScreen(
                 onTabSelected = onTabSelected,
                 navRequesters = navRequesters,
                 contentEnterRequester = contentEnterRequester,
-                // Logo 下方展示当前默认音乐平台
+                // Logo 下方展示当前預設音樂平台
                 platform = defaultPlatform,
-                // 2.8 Logo 点击 → 下拉菜单选择平台（选中即切换默认音乐平台）
+                // 2.8 Logo 点击 → 下拉菜单选择平台（选中即切换預設音樂平台）
                 onPlatformSelect = onDefaultPlatformChange,
                 // 2.8 Logo 焦点状态上报：记录聚焦时刻，兜底判断「系统分配 vs 用户按键」
                 onLogoFocusChanged = { focused ->
@@ -314,7 +314,7 @@ fun MainScreen(
                 onDefaultPlatformChange = onDefaultPlatformChange,
                 preferredQuality = preferredQuality,
                 onPreferredQualityChange = onPreferredQualityChange,
-                // 2.8 歌词设置
+                // 2.8 歌詞設定
                 lyricTranslationEnabled = lyricTranslationEnabled,
                 onLyricTranslationEnabledChange = onLyricTranslationEnabledChange,
                 browseItems = browseItems,
@@ -350,7 +350,7 @@ fun MainScreen(
                 cachedSongsLoading = cachedSongsLoading,
                 onPlayCachedSong = onPlayCachedSong,
                 onDeleteCachedSong = onDeleteCachedSong,
-                // 2.9 启动默认页面
+                // 2.9 啟動預設頁面
                 defaultStartupTab = defaultStartupTab,
                 onDefaultStartupTabChange = onDefaultStartupTabChange,
                 modifier = Modifier
@@ -369,9 +369,9 @@ fun NavigationSidebar(
     onTabSelected: (Int) -> Unit,
     navRequesters: List<FocusRequester>,
     contentEnterRequester: FocusRequester,
-    // 当前默认音乐平台（Logo 下方展示）
+    // 当前預設音樂平台（Logo 下方展示）
     platform: MusicPlatform = MusicPlatform.KW,
-    // 2.8 Logo 点击 → 下拉菜单选择平台（选中即切换默认音乐平台）
+    // 2.8 Logo 点击 → 下拉菜单选择平台（选中即切换預設音樂平台）
     onPlatformSelect: (MusicPlatform) -> Unit = {},
     // 2.8 Logo 焦点状态上报（MainScreen 用于「系统默认分配落 logo 时移回当前 tab」的兜底）
     onLogoFocusChanged: (Boolean) -> Unit = {},
@@ -422,7 +422,7 @@ fun NavigationSidebar(
         // 焦点样式与下方 tab 项（NavigationItem）完全一致：聚焦 LXFocusFill 背景 + 同款边框，
         // modifier 顺序也对齐（lxFocusBorder 在 clickable 之前）
         var logoFocused by remember { mutableStateOf(false) }
-        // 2.8 下拉菜单展开状态（点击 logo 弹出，选中/失焦关闭）
+        // 2.8 下拉菜单展开状态（点击 logo 弹出，选中/失焦關閉）
         var logoMenuExpanded by remember { mutableStateOf(false) }
         val logoBgColor = if (logoFocused) LXFocusFill else Color.Transparent
         Box {
@@ -453,7 +453,7 @@ fun NavigationSidebar(
                     contentDescription = "LX Music",
                     modifier = Modifier.size(32.dp)
                 )
-                // 当前默认音乐平台（短名，如 酷狗/QQ）
+                // 当前預設音樂平台（短名，如 酷狗/QQ）
                 Text(
                     text = platformShortName(platform),
                     fontSize = 10.sp,
@@ -763,7 +763,7 @@ fun MainContent(
     onNavigateToSettings: () -> Unit,
     onNavigateToSourceManagement: () -> Unit,
     onNavigateToInterfaceSettings: () -> Unit = {},
-    // 2.8 缓存管理独立子页面
+    // 2.8 快取管理独立子页面
     onNavigateToCacheManage: () -> Unit = {},
     // ===== 搜索页内嵌参数（2.6：tab 内容区直接渲染搜索页，保留左侧导航栏）=====
     searchQuery: String = "",
@@ -778,15 +778,15 @@ fun MainContent(
     onSearchPlaylist: (String, MusicPlatform) -> Unit = { _, _ -> },
     onSearchTypeChange: (SearchType) -> Unit = {},
     onClearSearchHistory: () -> Unit = {},
-    // 2.8 HTTP 服务器地址（搜索页扫码推送弹窗用；null=未开启服务器）
+    // 2.8 HTTP 服务器地址（搜索页扫码推送弹窗用；null=未開啟服务器）
     serverUrl: String? = null,
-    // 2.8 HTTP 未开启时点二维码 → 询问是否启用（调用方负责启动服务器）
+    // 2.8 HTTP 未開啟时点二维码 → 询问是否启用（调用方负责启动服务器）
     onEnableServer: () -> Unit = {},
     defaultPlatform: MusicPlatform = MusicPlatform.KW,
     onDefaultPlatformChange: (MusicPlatform) -> Unit = {},
     preferredQuality: AudioQuality = AudioQuality.FLAC,
     onPreferredQualityChange: (AudioQuality) -> Unit = {},
-    // 2.8 歌词设置：是否显示翻译歌词
+    // 2.8 歌詞設定：是否顯示翻譯歌詞
     lyricTranslationEnabled: Boolean = true,
     onLyricTranslationEnabledChange: (Boolean) -> Unit = {},
     browseItems: List<BrowseItem> = emptyList(),
@@ -824,7 +824,7 @@ fun MainContent(
     cachedSongsLoading: Boolean = false,
     onPlayCachedSong: (com.lxmusic.tv.data.cache.CacheManager.CachedSongItem) -> Unit = {},
     onDeleteCachedSong: (com.lxmusic.tv.data.cache.CacheManager.CachedSongItem) -> Unit = {},
-    // 2.9 启动默认页面（0搜索/1歌单/2排行/3收藏/4本地/5设置），默认选择歌单(1)
+    // 2.9 啟動預設頁面（0搜索/1歌单/2排行/3收藏/4本地/5设置），默认选择歌单(1)
     defaultStartupTab: Int = 1,
     onDefaultStartupTabChange: (Int) -> Unit = {},
     modifier: Modifier = Modifier
@@ -951,21 +951,21 @@ fun MainContent(
             5 -> SettingsScreen(
                 onNavigateToSourceManagement = onNavigateToSourceManagement,
                 onNavigateToInterfaceSettings = onNavigateToInterfaceSettings,
-                // 2.8 缓存管理独立子页面
+                // 2.8 快取管理独立子页面
                 onNavigateToCacheManage = onNavigateToCacheManage,
                 defaultPlatform = defaultPlatform,
                 onDefaultPlatformChange = onDefaultPlatformChange,
                 preferredQuality = preferredQuality,
                 onPreferredQualityChange = onPreferredQualityChange,
-                // 2.8 歌词设置
+                // 2.8 歌詞設定
                 lyricTranslationEnabled = lyricTranslationEnabled,
                 onLyricTranslationEnabledChange = onLyricTranslationEnabledChange,
-                // 2.9 启动默认页面
+                // 2.9 啟動預設頁面
                 defaultStartupTab = defaultStartupTab,
                 onDefaultStartupTabChange = onDefaultStartupTabChange,
-                // 2.8 异常日志导出弹窗需要服务器地址
+                // 2.8 異常記錄导出弹窗需要服务器地址
                 serverUrl = serverUrl,
-                // 2.8 异常日志：HTTP 未开启时询问是否启用
+                // 2.8 異常記錄：HTTP 未開啟时询问是否启用
                 onEnableServer = onEnableServer,
                 contentEnterRequester = contentEnterRequester,
                 onExitToNav = { navRequesters[selectedTab].requestFocus() },
@@ -1343,7 +1343,7 @@ fun BrowsePage(
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     CircularProgressIndicator(color = LXPrimary)
                     Spacer(modifier = Modifier.height(16.dp))
-                    Text(text = "加载中...", fontSize = 15.sp, color = Color.Gray)
+                    Text(text = "載入中...", fontSize = 15.sp, color = Color.Gray)
                 }
             }
         } else if (directSongs && loading && songs.isEmpty()) {
@@ -1355,7 +1355,7 @@ fun BrowsePage(
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     CircularProgressIndicator(color = LXPrimary)
                     Spacer(modifier = Modifier.height(16.dp))
-                    Text(text = "加载中...", fontSize = 15.sp, color = Color.Gray)
+                    Text(text = "載入中...", fontSize = 15.sp, color = Color.Gray)
                 }
             }
         } else if (selected == null && !directSongs) {
@@ -1374,13 +1374,13 @@ fun BrowsePage(
                         )
                         Spacer(modifier = Modifier.height(12.dp))
                         Text(
-                            text = "该平台暂不支持或暂无数据",
+                            text = "此平台暫不支援或目前沒有資料",
                             fontSize = 16.sp,
                             color = Color.Gray
                         )
                         Spacer(modifier = Modifier.height(6.dp))
                         Text(
-                            text = "可在设置中切换默认音乐平台",
+                            text = "可在設定中切換預設音樂平台",
                             fontSize = 13.sp,
                             color = Color.Gray.copy(alpha = 0.7f)
                         )
@@ -1458,7 +1458,7 @@ fun BrowsePage(
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             CircularProgressIndicator(color = LXPrimary)
                             Spacer(modifier = Modifier.height(16.dp))
-                            Text(text = "加载中...", fontSize = 15.sp, color = Color.Gray)
+                            Text(text = "載入中...", fontSize = 15.sp, color = Color.Gray)
                         }
                     }
                 }
@@ -1478,13 +1478,13 @@ fun BrowsePage(
                             Spacer(modifier = Modifier.height(12.dp))
                             Text(
                                 // 超时/异常失败（browseSongsError）与平台不支持/空歌单区分展示
-                                text = browseSongsError ?: "暂不支持获取歌曲列表",
+                                text = browseSongsError ?: "目前不支援取得歌曲清單",
                                 fontSize = 16.sp,
                                 color = Color.Gray
                             )
                             Spacer(modifier = Modifier.height(6.dp))
                             Text(
-                                text = if (browseSongsError != null) "可返回重试" else "可在设置中切换默认音乐平台",
+                                text = if (browseSongsError != null) "可返回重試" else "可在設定中切換預設音樂平台",
                                 fontSize = 13.sp,
                                 color = Color.Gray.copy(alpha = 0.7f)
                             )
@@ -1558,7 +1558,7 @@ fun BrowseCard(
     Card(
         // 根节点挂 onFocusChanged：本卡片获得焦点即上报其序号，用于「焦点接近网格末尾时触发加载更多」。
         modifier = modifier.onFocusChanged { if (it.hasFocus) onCardFocused(index) }
-            // 网格卡片密集排列，滚动时焦点快速移动；关闭发光与过渡动画，避免逐卡跑阴影动画导致首页滚动掉帧
+            // 网格卡片密集排列，滚动时焦点快速移动；關閉发光与过渡动画，避免逐卡跑阴影动画导致首页滚动掉帧
             .lxFocusBorder(shape = RoundedCornerShape(12.dp), glow = false, animated = false)
             // 列表首项承载「从导航栏右键进入」的焦点请求器
             .then(if (contentEnterRequester != null) Modifier.focusRequester(contentEnterRequester) else Modifier)
@@ -1873,47 +1873,47 @@ private fun formatDuration(durationMs: Long): String {
 fun SettingsScreen(
     onNavigateToSourceManagement: () -> Unit,
     onNavigateToInterfaceSettings: () -> Unit = {},
-    // 2.8 缓存管理改为独立子页面
+    // 2.8 快取管理改为独立子页面
     onNavigateToCacheManage: () -> Unit = {},
     defaultPlatform: MusicPlatform = MusicPlatform.KW,
     onDefaultPlatformChange: (MusicPlatform) -> Unit = {},
     preferredQuality: AudioQuality = AudioQuality.FLAC,
     onPreferredQualityChange: (AudioQuality) -> Unit = {},
-    // 2.8 歌词设置：是否显示翻译歌词
+    // 2.8 歌詞設定：是否顯示翻譯歌詞
     lyricTranslationEnabled: Boolean = true,
     onLyricTranslationEnabledChange: (Boolean) -> Unit = {},
-    // 2.9 启动默认页面设置（侧栏 Tab 索引：0搜索/1歌单/2排行/3收藏/4本地/5设置），默认选择歌单(1)
+    // 2.9 啟動預設頁面设置（侧栏 Tab 索引：0搜索/1歌单/2排行/3收藏/4本地/5设置），默认选择歌单(1)
     defaultStartupTab: Int = 1,
     onDefaultStartupTabChange: (Int) -> Unit = {},
-    // 2.8 HTTP 服务器地址（异常日志导出弹窗显示 /log 地址；null=未开启服务器）
+    // 2.8 HTTP 服务器地址（異常記錄导出弹窗显示 /log 地址；null=未開啟服务器）
     serverUrl: String? = null,
-    // 2.8 HTTP 未开启时点异常日志 → 询问是否启用（调用方负责启动服务器，如 viewModel.startServer）
+    // 2.8 HTTP 未開啟时点異常記錄 → 询问是否启用（调用方负责启动服务器，如 viewModel.startServer）
     onEnableServer: () -> Unit = {},
     contentEnterRequester: FocusRequester,
     onExitToNav: () -> Unit,
     // 重复点击 tab 刷新信号：>0 且变化时滚动回顶部
     refreshTick: Int = 0,
-    // 从子路由（播放源管理/界面设置）返回的信号：>0 且变化时恢复焦点到点击的卡片
+    // 从子路由（音源管理/介面設定）返回的信号：>0 且变化时恢复焦点到点击的卡片
     restoreTick: Int = 0,
     modifier: Modifier = Modifier
 ) {
     var showPlatformDialog by remember { mutableStateOf(false) }
     var showQualityDialog by remember { mutableStateOf(false) }
-    // 2.9 启动默认页面设置弹窗
+    // 2.9 啟動預設頁面设置弹窗
     var showStartupTabDialog by remember { mutableStateOf(false) }
-    // 2.8 歌词设置弹窗
+    // 2.8 歌詞設定弹窗
     var showLyricsDialog by remember { mutableStateOf(false) }
     var showAboutDialog by remember { mutableStateOf(false) }
-    // 2.9 设备信息弹窗
+    // 2.9 裝置資訊弹窗
     var showDeviceInfoDialog by remember { mutableStateOf(false) }
-    // 2.8 异常日志导出弹窗
+    // 2.8 異常記錄导出弹窗
     var showLogExportDialog by remember { mutableStateOf(false) }
-    // 2.8 HTTP 未启用询问弹窗开关（异常日志需要 Web 端访问，未开服务器先询问）
+    // 2.8 HTTP 未启用询问弹窗开关（異常記錄需要 Web 端访问，未开服务器先询问）
     var showEnableServerDialog by remember { mutableStateOf(false) }
-    // 2.8 是否在等待服务器启动后自动弹异常日志弹窗（询问弹窗点了「开启」）
+    // 2.8 是否在等待服务器启动后自动弹異常記錄弹窗（询问弹窗点了「開啟」）
     var pendingLogDialogAfterServerStart by remember { mutableStateOf(false) }
 
-    // 2.8 服务器启动完成（serverUrl 变为非空）→ 自动弹出异常日志弹窗
+    // 2.8 服务器启动完成（serverUrl 变为非空）→ 自动弹出異常記錄弹窗
     LaunchedEffect(serverUrl) {
         if (serverUrl != null && pendingLogDialogAfterServerStart) {
             pendingLogDialogAfterServerStart = false
@@ -1926,7 +1926,7 @@ fun SettingsScreen(
 
     // 进入子路由前点击的设置项索引（rememberSaveable：从子路由返回重新组合后仍可恢复）
     var lastClickedIndex by rememberSaveable { mutableIntStateOf(-1) }
-    // 各设置项的焦点请求器（共 10 项：默认音乐平台/播放源管理/启动默认页面/播放设置/歌词设置/界面设置/缓存管理/异常日志/设备信息/关于）
+    // 各设置项的焦点请求器（共 10 项：預設音樂平台/音源管理/啟動預設頁面/播放設定/歌詞設定/介面設定/快取管理/異常記錄/裝置資訊/关于）
     val itemRequesters = remember { List(10) { FocusRequester() } }
 
     // 重复点击「设置」tab：滚动回顶部（仅 tick 真正变化时，避免组件重建误触发）
@@ -1963,8 +1963,8 @@ fun SettingsScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             SettingsItem(
-                title = "默认音乐平台",
-                subtitle = "搜索、歌单、排行、发现使用的音乐平台（当前：${platformShortName(defaultPlatform)}）",
+                title = "預設音樂平台",
+                subtitle = "搜尋、歌單、排行榜、探索使用的音樂平台（目前：${platformShortName(defaultPlatform)}）",
                 icon = Icons.Default.LibraryMusic,
                 onClick = { showPlatformDialog = true },
                 focusRequester = contentEnterRequester,
@@ -1974,8 +1974,8 @@ fun SettingsScreen(
             )
 
             SettingsItem(
-                title = "播放源管理",
-                subtitle = "管理导入的播放源文件",
+                title = "音源管理",
+                subtitle = "管理匯入的音源檔案",
                 icon = Icons.Default.Cloud,
                 onClick = {
                     // 记录点击项：从子路由返回时恢复焦点到本卡片
@@ -1986,12 +1986,12 @@ fun SettingsScreen(
                 onExitToNav = onExitToNav
             )
 
-            // 2.9 启动默认页面设置（搜索/歌单/排行/收藏/本地/设置）
+            // 2.9 啟動預設頁面设置（搜索/歌单/排行/收藏/本地/设置）
             val startupTabNames = listOf("搜索音乐", "歌单广场", "音乐排行榜", "我的收藏", "本地缓存歌曲", "应用设置")
             val currentStartupTabName = startupTabNames.getOrElse(defaultStartupTab) { "歌单广场" }
             SettingsItem(
-                title = "启动默认页面",
-                subtitle = "设置启动应用时默认展示的页面（当前：$currentStartupTabName）",
+                title = "啟動預設頁面",
+                subtitle = "設定啟動應用時預設顯示的頁面（目前：$currentStartupTabName）",
                 icon = Icons.Default.Home,
                 onClick = { showStartupTabDialog = true },
                 extraFocusRequester = itemRequesters[2],
@@ -1999,18 +1999,18 @@ fun SettingsScreen(
             )
 
             SettingsItem(
-                title = "播放设置",
-                subtitle = "优先歌曲音质（当前：${qualityShortName(preferredQuality)}）",
+                title = "播放設定",
+                subtitle = "優先歌曲音質（目前：${qualityShortName(preferredQuality)}）",
                 icon = Icons.Default.Equalizer,
                 onClick = { showQualityDialog = true },
                 extraFocusRequester = itemRequesters[3],
                 onExitToNav = onExitToNav
             )
 
-            // 2.8 歌词设置：显示翻译歌词开关
+            // 2.8 歌詞設定：顯示翻譯歌詞开关
             SettingsItem(
-                title = "歌词设置",
-                subtitle = "是否在播放页显示歌词翻译（当前：${if (lyricTranslationEnabled) "开启" else "关闭"}）",
+                title = "歌詞設定",
+                subtitle = "是否在播放頁顯示歌詞翻譯（目前：${if (lyricTranslationEnabled) "開啟" else "關閉"}）",
                 icon = Icons.Default.Lyrics,
                 onClick = { showLyricsDialog = true },
                 extraFocusRequester = itemRequesters[4],
@@ -2018,8 +2018,8 @@ fun SettingsScreen(
             )
 
             SettingsItem(
-                title = "界面设置",
-                subtitle = "主题模式、主题色等界面相关设置",
+                title = "介面設定",
+                subtitle = "主題模式、主題色等介面相關設定",
                 icon = Icons.Default.Palette,
                 onClick = {
                     // 记录点击项：从子路由返回时恢复焦点到本卡片
@@ -2031,8 +2031,8 @@ fun SettingsScreen(
             )
 
             SettingsItem(
-                title = "缓存管理",
-                subtitle = "查看与清理音频、封面、歌词缓存",
+                title = "快取管理",
+                subtitle = "查看及清理音訊、封面、歌詞快取",
                 icon = Icons.Default.Storage,
                 onClick = {
                     // 2.8 改为独立子页面；记录点击项：从子路由返回时恢复焦点到本卡片
@@ -2043,11 +2043,11 @@ fun SettingsScreen(
                 onExitToNav = onExitToNav
             )
 
-            // 2.8 异常日志导出：弹窗提示 Web 端地址（/log），手机/电脑浏览器查看并导出崩溃与运行日志。
-            // 点击时 HTTP 未开启 → 先询问是否启动，启动完成自动弹导出弹窗
+            // 2.8 異常記錄导出：弹窗提示 Web 端地址（/log），手机/电脑浏览器查看并导出崩溃与运行日志。
+            // 点击时 HTTP 未開啟 → 先询问是否启动，启动完成自动弹导出弹窗
             SettingsItem(
-                title = "异常日志",
-                subtitle = "查看并导出应用崩溃记录与运行日志（Web 端访问）",
+                title = "異常記錄",
+                subtitle = "查看並匯出應用程式當機記錄與執行日誌（透過網頁存取）",
                 icon = Icons.Default.BugReport,
                 onClick = {
                     if (serverUrl != null) {
@@ -2060,10 +2060,10 @@ fun SettingsScreen(
                 onExitToNav = onExitToNav
             )
 
-            // 2.9 设备信息：展示当前设备型号、屏幕物理分辨率、系统版本号、DPI 与自适应大屏视口
+            // 2.9 裝置資訊：展示当前设备型号、屏幕物理分辨率、系统版本号、DPI 与自适应大屏视口
             SettingsItem(
-                title = "设备信息",
-                subtitle = "查看设备型号、屏幕分辨率、系统版本及显示参数",
+                title = "裝置資訊",
+                subtitle = "查看裝置型號、螢幕解析度、系統版本及顯示參數",
                 icon = Icons.Default.Tv,
                 onClick = { showDeviceInfoDialog = true },
                 extraFocusRequester = itemRequesters[8],
@@ -2072,7 +2072,7 @@ fun SettingsScreen(
 
             SettingsItem(
                 title = "关于",
-                subtitle = "版本号、说明等",
+                subtitle = "版本號、說明等",
                 icon = Icons.Default.Info,
                 onClick = { showAboutDialog = true },
                 extraFocusRequester = itemRequesters[9],
@@ -2081,7 +2081,7 @@ fun SettingsScreen(
         }
     }
 
-    // 默认音乐平台选择对话框（电视遥控器友好）
+    // 預設音樂平台选择对话框（电视遥控器友好）
     if (showPlatformDialog) {
         PlatformSelectDialog(
             currentPlatform = defaultPlatform,
@@ -2093,7 +2093,7 @@ fun SettingsScreen(
         )
     }
 
-    // 播放设置：优先音质选择对话框（电视遥控器友好）
+    // 播放設定：优先音质选择对话框（电视遥控器友好）
     if (showQualityDialog) {
         QualitySelectDialog(
             currentQuality = preferredQuality,
@@ -2105,7 +2105,7 @@ fun SettingsScreen(
         )
     }
 
-    // 2.9 启动默认页面选择对话框（电视遥控器友好）
+    // 2.9 啟動預設頁面选择对话框（电视遥控器友好）
     if (showStartupTabDialog) {
         StartupTabSelectDialog(
             currentTab = defaultStartupTab,
@@ -2117,7 +2117,7 @@ fun SettingsScreen(
         )
     }
 
-    // 2.8 歌词设置对话框：显示翻译歌词开关
+    // 2.8 歌詞設定对话框：顯示翻譯歌詞开关
     if (showLyricsDialog) {
         LyricsSettingsDialog(
             translationEnabled = lyricTranslationEnabled,
@@ -2126,7 +2126,7 @@ fun SettingsScreen(
         )
     }
 
-    // 2.9 设备信息对话框：显示设备型号、屏幕物理分辨率、DPI 与自适应视口
+    // 2.9 裝置資訊对话框：显示设备型号、屏幕物理分辨率、DPI 与自适应视口
     if (showDeviceInfoDialog) {
         DeviceInfoDialog(onDismiss = { showDeviceInfoDialog = false })
     }
@@ -2136,15 +2136,15 @@ fun SettingsScreen(
         AboutDialog(onDismiss = { showAboutDialog = false })
     }
 
-    // 2.8 异常日志需要 Web 端访问：HTTP 未开启时询问是否启用（与搜索页扫码推送交互一致），
-    // 确认后启动服务器，serverUrl 更新 → LaunchedEffect 自动弹出异常日志弹窗
+    // 2.8 異常記錄需要 Web 端访问：HTTP 未開啟时询问是否启用（与搜索页扫码推送交互一致），
+    // 确认后启动服务器，serverUrl 更新 → LaunchedEffect 自动弹出異常記錄弹窗
     if (showEnableServerDialog) {
         AlertDialog(
             onDismissRequest = { showEnableServerDialog = false },
             containerColor = LXSurfaceDialog,
             title = {
                 Text(
-                    text = "开启 HTTP 服务器？",
+                    text = "開啟 HTTP 服务器？",
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
                     color = LXTextPrimary
@@ -2152,7 +2152,7 @@ fun SettingsScreen(
             },
             text = {
                 Text(
-                    text = "异常日志需要 HTTP 服务器支持。开启后手机/电脑浏览器打开 /log 页面，即可查看并导出应用崩溃记录与运行日志。",
+                    text = "異常記錄需要 HTTP 服务器支持。開啟后手机/电脑浏览器打开 /log 页面，即可查看并导出应用崩溃记录与运行日志。",
                     fontSize = 14.sp,
                     color = LXTextSecondary
                 )
@@ -2163,7 +2163,7 @@ fun SettingsScreen(
                     pendingLogDialogAfterServerStart = true
                     onEnableServer()
                 }) {
-                    Text("开启", color = LXPrimary, fontWeight = FontWeight.Bold)
+                    Text("開啟", color = LXPrimary, fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
@@ -2174,7 +2174,7 @@ fun SettingsScreen(
         )
     }
 
-    // 2.8 异常日志导出对话框：提示 Web 端地址（/log）
+    // 2.8 異常記錄导出对话框：提示 Web 端地址（/log）
     if (showLogExportDialog) {
         LogExportDialog(
             serverUrl = serverUrl,
@@ -2184,21 +2184,21 @@ fun SettingsScreen(
 }
 
 /**
- * 2.8 异常日志导出对话框：开启 HTTP 服务器后，手机/电脑浏览器访问 http://电视IP:5777/log
- * 查看并导出应用异常日志（崩溃记录 crash.log + 运行日志 logcat）。
+ * 2.8 異常記錄导出对话框：開啟 HTTP 服务器后，手机/电脑浏览器访问 http://电视IP:5777/log
+ * 查看并导出应用異常記錄（崩溃记录 crash.log + 运行日志 logcat）。
  */
 @Composable
 fun LogExportDialog(
     serverUrl: String?,
     onDismiss: () -> Unit
 ) {
-    val logUrl = serverUrl?.let { "$it/log" } ?: "需先开启 HTTP 服务器"
+    val logUrl = serverUrl?.let { "$it/log" } ?: "需先開啟 HTTP 服务器"
     AlertDialog(
         onDismissRequest = onDismiss,
         containerColor = LXSurfaceDialog,
         title = {
             Text(
-                text = "异常日志导出",
+                text = "異常記錄导出",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
                 color = LXTextPrimary
@@ -2210,7 +2210,7 @@ fun LogExportDialog(
                 verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
                 Text(
-                    text = "开启 HTTP 服务器后，用手机/电脑浏览器打开下方地址，可查看并导出应用异常日志（崩溃记录 + 运行日志）。加 ?download=1 可直接下载日志文件。",
+                    text = "開啟 HTTP 服务器后，用手机/电脑浏览器打开下方地址，可查看并导出应用異常記錄（崩溃记录 + 运行日志）。加 ?download=1 可直接下载日志文件。",
                     fontSize = 13.sp,
                     color = LXTextSecondary
                 )
@@ -2226,13 +2226,13 @@ fun LogExportDialog(
                     if (qr != null) {
                         Image(
                             bitmap = qr,
-                            contentDescription = "异常日志导出二维码",
+                            contentDescription = "異常記錄导出二维码",
                             modifier = Modifier.size(280.dp)
                         )
                     }
                 }
                 Text(
-                    text = "需先在设置中开启 HTTP 服务器；地址为电视当前局域网 IP",
+                    text = "需先在设置中開啟 HTTP 服务器；地址为电视当前局域网 IP",
                     fontSize = 12.sp,
                     color = LXTextSecondary
                 )
@@ -2240,7 +2240,7 @@ fun LogExportDialog(
         },
         confirmButton = {
             TextButton(onClick = onDismiss) {
-                Text("关闭", color = LXTextSecondary)
+                Text("關閉", color = LXTextSecondary)
             }
         },
         dismissButton = {}
@@ -2248,7 +2248,7 @@ fun LogExportDialog(
 }
 
 /**
- * 2.8 生成二维码 ImageBitmap（zxing core，纯本地编码）——异常日志导出弹窗用
+ * 2.8 生成二维码 ImageBitmap（zxing core，纯本地编码）——異常記錄导出弹窗用
  */
 private fun generateSettingsQrCode(content: String, size: Int = 300): androidx.compose.ui.graphics.ImageBitmap? {
     return try {
@@ -2268,7 +2268,7 @@ private fun generateSettingsQrCode(content: String, size: Int = 300): androidx.c
 }
 
 /**
- * 2.9 设备信息对话框：展示设备型号、屏幕物理分辨率、系统版本号、DPI 以及大屏自适应参数。
+ * 2.9 裝置資訊对话框：展示设备型号、屏幕物理分辨率、系统版本号、DPI 以及大屏自适应参数。
  * 方便在大屏/24寸触摸电视/4K电视上直观核对物理分辨率与自适应视口。
  */
 @Composable
@@ -2314,7 +2314,7 @@ fun DeviceInfoDialog(onDismiss: () -> Unit) {
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "设备与显示信息",
+                    text = "裝置與顯示資訊",
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
                     color = LXTextPrimary
@@ -2337,7 +2337,7 @@ fun DeviceInfoDialog(onDismiss: () -> Unit) {
                 DeviceInfoRow("大屏自适应视口", "$adaptedWidthDp × $adaptedHeightDp DP")
                 DeviceInfoRow("视口适配倍率", "${"%.2f".format(adaptedDensity)}× (标准 960dp 基准)")
                 Text(
-                    text = "说明：应用以标准 960dp 为设计基准视口，无论设备物理 DPI 是 160 还是 320，均会自动等比例自适应缩放，确保大屏与触摸屏显示比例完全一致。",
+                    text = "說明：應用程式以標準 960dp 作為設計基準視窗，無論裝置實體 DPI 為 160 或 320，皆會自動等比例縮放，確保大螢幕與觸控螢幕的顯示比例一致。",
                     fontSize = 12.sp,
                     color = LXTextSecondary,
                     lineHeight = 16.sp,
@@ -2407,20 +2407,20 @@ fun AboutDialog(onDismiss: () -> Unit) {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text("洛雪音乐 TV 版 · 音乐播放器", fontSize = 15.sp, color = LXTextPrimary)
                 Text(
-                    text = "版本号：v$versionName",
+                    text = "版本號：v$versionName",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     color = LXPrimary
                 )
-                Text(text = "内部版本（versionCode）：$versionCode", fontSize = 14.sp, color = LXTextSecondary)
+                Text(text = "內部版本（versionCode）：$versionCode", fontSize = 14.sp, color = LXTextSecondary)
                 Text(
-                    text = "支持洛雪 JS 播放源 · 多平台音乐搜索/榜单/歌单",
+                    text = "支援洛雪 JS 音源 · 多平台音樂搜尋／排行榜／歌單",
                     fontSize = 13.sp,
                     color = LXTextSecondary
                 )
                 // 2.8 项目地址（GitHub 开源仓库）
                 Text(
-                    text = "项目地址：https://github.com/bmizhou/lx-music-tv",
+                    text = "專案網址：https://github.com/bmizhou/lx-music-tv",
                     fontSize = 13.sp,
                     color = LXPrimary,
                     modifier = Modifier.padding(top = 4.dp)
@@ -2436,7 +2436,7 @@ fun AboutDialog(onDismiss: () -> Unit) {
 }
 
 /**
- * 2.8 歌词设置对话框：显示翻译歌词开关（设置页歌词设置项进入）
+ * 2.8 歌詞設定对话框：顯示翻譯歌詞开关（设置页歌詞設定项进入）
  */
 @Composable
 fun LyricsSettingsDialog(
@@ -2447,10 +2447,10 @@ fun LyricsSettingsDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         containerColor = LXSurfaceDialog,
-        title = { Text("歌词设置", fontSize = 20.sp, color = LXTextPrimary) },
+        title = { Text("歌詞設定", fontSize = 20.sp, color = LXTextPrimary) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                // 显示翻译歌词开关（整行可聚焦点击切换）
+                // 顯示翻譯歌詞开关（整行可聚焦点击切换）
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -2466,7 +2466,7 @@ fun LyricsSettingsDialog(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "显示翻译歌词",
+                        text = "顯示翻譯歌詞",
                         fontSize = 15.sp,
                         color = LXTextPrimary,
                         modifier = Modifier.weight(1f)
@@ -2482,7 +2482,7 @@ fun LyricsSettingsDialog(
                 }
                 Spacer(modifier = Modifier.height(6.dp))
                 Text(
-                    text = "开启后，播放页歌词下方显示翻译（需音源/接口返回翻译歌词）",
+                    text = "開啟后，播放页歌词下方显示翻译（需音源/接口返回翻译歌词）",
                     fontSize = 12.sp,
                     color = LXTextSecondary
                 )
@@ -2497,8 +2497,8 @@ fun LyricsSettingsDialog(
 }
 
 /**
- * 2.8 缓存管理页（独立子页面，替代原 2.7 弹窗）
- * 展示音频/封面/歌词缓存大小，提供按分类清理、全部清理，
+ * 2.8 快取管理页（独立子页面，替代原 2.7 弹窗）
+ * 展示音频/封面/歌詞快取大小，提供按分类清理、全部清理，
  * 以及「清除未收藏歌曲缓存」（仅保留已收藏歌曲，含未收藏歌单中的歌曲）。
  * 2.8 优化：返回按钮固定在顶部（不随内容滚动，方向键稳定可达）；
  * 操作按钮统一为小键盘键帽样式（与搜索页键盘一致）；返回按钮按「右键」可切到悬浮播放球。
@@ -2509,7 +2509,7 @@ fun CacheManageScreen(
     onBack: () -> Unit,
     // 2.8 返回按钮按「右键」→ 聚焦右上角悬浮播放球
     onFocusFloatingBall: () -> Unit = {},
-    // 2.8 音频缓存被清除后回调（用于重建播放器，避免旧 SimpleCache 失效导致播放失败）
+    // 2.8 音訊快取被清除后回调（用于重建播放器，避免旧 SimpleCache 失效导致播放失败）
     onCacheCleared: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
@@ -2517,7 +2517,7 @@ fun CacheManageScreen(
     var audioSize by remember { mutableStateOf(0L) }
     var coverSize by remember { mutableStateOf(0L) }
     var lyricSize by remember { mutableStateOf(0L) }
-    // 2.8 音乐缓存开关（默认开启，SharedPreferences 持久化；与 PlayerService 共用 lx_settings）
+    // 2.8 音樂快取开关（默认開啟，SharedPreferences 持久化；与 PlayerService 共用 lx_settings）
     var musicCacheEnabled by remember {
         mutableStateOf(
             try {
@@ -2544,7 +2544,7 @@ fun CacheManageScreen(
     }
     LaunchedEffect(Unit) { refreshSizes() }
 
-    // 2.8 受保护缓存 key 集合（格式 "平台key|歌曲id"，与音频缓存 key 前缀一致）：
+    // 2.8 受保护缓存 key 集合（格式 "平台key|歌曲id"，与音訊快取 key 前缀一致）：
     // 收藏单曲 + 收藏歌单的歌曲（按歌单分组累积在 SharedPreferences，取消收藏歌单即移除）——缓存均不清除
     val favoriteKeys = remember(favorites) {
         val singleKeys = favorites.map { "${it.platform.key}|${it.musicId}" }.toSet()
@@ -2563,7 +2563,7 @@ fun CacheManageScreen(
     }
 
     // 清理动作：IO 线程执行 + 刷新大小 + 提示（2.8 清除中状态 + 防重复点击）
-    // rebuildPlayer=true 的操作为「影响音频缓存的清除」：完成后通知重建播放器，
+    // rebuildPlayer=true 的操作为「影响音訊快取的清除」：完成后通知重建播放器，
     // 避免旧 ExoPlayer 持有已释放/已删文件的 SimpleCache 导致后续播放全部失败。
     // 注意：rebuildPlayer 必须在 action 之前（trailing lambda 绑定最后一个参数 = action）
     fun doClear(label: String, rebuildPlayer: Boolean = false, action: (Context) -> Unit) {
@@ -2634,7 +2634,7 @@ fun CacheManageScreen(
                 }
                 Spacer(modifier = Modifier.width(16.dp))
                 Text(
-                    text = "缓存管理",
+                    text = "快取管理",
                     fontSize = 28.sp,
                     fontWeight = FontWeight.Bold,
                     color = LXTextPrimary
@@ -2650,7 +2650,7 @@ fun CacheManageScreen(
                     .padding(bottom = 24.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                // 2.8 音乐缓存总开关（默认开启）
+                // 2.8 音樂快取总开关（默认開啟）
                 item {
                     MusicCacheToggleCard(
                         enabled = musicCacheEnabled,
@@ -2662,7 +2662,7 @@ fun CacheManageScreen(
                                     .putBoolean("music_cache_enabled", new)
                                     .apply()
                             } catch (e: Exception) {}
-                            actionMessage = if (new) "音乐缓存已开启，下次播放生效" else "音乐缓存已关闭，下次播放生效"
+                            actionMessage = if (new) "音樂快取已開啟，下次播放生效" else "音樂快取已關閉，下次播放生效"
                         }
                     )
                 }
@@ -2670,36 +2670,36 @@ fun CacheManageScreen(
                 // 每种缓存一张卡片：左侧信息 + 右侧「清除」键帽
                 item {
                     CacheManageCard(
-                        label = "音频缓存",
-                        hint = "播放过的歌曲文件，上限 2GB，超出自动清理最久未播放的歌曲",
+                        label = "音訊快取",
+                        hint = "已播放過的歌曲檔案，上限 2GB；超過上限時會自動清理最久未播放的歌曲",
                         bytes = audioSize,
                         // 2.8 上限说明移入卡片内（SimpleCache LRU 淘汰）
                         //extraHint = "上限 2GB，超出自动清理最久未播放的歌曲",
-                        onClear = { doClear("已清空音频缓存", rebuildPlayer = true) { CacheManager.clearAudio(it) } }
+                        onClear = { doClear("已清空音訊快取", rebuildPlayer = true) { CacheManager.clearAudio(it) } }
                     )
                 }
                 item {
                     CacheManageCard(
-                        label = "封面缓存",
-                        hint = "歌曲/歌单封面图片",
+                        label = "封面快取",
+                        hint = "歌曲／歌單封面圖片",
                         bytes = coverSize,
-                        onClear = { doClear("已清空封面缓存") { CacheManager.clearCover(it) } }
+                        onClear = { doClear("已清空封面快取") { CacheManager.clearCover(it) } }
                     )
                 }
                 item {
                     CacheManageCard(
-                        label = "歌词缓存",
-                        hint = "平台歌词文本",
+                        label = "歌詞快取",
+                        hint = "平台歌詞文字",
                         bytes = lyricSize,
-                        onClear = { doClear("已清空歌词缓存") { CacheManager.clearLyric(it) } }
+                        onClear = { doClear("已清空歌詞快取") { CacheManager.clearLyric(it) } }
                     )
                 }
 
-                // 底部操作区：清除未收藏缓存 + 清除全部（并排大按钮，替代原细长键帽）
+                // 底部操作区：清除未收藏的快取 + 全部清除（并排大按钮，替代原细长键帽）
                 item {
                     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                         Text(
-                            text = "清理后对应内容下次使用时需重新联网获取；收藏的歌曲缓存会保留",
+                            text = "清理後，下次使用時需重新連線取得內容；已收藏歌曲的快取會保留",
                             fontSize = 12.sp,
                             color = LXTextSecondary
                         )
@@ -2708,19 +2708,19 @@ fun CacheManageScreen(
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             CacheActionButton(
-                                text = "清除未收藏缓存",
-                                hint = "仅保留已收藏歌曲与歌单歌曲",
+                                text = "清除未收藏的快取",
+                                hint = "僅保留已收藏歌曲及歌單中的歌曲",
                                 enabled = !isClearing,
                                 onClick = {
-                                    doClear("已清除未收藏歌曲的音频缓存", rebuildPlayer = true) {
+                                    doClear("已清除未收藏歌曲的音訊快取", rebuildPlayer = true) {
                                         CacheManager.clearUnfavoritedAudio(it, favoriteKeys)
                                     }
                                 },
                                 modifier = Modifier.weight(1f)
                             )
                             CacheActionButton(
-                                text = "清除全部",
-                                hint = "音频 / 封面 / 歌词",
+                                text = "全部清除",
+                                hint = "音訊／封面／歌詞",
                                 enabled = !isClearing,
                                 onClick = { doClear("已清空全部缓存", rebuildPlayer = true) { CacheManager.clearAll(it) } },
                                 modifier = Modifier.weight(1f)
@@ -2736,7 +2736,7 @@ fun CacheManageScreen(
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
-                                    text = "正在清除缓存...",
+                                    text = "正在清除快取...",
                                     fontSize = 13.sp,
                                     color = LXPrimary,
                                     fontWeight = FontWeight.Medium
@@ -2762,7 +2762,7 @@ fun CacheManageScreen(
 }
 
 /**
- * 缓存管理卡片（2.8 卡片式布局）：左侧标签/大小/说明，右侧「清除」键帽按钮
+ * 快取管理卡片（2.8 卡片式布局）：左侧标签/大小/说明，右侧「清除」键帽按钮
  */
 @Composable
 private fun CacheManageCard(
@@ -2770,7 +2770,7 @@ private fun CacheManageCard(
     hint: String,
     bytes: Long,
     onClear: () -> Unit,
-    // 2.8 卡片内附加说明（如音频缓存上限）
+    // 2.8 卡片内附加说明（如音訊快取上限）
     extraHint: String? = null
 ) {
     Card(
@@ -2831,7 +2831,7 @@ fun formatCacheSize(bytes: Long): String {
 }
 
 /**
- * 2.8 音乐缓存总开关卡片：左侧标题/说明，右侧 Switch（默认开启，SharedPreferences 持久化）
+ * 2.8 音樂快取总开关卡片：左侧标题/说明，右侧 Switch（默认開啟，SharedPreferences 持久化）
  */
 @Composable
 private fun MusicCacheToggleCard(
@@ -2849,13 +2849,13 @@ private fun MusicCacheToggleCard(
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "音乐缓存",
+                    text = "音樂快取",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     color = LXOnCardDark
                 )
                 Text(
-                    text = "开启后播放的歌曲边播边缓存到本地，下次播放免流量",
+                    text = "開啟后播放的歌曲边播边缓存到本地，下次播放免流量",
                     fontSize = 12.sp,
                     color = LXOnCardDarkSecondary
                 )
@@ -2875,7 +2875,7 @@ private fun MusicCacheToggleCard(
 
 /**
  * 2.8 缓存操作大按钮（并排布局，替代原细长键帽）：主标题 + 可选副说明，高 56dp 圆角 12dp。
- * 公开组件：播放源管理（平台配置/删除）、收藏页顶部 tab（歌曲/歌单）等复用同款样式。
+ * 公开组件：音源管理（平台配置/删除）、收藏页顶部 tab（歌曲/歌单）等复用同款样式。
  */
 @Composable
 fun CacheActionButton(
@@ -2974,7 +2974,7 @@ fun QualitySelectDialog(
         containerColor = LXSurfaceDialog,
         title = {
             Text(
-                text = "选择优先歌曲音质",
+                text = "選擇優先歌曲音質",
                 fontSize = 22.sp,
                 fontWeight = FontWeight.Bold,
                 // 灰白底深色标题
@@ -2990,7 +2990,7 @@ fun QualitySelectDialog(
                             .fillMaxWidth()
                         // focusRequester 必须在 focusable(clickable) 之前
                         .then(if (index == selectedIndex) Modifier.focusRequester(selectedRequester) else Modifier)
-                        // 对话框内列表密集，关闭发光与动画：避免上下快速切换时阴影/边框动画鬼畜
+                        // 对话框内列表密集，關閉发光与动画：避免上下快速切换时阴影/边框动画鬼畜
                         .lxSelectorFocus(shape = RoundedCornerShape(8.dp), glow = false, animated = false)
                         .clickable { onSelect(quality) },
                     // 灰白底上：选中=浅红填充，未选中=透明（沿用对话框底色）
@@ -3067,7 +3067,7 @@ fun PlatformSelectDialog(
         containerColor = LXSurfaceDialog,
         title = {
             Text(
-                text = "选择默认音乐平台",
+                text = "选择預設音樂平台",
                 fontSize = 22.sp,
                 fontWeight = FontWeight.Bold,
                 // 灰白底深色标题
@@ -3083,7 +3083,7 @@ fun PlatformSelectDialog(
                             .fillMaxWidth()
                         // focusRequester 必须在 focusable(clickable) 之前
                         .then(if (index == selectedIndex) Modifier.focusRequester(selectedRequester) else Modifier)
-                        // 对话框内列表密集，关闭发光与动画：避免上下快速切换时阴影/边框动画鬼畜
+                        // 对话框内列表密集，關閉发光与动画：避免上下快速切换时阴影/边框动画鬼畜
                         .lxSelectorFocus(shape = RoundedCornerShape(8.dp), glow = false, animated = false)
                         .clickable { onSelect(platform) },
                     // 灰白底上：选中=浅红填充，未选中=透明（沿用对话框底色）
@@ -3125,7 +3125,7 @@ fun PlatformSelectDialog(
 }
 
 /**
- * 2.9 启动默认页面选择对话框（遥控器方向键 + 确认选择）
+ * 2.9 啟動預設頁面选择对话框（遥控器方向键 + 确认选择）
  */
 @Composable
 fun StartupTabSelectDialog(
@@ -3159,7 +3159,7 @@ fun StartupTabSelectDialog(
         containerColor = LXSurfaceDialog,
         title = {
             Text(
-                text = "选择启动默认页面",
+                text = "选择啟動預設頁面",
                 fontSize = 22.sp,
                 fontWeight = FontWeight.Bold,
                 color = LXTextPrimary
