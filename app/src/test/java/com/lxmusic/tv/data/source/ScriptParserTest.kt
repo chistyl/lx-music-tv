@@ -58,6 +58,7 @@ class ScriptParserTest {
              * @version 2.0.0
              */
             
+            const { EVENT_NAMES, request, on, send } = globalThis.lx
             send(EVENT_NAMES.inited, {
                 sources: {
                     kw: {
@@ -102,6 +103,7 @@ class ScriptParserTest {
              * @author 测试作者
              */
             
+            const { EVENT_NAMES, request, on, send } = globalThis.lx
             send(EVENT_NAMES.inited, {
                 sources: {}
             })
@@ -123,6 +125,7 @@ class ScriptParserTest {
              * @version 1.0.0
              */
             
+            const { EVENT_NAMES, request, on, send } = globalThis.lx
             send(EVENT_NAMES.inited, {
                 sources: {
                     local: {
@@ -164,6 +167,7 @@ class ScriptParserTest {
                 });
             })
             
+            const { EVENT_NAMES, request, on, send } = globalThis.lx
             send(EVENT_NAMES.inited, {
                 sources: {
                     kw: {
@@ -217,6 +221,7 @@ class ScriptParserTest {
              * @version 1.0.0
              */
             
+            const { EVENT_NAMES, request, on, send } = globalThis.lx
             send(EVENT_NAMES.inited, {
                 sources: {
                     kw: {
