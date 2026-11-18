@@ -109,13 +109,17 @@ class ScriptParser {
             val body = extractBalancedBody(sourcesBody, openBrace) ?: continue
             val nameMatch = Regex("""name\s*:\s*['"]([^'"]+)['"]""").find(body)
             val name = nameMatch?.groupValues?.get(1) ?: key
-            val actions = listOf("musicUrl", "lyric", "pic").filter { action ->
-                Regex("['\"]" + Regex.escape(action) + "['\"]").containsMatchIn(body)
-            }
-            val qualitys = AudioQuality.entries.filter { quality ->
-                Regex("['\"]" + Regex.escape(quality.key) + "['\"]").containsMatchIn(body)
-            }
-            result[key] = SourcePlatformInfo(name = name, actions = actions, qualitys = qualitys)
+            val actionsBody = Regex("""actions\s*:\s*\[([^]]*)]""").find(body)?.groupValues?.get(1).orEmpty()
+            val actions = Regex("""['"]([^'"]+)['"]""").findAll(actionsBody).map { it.groupValues[1] }.toList()
+            val qualityBody = Regex("""qualitys\s*:\s*\[([^]]*)]""").find(body)?.groupValues?.get(1).orEmpty()
+            val qualityKeys = Regex("""['"]([^'"]+)['"]""").findAll(qualityBody).map { it.groupValues[1] }.toList()
+            val qualitys = AudioQuality.entries.filter { it.key in qualityKeys }
+            result[key] = SourcePlatformInfo(
+                name = name,
+                actions = actions,
+                qualitys = qualitys,
+                qualityKeys = qualityKeys
+            )
         }
         return result
     }
