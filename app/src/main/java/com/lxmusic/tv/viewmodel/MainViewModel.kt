@@ -133,6 +133,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val currentRoute: StateFlow<String> = _currentRoute.asStateFlow()
     private val _searchPlatform = MutableStateFlow(MusicPlatform.TX)
     val searchPlatform: StateFlow<MusicPlatform> = _searchPlatform.asStateFlow()
+    /** 搜尋頁實際平台 key；自訂平台不再被 enum fallback 遺失。 */
+    private val _searchPlatformKey = MutableStateFlow(MusicPlatform.TX.key)
+    val searchPlatformKey: StateFlow<String> = _searchPlatformKey.asStateFlow()
     private val _searchTriggered = MutableStateFlow(false)
     val searchTriggered: StateFlow<Boolean> = _searchTriggered.asStateFlow()
 
@@ -1076,6 +1079,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
         _searchQuery.value = keyword
         _searchPlatform.value = platform
+        _searchPlatformKey.value = platform.key
         _searchTriggered.value = true
         _playlistResults.value = emptyList()
         // 仅新搜索（第一页）记录历史；分页续拉不重复记录。
@@ -1109,6 +1113,47 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    /**
+     * 透過音源腳本宣告的平台 key 搜尋歌曲，支援非內建平台。
+     */
+    fun searchByPlatformKey(
+        keyword: String,
+        platformKey: String,
+        page: Int = 1,
+        pageSize: Int = 30,
+        sourceId: String? = null,
+        recordHistory: Boolean = true
+    ) {
+        if (keyword.isBlank() || platformKey.isBlank()) return
+        _searchQuery.value = keyword
+        _searchPlatformKey.value = platformKey
+        _searchPlatform.value = MusicPlatform.entries.firstOrNull { it.key == platformKey } ?: MusicPlatform.LOCAL
+        _searchTriggered.value = true
+        _playlistResults.value = emptyList()
+        if (page == 1 && recordHistory) addSearchHistory(keyword)
+        viewModelScope.launch {
+            _isSearching.value = true
+            _searchError.value = null
+            try {
+                val result = searchService.searchByPlatformKey(keyword, platformKey, page, pageSize, sourceId)
+                withContext(Dispatchers.Main) {
+                    if (result.success && result.data != null) {
+                        _searchResults.value = result.data.songs
+                    } else {
+                        _searchError.value = result.message ?: "搜尋失敗"
+                    }
+                    _isSearching.value = false
+                }
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    _searchError.value = "搜尋出錯: ${e.message}"
+                    _isSearching.value = false
+                }
+            }
+        }
+    }
     /**
      * 搜索歌单（按平台调用内置歌单搜索接口）
      */
