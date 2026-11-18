@@ -723,6 +723,7 @@ private fun Favorite.toSong(): Song {
         albumId = null,
         picUrl = picUrl,
         duration = duration,
-        platform = platform
+        platform = platform,
+        platformKey = platformKey
     )
 }
