@@ -53,7 +53,7 @@ import com.lxmusic.tv.presentation.theme.LXTextSecondary
 
 /**
  * 播放源管理界面
- * 管理导入的播放源文件，启动HTTP服务器
+ * 管理导入的播放源文件，启动HTTP 伺服器
  */
 @Composable
 fun SourceManagementScreen(
@@ -179,7 +179,7 @@ fun SourceManagementScreen(
                 }
             }
 
-            // HTTP服务器状态
+            // HTTP 伺服器状态
             item {
                 ServerStatusCard(
                     isRunning = serverRunning,
@@ -205,7 +205,7 @@ fun SourceManagementScreen(
                 // 说明：优先级 = 启用顺序
                 item {
                     Text(
-                        text = "启用的音源按「启用顺序」作为播放优先级（越靠前优先级越高），播放失败会自动切换到下一个音源",
+                        text = "已啟用的音源依「啟用順序」排列播放優先級（越前面優先級越高），播放失敗時會自動切換至下一個音源",
                         fontSize = 13.sp,
                         color = LXTextSecondary,
                         modifier = Modifier.fillMaxWidth().padding(top = 4.dp, bottom = 2.dp)
@@ -288,7 +288,7 @@ fun ServerStatusCard(
                 )
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(
-                    text = "HTTP服务器",
+                    text = "HTTP 伺服器",
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Medium,
                     // 2.5 浅色主题：深卡片上的浅色文字
@@ -345,7 +345,7 @@ fun ServerStatusCard(
                 }
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "在手机或电脑浏览器中打开上述地址，即可上传和管理播放源",
+                    text = "在手機或電腦瀏覽器中開啟上述網址，即可上傳及管理音源",
                     fontSize = 12.sp,
                     // 2.5 浅色主题：深卡片上的次级文字（白70%）
                     color = LXOnCardDarkSecondary
@@ -378,14 +378,14 @@ fun PlatformSwitchCard(
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "播放失败尝试切换音乐平台",
+                    text = "播放失敗時嘗試切換音樂平台",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Medium,
                     color = LXOnCardDark
                 )
                 Spacer(modifier = Modifier.height(6.dp))
                 Text(
-                    text = "JS 源解析失败时，自动用同一源尝试其他平台版本",
+                    text = "JS 音源解析失敗時，自動使用同一音源嘗試其他平台版本",
                     fontSize = 12.sp,
                     color = LXOnCardDarkSecondary
                 )
@@ -410,7 +410,7 @@ fun PlatformSwitchCard(
 
 /**
  * 播放源列表项
- * 两行紧凑布局：第一行 图标+信息+启用开关；第二行删除按钮
+ * 两行紧凑布局：第一行 图标+信息+启用开关；第二行刪除按钮
  * 手机上不拥挤，均可点击
  */
 @Composable
@@ -429,7 +429,7 @@ fun SourceItem(
     }
     Card(
         // 卡片自身不设焦点节点：若卡片 focusable 会拦截方向键，导致遥控器
-        // 无法把焦点移入卡片内部的「启用/删除」操作（需按两次确定）。
+        // 无法把焦点移入卡片内部的「启用/刪除」操作（需按两次确定）。
         // 焦点直接落在内部三个操作控件上，方向键即可在它们之间切换。
         modifier = modifier,
         // 2.5 浅色主题：深色卡片（仿播放页播放列表），内部文字浅色
@@ -484,7 +484,7 @@ fun SourceItem(
                                     .padding(horizontal = 8.dp, vertical = 2.dp)
                             ) {
                                 Text(
-                                    text = "优先级 $p",
+                                    text = "優先級 $p",
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = LXPrimary
@@ -542,15 +542,15 @@ fun SourceItem(
                 )
             }
 
-            // 音源支援平台由 JS 脚本 platforms 自行宣告；此处仅保留删除操作。
+            // 音源支援平台由 JS 脚本 platforms 自行宣告；此处仅保留刪除操作。
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 8.dp)
             ) {
                 CacheActionButton(
-                    text = "删除",
-                    hint = "移除该播放源",
+                    text = "刪除",
+                    hint = "移除此音源",
                     onClick = onDelete,
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -571,13 +571,13 @@ fun EmptyState(modifier: Modifier = Modifier) {
     ) {
         Icon(
             imageVector = Icons.Default.CloudOff,
-            contentDescription = "无播放源",
+            contentDescription = "沒有音源",
             tint = LXTextSecondary,
             modifier = Modifier.size(64.dp)
         )
         Spacer(modifier = Modifier.height(16.dp))
         Text(
-            text = "暂无播放源",
+            text = "暂沒有音源",
             fontSize = 20.sp,
             fontWeight = FontWeight.Medium,
             // 2.5 浅色主题：浅底深色文字
@@ -585,7 +585,7 @@ fun EmptyState(modifier: Modifier = Modifier) {
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
-            text = "启动HTTP服务器后，在手机/电脑浏览器中打开页面地址即可上传JS播放源文件",
+            text = "启动HTTP 伺服器后，在手机/电脑浏览器中打开页面地址即可上传JS播放源文件",
             fontSize = 14.sp,
             color = LXTextSecondary,
             textAlign = TextAlign.Center
@@ -594,7 +594,7 @@ fun EmptyState(modifier: Modifier = Modifier) {
 }
 
 /**
- * 删除确认对话框
+ * 刪除确认对话框
  */
 @Composable
 fun DeleteConfirmDialog(
@@ -604,12 +604,12 @@ fun DeleteConfirmDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(text = "确认删除", fontWeight = FontWeight.Bold) },
-        text = { Text("确定要删除播放源 \"$sourceName\" 吗？") },
+        title = { Text(text = "确认刪除", fontWeight = FontWeight.Bold) },
+        text = { Text("确定要刪除播放源 \"$sourceName\" 吗？") },
         confirmButton = {
             // 2.8 与主页「退出应用」弹窗按钮样式统一：无背景文本按钮，红字醒目
             TextButton(onClick = onConfirm) {
-                Text("删除", color = LXPrimary)
+                Text("刪除", color = LXPrimary)
             }
         },
         dismissButton = {
@@ -645,7 +645,7 @@ fun ImportSourceDialog(
         onDismissRequest = onDismiss,
         title = {
             Text(
-                text = "導入洛雪音源",
+                text = "匯入洛雪音源",
                 fontWeight = FontWeight.Bold,
                 color = LXTextPrimary
             )
@@ -653,7 +653,7 @@ fun ImportSourceDialog(
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(
-                    text = "輸入音源 JS 腳本的直連網址。匯入後會自動解析音源名稱、版本、作者及支援平台。",
+                    text = "輸入音源 JS 腳本的直接連結網址。匯入後會自動解析音源名稱、版本、作者及支援平台。",
                     color = LXTextSecondary,
                     fontSize = 14.sp
                 )
@@ -672,7 +672,7 @@ fun ImportSourceDialog(
                     )
                 )
                 Text(
-                    text = "也可啟動下方 HTTP 伺服器，再用手機或電腦上傳 JS 音源檔。",
+                    text = "也可以啟動下方 HTTP 伺服器，再透過手機或電腦上傳 JS 音源檔。",
                     color = LXTextSecondary,
                     fontSize = 12.sp
                 )
@@ -725,7 +725,7 @@ fun SourceImportPreviewDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
-            Text("確認導入音源", fontWeight = FontWeight.Bold, color = LXTextPrimary)
+            Text("確認匯入音源", fontWeight = FontWeight.Bold, color = LXTextPrimary)
         },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(9.dp)) {
@@ -759,7 +759,7 @@ fun SourceImportPreviewDialog(
                     .lxSelectorFocus(shape = RoundedCornerShape(10.dp), glow = false, animated = false),
                 colors = ButtonDefaults.buttonColors(containerColor = LXPrimary)
             ) {
-                Text("確認導入")
+                Text("確認匯入")
             }
         },
         dismissButton = {
