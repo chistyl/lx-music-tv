@@ -136,6 +136,14 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     /** 搜尋頁實際平台 key；自訂平台不再被 enum fallback 遺失。 */
     private val _searchPlatformKey = MutableStateFlow(MusicPlatform.TX.key)
     val searchPlatformKey: StateFlow<String> = _searchPlatformKey.asStateFlow()
+    private val _searchPlatformOptions = MutableStateFlow(MusicPlatform.entries.filter { it != MusicPlatform.LOCAL }.map { SearchPlatformOption(it.key, it.displayName, true) })
+    val searchPlatformOptions: StateFlow<List<SearchPlatformOption>> = _searchPlatformOptions.asStateFlow()
+
+    fun setSearchPlatformKey(key: String) {
+        if (key.isBlank()) return
+        _searchPlatformKey.value = key
+        _searchPlatform.value = MusicPlatform.entries.firstOrNull { it.key == key } ?: MusicPlatform.LOCAL
+    }
     private val _searchTriggered = MutableStateFlow(false)
     val searchTriggered: StateFlow<Boolean> = _searchTriggered.asStateFlow()
 
@@ -341,6 +349,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             sourceManager.sourcesFlow.collect { sourceList ->
                 _sources.value = sourceList
+                val builtIns = MusicPlatform.entries.filter { it != MusicPlatform.LOCAL }
+                    .map { SearchPlatformOption(it.key, it.displayName, true) }
+                val custom = sourceManager.getSearchablePlatformOptions()
+                    .filterNot { option -> builtIns.any { it.key == option.key } }
+                _searchPlatformOptions.value = builtIns + custom
             }
         }
 
