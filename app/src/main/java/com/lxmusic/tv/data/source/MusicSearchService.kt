@@ -809,12 +809,10 @@ private fun MusicItem.toSong(): Song {
         albumId = null,
         picUrl = picUrl,
         duration = duration,
-        platform = try {
-            MusicPlatform.valueOf(platform.uppercase())
-        } catch (e: kotlin.coroutines.cancellation.CancellationException) { throw e } catch (e: Exception) {
-            MusicPlatform.LOCAL
-        },
-        quality = listOf(AudioQuality.QUALITY_128K, AudioQuality.QUALITY_320K, AudioQuality.FLAC)
+        platform = MusicPlatform.entries.firstOrNull { it.key == platform }
+            ?: MusicPlatform.LOCAL,
+        quality = listOf(AudioQuality.QUALITY_128K, AudioQuality.QUALITY_320K, AudioQuality.FLAC),
+        platformKey = platform
     )
 }
 
