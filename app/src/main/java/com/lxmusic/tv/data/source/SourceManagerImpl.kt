@@ -442,6 +442,30 @@ class SourceManagerImpl(
      * 音源選擇遵循啟用順序；指定 sourceId 時仍要求該音源已啟用。
      * action 必須同時存在於靜態解析 metadata 與腳本執行後的 inited 宣告。
      */
+    /**
+     * 列出所有已啟用音源明確宣告的平台與 Action。
+     * 不推測任何 Action 名稱；每筆資料均來自腳本 init metadata。
+     */
+    fun getAllDeclaredActions(): List<SourceActionOption> {
+        return getEnabledSources().flatMap { source ->
+            val parsed = parser.parse(source.scriptContent)
+            if (parsed !is ParseResult.Success) return@flatMap emptyList()
+            parsed.declaredPlatforms.flatMap { (platformKey, platformInfo) ->
+                platformInfo.actions
+                    .filter { it.isNotBlank() }
+                    .map { action ->
+                        SourceActionOption(
+                            sourceId = source.id,
+                            sourceName = source.name,
+                            platformKey = platformKey,
+                            platformName = platformInfo.name,
+                            action = action
+                        )
+                    }
+            }
+        }.distinct()
+    }
+
     suspend fun executeSourceAction(
         platformKey: String,
         action: String,
