@@ -108,10 +108,8 @@ class ScriptParser {
             }
         }
 
-        // 如果没有找到明确的平台定义，尝试从代码中推断
-        if (platforms.isEmpty()) {
-            platforms.putAll(inferPlatforms(scriptContent))
-        }
+        // 僅接受腳本 sources metadata 明確宣告的平台；不再從關鍵字猜測平台，
+        // 避免把未支援的平台錯誤加入音源清單。
 
         return platforms
     }
@@ -154,39 +152,6 @@ class ScriptParser {
             actions = actions,
             qualitys = qualitys
         )
-    }
-
-    /**
-     * 从脚本代码中推断支持的平台
-     */
-    private fun inferPlatforms(scriptContent: String): Map<MusicPlatform, SourcePlatformInfo> {
-        val platforms = mutableMapOf<MusicPlatform, SourcePlatformInfo>()
-
-        // 检查常见的平台关键字
-        val platformKeywords = mapOf(
-            MusicPlatform.KW to listOf("酷我", "kuwo", "kw"),
-            MusicPlatform.KG to listOf("酷狗", "kugou", "kg"),
-            MusicPlatform.TX to listOf("QQ音乐", "qq", "tx"),
-            MusicPlatform.WY to listOf("网易云", "netease", "wy"),
-            MusicPlatform.MG to listOf("咪咕", "migu", "mg"),
-            MusicPlatform.LOCAL to listOf("本地", "local")
-        )
-
-        for ((platform, keywords) in platformKeywords) {
-            if (keywords.any { scriptContent.contains(it, ignoreCase = true) }) {
-                platforms[platform] = SourcePlatformInfo(
-                    name = platform.displayName,
-                    actions = if (platform == MusicPlatform.LOCAL) {
-                        listOf("musicUrl", "lyric", "pic")
-                    } else {
-                        listOf("musicUrl")
-                    },
-                    qualitys = AudioQuality.entries.toList()
-                )
-            }
-        }
-
-        return platforms
     }
 
     /**
