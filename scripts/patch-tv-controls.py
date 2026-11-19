@@ -367,6 +367,33 @@ def patch_navigation(relative_path: str) -> None:
         raise SystemExit(f"Failed to add focusable navigation item: {relative_path}")
     target.write_text(source, encoding="utf-8")
 
+
+def patch_player_typography() -> None:
+    title = ROOT / "src/components/player/PlayerBar/components/Title.tsx"
+    source = title.read_text(encoding="utf-8")
+    source = replace_once(
+        source,
+        "<Text color={theme['c-font-label']} numberOfLines={1}>{title}</Text>",
+        "<Text color={theme['c-font-label']} numberOfLines={2} size={22}>{title}</Text>",
+        "TV player title typography",
+    )
+    title.write_text(source, encoding="utf-8")
+
+    status = ROOT / "src/components/player/PlayerBar/components/Status.tsx"
+    source = status.read_text(encoding="utf-8")
+    source = replace_once(
+        source,
+        "return <Text numberOfLines={1} size={12}>{status}</Text>",
+        "return <Text numberOfLines={2} size={18}>{status}</Text>",
+        "TV player lyric typography",
+    )
+    status.write_text(source, encoding="utf-8")
+
+    play_info = ROOT / "src/components/player/PlayerBar/components/PlayInfo.tsx"
+    source = play_info.read_text(encoding="utf-8")
+    source = replace_once(source, "const FONT_SIZE = 13", "const FONT_SIZE = 16", "TV player time typography")
+    play_info.write_text(source, encoding="utf-8")
+
 def patch_android_abis() -> None:
     path = ROOT / "android/app/build.gradle"
     source = path.read_text(encoding="utf-8")
@@ -399,6 +426,7 @@ def patch_my_lists() -> None:
 patch_button()
 patch_player_controls()
 patch_player_bar()
+patch_player_typography()
 patch_my_lists()
 patch_home_layout()
 patch_android_abis()
