@@ -51,10 +51,14 @@ fun SourceBrowseScreen(
 ) {
     val backRequester = remember { FocusRequester() }
     val context = LocalContext.current
-    var selectedItem by remember(items) { mutableStateOf<SourceBrowseItem?>(null) }
+    var selectedItem by remember { mutableStateOf<SourceBrowseItem?>(null) }
+    var requestContextItem by remember { mutableStateOf<SourceBrowseItem?>(null) }
     var activeBrowseAction by remember { mutableStateOf<SourceActionOption?>(null) }
     var activePage by remember { mutableIntStateOf(1) }
     BackHandler(onBack = onBack)
+    LaunchedEffect(items, activeBrowseAction) {
+        if (activeBrowseAction != null && items.isNotEmpty()) selectedItem = items.first()
+    }
 
     Column(
         modifier = modifier.fillMaxSize().background(LXSurfaceMain).padding(28.dp),
@@ -97,7 +101,7 @@ fun SourceBrowseScreen(
                             modifier = Modifier.fillMaxWidth()
                                 .background(if (selected) LXPrimary.copy(alpha = 0.14f) else Color.White, RoundedCornerShape(12.dp))
                                 .lxSelectorFocus(shape = RoundedCornerShape(12.dp), glow = false, animated = false)
-                                .clickable { selectedItem = item; activeBrowseAction = null; activePage = 1 }
+                                .clickable { selectedItem = item; requestContextItem = item; activeBrowseAction = null; activePage = 1 }
                                 .focusable()
                                 .padding(16.dp),
                             verticalAlignment = Alignment.CenterVertically
@@ -152,6 +156,7 @@ fun SourceBrowseScreen(
                                             onClick = {
                                                 val request = buildItemRequest(config.optString("requestJson", "{}"), item, 1)
                                                 activeBrowseAction = option
+                                                requestContextItem = item
                                                 activePage = 1
                                                 onLoadBrowseAction(option, request, fields, false)
                                             },
@@ -172,7 +177,7 @@ fun SourceBrowseScreen(
                                                 val fields = config?.let { parseSavedFields(it) }
                                                 if (config != null && fields != null) {
                                                     val nextPage = activePage + 1
-                                                    onLoadBrowseAction(option, buildItemRequest(config.optString("requestJson", "{}"), item, nextPage), fields, true)
+                                                    onLoadBrowseAction(option, buildItemRequest(config.optString("requestJson", "{}"), requestContextItem ?: item, nextPage), fields, true)
                                                     activePage = nextPage
                                                 }
                                             },
