@@ -11,6 +11,7 @@ class ScriptParser {
 
     /** 匹配 \xNN 十六进制转义（Kotlin 字符串中 \\ 表示单个反斜杠） */
     private val HEX_ESCAPE_REGEX = Regex("\\\\x([0-9a-fA-F]{2})")
+    private val UNICODE_ESCAPE_REGEX = Regex("\\\\u([0-9a-fA-F]{4})")
 
     /**
      * 解析脚本内容
@@ -23,7 +24,7 @@ class ScriptParser {
             //    '\x6c\x78' 形式（globalThis['\x6c\x78'] = globalThis['lx']），
             //    不解码则下面的字面量匹配（globalThis['lx']、kw: 等）全部落空，
             //    导致洛雪 PC 能导入的混淆源被判「脚本格式不正确」。
-            val decoded = decodeHexEscapes(scriptContent)
+            val decoded = decodeUnicodeEscapes(decodeHexEscapes(scriptContent))
 
             // 1. 解析元数据（@name 等注解在文件头注释里，不受混淆影响，用原文即可）
             val metadata = parseMetadata(scriptContent)
@@ -60,6 +61,12 @@ class ScriptParser {
             m.groupValues[1].toInt(16).toChar().toString()
         }
     }
+
+    /** 解碼 JS 常見 Unicode 轉義（\uXXXX），供混淆音源的靜態識別使用。 */
+    private fun decodeUnicodeEscapes(input: String): String =
+        UNICODE_ESCAPE_REGEX.replace(input) { match ->
+            match.groupValues[1].toInt(16).toChar().toString()
+        }
 
     /**
      * 解析脚本元数据
@@ -261,21 +268,20 @@ class ScriptParser {
      * - 注册调用可能是字面量 send(...) / EVENT_NAMES.inited，也可能在混淆后被包装（send 作为实参传入、EVENT_NAMES 用计算下标访问）。
      */
     private fun validateScript(scriptContent: String): Boolean {
-        // 1. 必须引用洛雪宿主 API 对象 globalThis.lx（兼容点号与方括号两种写法）。
-        //    @name 是可选元数据；缺少时由 parseMetadata() 使用「未知源」作为默认名称。
-        val referencesLxApi = scriptContent.contains("globalThis.lx")
-            || scriptContent.contains("globalThis['lx']")
-            || scriptContent.contains("globalThis[\"lx\"]")
-        if (!referencesLxApi) return false
+        // 依洛雪 Mobile 的 user-api-preload.js 契約，音源會透過宿主 lx API
+        // 註冊 request handler 並回報 inited。變數可被混淆/重新命名，故不要求
+        // 必須出現固定的 send( 或 EVENT_NAMES.inited 字面組合。
+        val referencesHostApi = Regex(
+            """(?:globalThis|window|global)\\s*(?:\\.\\s*lx|\\[\\s*['\"]lx['\"]\\s*])"""
+        ).containsMatchIn(scriptContent) ||
+            scriptContent.contains("__lx_setup__") || scriptContent.contains("lx_setup")
+        if (!referencesHostApi) return false
 
-        // 3. 必须注册音源：调用 send(...) 或通过 EVENT_NAMES 监听 inited 事件。
-        //    兼容混淆源（send 经包装函数调用、EVENT_NAMES 用计算下标访问，无字面量 send( / EVENT_NAMES.inited）。
-        val registersSource = scriptContent.contains("send(")
-            || scriptContent.contains("EVENT_NAMES.inited")
-            || (scriptContent.contains("send") && scriptContent.contains("EVENT_NAMES"))
-        if (!registersSource) return false
-
-        return true
+        // 只做匯入層的輕量格式辨識；初始化與 request handler 是否有效，
+        // 交由 QuickJS 執行官方相容執行環境後確認，避免靜態正則誤拒動態/混淆音源。
+        val hasSourceLifecycle = listOf("send", "inited", "request", "EVENT_NAMES", "on(")
+            .any { token -> scriptContent.contains(token) }
+        return hasSourceLifecycle
     }
 }
 
