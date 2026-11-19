@@ -1,3 +1,4 @@
+# TV build pipeline; pushes to the feature branches below trigger artifact generation.
 name: Android TV build
 
 on:
