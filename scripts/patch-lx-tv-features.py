@@ -171,3 +171,13 @@ edit("src/core/init/i18n.ts",
      "  let lang: I18n['locale'] = 'zh_tw'\n  updateSetting({ 'common.langId': lang })",
      "set Taiwan Traditional Chinese as default interface language")
 print("Applied: Simplified-to-Traditional Chinese display conversion")
+
+# Keep the React import minimal and cover the second animated text wrapper as well.
+edit("src/components/common/Text.tsx",
+     "import { memo, Children, type ComponentProps } from 'react'\n",
+     "import { memo, type ComponentProps } from 'react'\n",
+     "clean shared text imports")
+edit("src/components/common/Text.tsx",
+     ">{children}</Animated.Text>",
+     ">{toTraditionalText(children)}</Animated.Text>",
+     "convert animated color text content")
