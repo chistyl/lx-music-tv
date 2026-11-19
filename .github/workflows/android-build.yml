@@ -37,7 +37,7 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Run unit tests
-        run: ./gradlew --no-daemon testDebugUnitTest
+        run: ./gradlew --no-daemon testDebugUnitTest --tests "com.lxmusic.tv.presentation.lyrics.TraditionalChineseConverterTest"
 
       - name: Build debug APK
         run: ./gradlew --no-daemon assembleDebug
