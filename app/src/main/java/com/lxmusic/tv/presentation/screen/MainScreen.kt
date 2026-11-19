@@ -591,9 +591,7 @@ fun DiscCoverButton(
 }
 
 /**
- * 正在播放控制条（导航栏底部常驻入口，2.6 窄栏版）
- * 窄栏只放 1 个图标宽：封面（点击进播放页）+ 播放/暂停按钮；
- * 上一曲/下一曲等完整控制在播放页控制栏里操作
+ * 電視底部播放列：橫向顯示封面、歌曲資訊及播放控制，作為全畫面常駐入口
  */
 @Composable
 fun NowPlayingBar(
@@ -608,6 +606,7 @@ fun NowPlayingBar(
         modifier = modifier
             .fillMaxWidth()
             .height(88.dp)
+            .focusGroup()
             .background(LXCardDark)
             .padding(horizontal = 28.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
