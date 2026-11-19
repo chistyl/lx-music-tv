@@ -292,7 +292,8 @@ class SourceExecutor(
         source: String = "kw",
         // 2.8 歌曲信息：JS 源（尤其按歌名搜索的源）需要 name/singer，缺失报「没歌名搜不了」
         songName: String = "",
-        singer: String = ""
+        singer: String = "",
+        rawSongData: String? = null
     ): SourceExecutionResult = withContext(Dispatchers.IO) {
         try {
             Log.i(TAG, "获取播放URL: musicId=$musicId, quality=${quality.key}")
@@ -313,7 +314,8 @@ class SourceExecutor(
             // 传统函数模式
             val urlResult = javaScriptEngine.callFunction(
                 "getMusicUrl",
-                arrayOf(musicId, quality.key)
+                // 通用 JS 協議第三參數提供完整原始歌曲物件；舊函式仍可忽略第三參數。
+                arrayOf(musicId, quality.key, rawSongData?.let { JSONObject(it) } ?: JSONObject().put("id", musicId))
             )
 
             when (urlResult) {
@@ -591,7 +593,8 @@ class SourceExecutor(
                             sourceId = sourceId,
                             url = url,
                             picUrl = pic,
-                            lyricUrl = lyric
+                            lyricUrl = lyric,
+                            rawData = item.toString()
                         )
                     )
                 }
