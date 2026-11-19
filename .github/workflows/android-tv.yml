@@ -37,7 +37,30 @@ jobs:
 
       - name: Add Traditional Chinese conversion dependency
         working-directory: upstream/lx-music-mobile-auto-source
-        run: npm install --save-exact opencc-js@1.4.2
+        timeout-minutes: 5
+        run: |
+          set -o pipefail
+          for attempt in 1 2 3; do
+            echo "OpenCC npm install attempt ${attempt}/3"
+            if timeout 90s npm install --save-exact --fetch-retries=1 --fetch-timeout=30000 opencc-js@1.4.2 2>&1 | tee "opencc-install-attempt-${attempt}.log"; then
+              exit 0
+            else
+              status=$?
+            fi
+            echo "OpenCC install attempt ${attempt} failed with exit code ${status}."
+            if [ "$attempt" -lt 3 ]; then sleep 5; fi
+          done
+          echo "OpenCC dependency installation failed after 3 attempts."
+          exit 1
+
+      - name: Upload dependency installation diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lx-music-tv-dependency-diagnostics
+          path: upstream/lx-music-mobile-auto-source/opencc-install-attempt-*.log
+          if-no-files-found: warn
+          retention-days: 14
 
       - name: Install JavaScript dependencies
         working-directory: upstream/lx-music-mobile-auto-source
