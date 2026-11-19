@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - feature/lx-tv-x86-focus-r1
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
