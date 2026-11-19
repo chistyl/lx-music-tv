@@ -56,8 +56,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         private const val KEY_SEARCH_HISTORY = "search_history"
         private const val HISTORY_SEPARATOR = "\u0001"
         private const val SEARCH_HISTORY_MAX = 10
-        // 2.9 播放失败尝试切换平台开关（lx_settings；设置-播放源管理页切换，MainActivity/本类共用）
-        const val KEY_PLATFORM_SWITCH = "play_platform_switch_enabled"
     }
 
     private val app = application as LXMusicApplication
@@ -1857,14 +1855,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         // 又不至于像 120s 那样让用户等太久。逐源失败提示不受影响。
         // 2.8 仅失败时提示（不提示「正在尝试」）；最后失败源合并进最终提示（「D」播放失败，5秒后播放下一曲）
         var lastFailedSource: String? = null
-        // 2.9 播放失败尝试切换平台开关（设置-播放源管理，默认启用）：开启后 JS 源解析失败时用同一源尝试其他平台版本
-        val platformSwitchEnabled = try {
-            getApplication<Application>()
-                .getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-                .getBoolean(KEY_PLATFORM_SWITCH, true)
-        } catch (e: Exception) {
-            true
-        }
         val urlResult = try {
             withTimeoutOrNull(30_000) {
                 searchService.getMusicUrl(
@@ -1877,7 +1867,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                             _toastMessage.value = "「$failedName」获取${song.platform.displayName}《${song.name}》播放地址失败，尝试下一个源「$nextName」"
                         }
                     },
-                    enablePlatformSwitch = platformSwitchEnabled
                 )
             } ?: ApiResponse.error("获取播放URL超时（30s）")
         } catch (e: kotlin.coroutines.cancellation.CancellationException) { throw e } catch (e: Exception) {
