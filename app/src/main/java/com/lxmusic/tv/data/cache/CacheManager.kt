@@ -677,7 +677,7 @@ object CacheManager {
             val ctx = appContext ?: return
             val prefs = ctx.getSharedPreferences("lx_song_metas", Context.MODE_PRIVATE)
             val meta = "${song.name}\t${song.singer}\t${song.picUrl ?: ""}"
-            prefs.edit().putString("${song.platform.key}|${song.id}", meta).apply()
+            prefs.edit().putString("${song.platformKey}|${song.id}", meta).apply()
         } catch (e: Exception) {
         }
     }
