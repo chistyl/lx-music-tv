@@ -41,7 +41,9 @@ data class Song(
     val platform: MusicPlatform,
     val quality: List<AudioQuality> = emptyList(),
     /** 原始平台 key，支援非內建平台並維持舊 enum API 相容。 */
-    val platformKey: String = platform.key
+    val platformKey: String = platform.key,
+    /** 搜尋／瀏覽此歌曲的音源 ID；播放時優先使用該來源，失敗仍可切換其他來源。 */
+    val sourceId: String? = null
 ) {
     /**
      * 转换为MusicInfo
