@@ -23,12 +23,14 @@ android {
         }
     }
 
-//
+// ABI：保留 ARM64，並新增 x86 / x86_64 電視支援
     buildTypes {
         release {
             ndk {
                 abiFilters.clear()
                 abiFilters.add("arm64-v8a")
+                abiFilters.add("x86")
+                abiFilters.add("x86_64")
             }
 
             optimization {
