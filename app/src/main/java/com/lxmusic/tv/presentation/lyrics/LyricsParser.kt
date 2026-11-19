@@ -74,7 +74,7 @@ class LyricsParser {
             
             // 为每个时间标签创建歌词行
             times.forEach { time ->
-                lines.add(LyricLine(timeMs = time, content = content))
+                lines.add(LyricLine(timeMs = time, content = TraditionalChineseConverter.convert(content)))
             }
         }
         
