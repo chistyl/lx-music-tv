@@ -33,13 +33,13 @@ def patch_player_mode_button() -> None:
     source = mode.read_text(encoding="utf-8")
     source = source.replace(
         "import { TouchableOpacity } from 'react-native'",
-        "import { TouchableOpacity } from 'react-native'\\nimport { useState } from 'react'",
+        "import { TouchableOpacity } from 'react-native'\nimport { useState } from 'react'",
         1,
     )
     source = replace_once(
         source,
-        "  const theme = useTheme()\\n  return (",
-        "  const theme = useTheme()\\n  const [tvFocused, setTvFocused] = useState(false)\\n  return (",
+        "  const theme = useTheme()\n  return (",
+        "  const theme = useTheme()\n  const [tvFocused, setTvFocused] = useState(false)\n  return (",
         "TV play mode focus state",
     )
     source = replace_once(
