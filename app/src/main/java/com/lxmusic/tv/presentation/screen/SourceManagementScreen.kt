@@ -1,6 +1,11 @@
 package com.lxmusic.tv.presentation.screen
 
 import android.content.Context
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import androidx.compose.ui.platform.LocalContext
 
 import androidx.compose.foundation.BorderStroke
@@ -81,6 +86,7 @@ fun SourceManagementScreen(
     onToggleSource: (String, Boolean) -> Unit,
     onDeleteSource: (String) -> Unit,
     onPreviewSourceFromUrl: (String) -> Unit = {},
+    onImportLocalSource: (String, String) -> Unit = { _, _ -> },
     sourceImportPreview: SourceImportPreview? = null,
     onConfirmImportSource: () -> Unit = {},
     onCancelImportPreview: () -> Unit = {},
@@ -100,6 +106,29 @@ fun SourceManagementScreen(
     // 进入页面时把焦点落到返回按钮，避免初始无焦点导致方向键失灵
     val backFocusRequester = remember { FocusRequester() }
     val addSourceFocusRequester = remember { FocusRequester() }
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val localSourcePicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        if (uri != null) {
+            scope.launch {
+                try {
+                    val fileName = uri.lastPathSegment?.substringAfterLast(":")?.substringAfterLast("/")?.takeIf { it.isNotBlank() } ?: "local-source.js"
+                    val content = withContext(Dispatchers.IO) {
+                        context.contentResolver.openInputStream(uri)?.use { input ->
+                            val bytes = input.readBytes()
+                            require(bytes.size <= 2 * 1024 * 1024) { "音源檔案超過 2 MB 上限" }
+                            String(bytes, Charsets.UTF_8)
+                        } ?: throw IllegalArgumentException("無法讀取選取的檔案")
+                    }
+                    require(fileName.endsWith(".js", true)) { "請選擇 .js 音源檔案" }
+                    onImportLocalSource(content, fileName)
+                    showImportDialog = false
+                } catch (e: Exception) {
+                    android.widget.Toast.makeText(context, "本機音源匯入失敗：${e.message}", android.widget.Toast.LENGTH_LONG).show()
+                }
+            }
+        }
+    }
     var initialFocusRequested by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
@@ -267,6 +296,7 @@ fun SourceManagementScreen(
                     onPreviewSourceFromUrl(url)
                     showImportDialog = false
                 },
+                onPickLocalFile = { localSourcePicker.launch(arrayOf("*/*")) },
                 onDismiss = { showImportDialog = false }
             )
         }
@@ -986,6 +1016,7 @@ fun DeleteConfirmDialog(
 @Composable
 fun ImportSourceDialog(
     onImport: (String) -> Unit,
+    onPickLocalFile: () -> Unit,
     onDismiss: () -> Unit
 ) {
     var sourceUrl by remember { mutableStateOf("") }
@@ -1008,10 +1039,20 @@ fun ImportSourceDialog(
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(
-                    text = "輸入音源 JS 腳本的直接連結網址。匯入後會自動解析音源名稱、版本、作者及支援平台。",
+                    text = "可選擇電視本機的 .js 音源檔，或輸入音源 JS 腳本的直接連結網址。",
                     color = LXTextSecondary,
                     fontSize = 14.sp
                 )
+                OutlinedButton(
+                    onClick = onPickLocalFile,
+                    modifier = Modifier.fillMaxWidth().lxSelectorFocus(
+                        shape = RoundedCornerShape(10.dp), glow = false, animated = false
+                    )
+                ) {
+                    Icon(Icons.Default.FolderOpen, contentDescription = null)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("從本機選擇音源檔（.js）")
+                }
                 OutlinedTextField(
                     value = sourceUrl,
                     onValueChange = {
