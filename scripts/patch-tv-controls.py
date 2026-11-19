@@ -12,6 +12,34 @@ def replace_once(source: str, old: str, new: str, label: str) -> str:
         raise SystemExit(f"Could not locate patch anchor: {label}")
     return source.replace(old, new, 1)
 
+def patch_player_mode_button() -> None:
+    control = ROOT / "src/components/player/PlayerBar/components/ControlBtn.tsx"
+    source = control.read_text(encoding="utf-8")
+    source = replace_once(
+        source,
+        "import { useHorizontalMode } from '@/utils/hooks'",
+        "import { useHorizontalMode } from '@/utils/hooks'\nimport PlayModeBtn from '@/screens/PlayDetail/Horizontal/MoreBtn/PlayModeBtn'",
+        "TV player play mode import",
+    )
+    source = replace_once(
+        source,
+        "{ isHorizontalMode ? <PlayPrevBtn /> : null }",
+        "{ isHorizontalMode ? <PlayPrevBtn /> : null }\n      <PlayModeBtn />",
+        "TV player repeat mode control",
+    )
+    control.write_text(source, encoding="utf-8")
+
+    mode = ROOT / "src/screens/PlayDetail/Horizontal/MoreBtn/Btn.tsx"
+    source = mode.read_text(encoding="utf-8")
+    source = replace_once(
+        source,
+        "<TouchableOpacity style={{ ...styles.cotrolBtn, width: BTN_WIDTH, height: BTN_WIDTH }}",
+        "<TouchableOpacity focusable style={{ ...styles.cotrolBtn, width: 60, height: 60, borderRadius: 30 }}",
+        "TV play mode remote focus target",
+    )
+    mode.write_text(source, encoding="utf-8")
+
+
 def patch_player_controls() -> None:
     path = ROOT / "src/components/player/PlayerBar/components/ControlBtn.tsx"
     source = path.read_text(encoding="utf-8")
@@ -426,6 +454,7 @@ def patch_my_lists() -> None:
 
 patch_button()
 patch_player_controls()
+patch_player_mode_button()
 patch_player_bar()
 patch_player_typography()
 patch_my_lists()
