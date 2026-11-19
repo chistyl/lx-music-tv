@@ -18,6 +18,9 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Apply requested feature removals
+        run: python3 scripts/patch-lx-tv-features.py
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -52,7 +55,6 @@ jobs:
         run: |
           python3 scripts/prepare-android-tv.py
           python3 scripts/patch-tv-controls.py
-          python3 scripts/patch-lx-tv-features.py
           grep -n "LEANBACK_LAUNCHER\|android.software.leanback\|screenOrientation" upstream/lx-music-mobile-auto-source/android/app/src/main/AndroidManifest.xml
           grep -n "focusable\|tvFocused\|handleFocus" upstream/lx-music-mobile-auto-source/src/components/common/Button.tsx
 
