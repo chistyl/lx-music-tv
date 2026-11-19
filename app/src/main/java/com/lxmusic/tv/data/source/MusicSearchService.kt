@@ -738,7 +738,8 @@ private fun MusicItem.toSong(): Song {
         platform = MusicPlatform.entries.firstOrNull { it.key == platform }
             ?: MusicPlatform.LOCAL,
         quality = listOf(AudioQuality.QUALITY_128K, AudioQuality.QUALITY_320K, AudioQuality.FLAC),
-        platformKey = platform
+        platformKey = platform,
+        sourceData = rawData
     )
 }
 
