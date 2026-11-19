@@ -64,7 +64,34 @@ jobs:
 
       - name: Install JavaScript dependencies
         working-directory: upstream/lx-music-mobile-auto-source
-        run: npm ci
+        timeout-minutes: 15
+        run: |
+          set -o pipefail
+          for attempt in 1 2; do
+            echo "npm ci attempt ${attempt}/2"
+            if timeout 7m npm ci --fetch-retries=2 --fetch-timeout=60000 --prefer-offline 2>&1 | tee "npm-ci-attempt-${attempt}.log"; then
+              exit 0
+            else
+              status=$?
+            fi
+            echo "npm ci attempt ${attempt} failed with exit code ${status}."
+            if [ "$attempt" -lt 2 ]; then
+              echo "Clearing npm cache and retrying once."
+              npm cache clean --force
+              sleep 5
+            fi
+          done
+          echo "npm ci failed after 2 attempts."
+          exit 1
+
+      - name: Upload npm installation diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lx-music-tv-npm-ci-diagnostics
+          path: upstream/lx-music-mobile-auto-source/npm-ci-attempt-*.log
+          if-no-files-found: warn
+          retention-days: 14
 
       - name: Run upstream custom-source tests
         working-directory: upstream/lx-music-mobile-auto-source
