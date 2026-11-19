@@ -161,7 +161,7 @@ export default () => {
     justifyContent: 'center',
     alignItems: 'center',
   },""", """  header: {
-    width: 270,
+    width: 190,
     height: '100%',
     justifyContent: 'center',
     alignItems: 'flex-start',
@@ -195,7 +195,7 @@ export default () => {
   },
   menuItem: {
     flexDirection: 'row',
-    paddingVertical: 12,
+    paddingVertical: 8,
     paddingHorizontal: 10,
     marginHorizontal: 3,
     justifyContent: 'center',
@@ -239,7 +239,7 @@ export default () => {
           color={active ? '#FFFFFF' : tvFocused ? theme['c-primary-font-active'] : theme['c-font-label']}
         />
       </View>
-      <Text style={{ marginLeft: 12, fontSize: 20, color: active ? '#FFFFFF' : tvFocused ? theme['c-primary-font-active'] : theme['c-font-label'] }}>
+      <Text style={{ marginLeft: 12, fontSize: 18, color: active ? '#FFFFFF' : tvFocused ? theme['c-primary-font-active'] : theme['c-font-label'] }}>
         {global.i18n.t(id)}
       </Text>
     </TouchableOpacity>
@@ -262,7 +262,7 @@ export default () => {
     source = source.replace("borderRightColor: theme['c-border-background']", "borderBottomColor: theme['c-border-background']", 1)
     source = source.replace("borderRightColor: theme['c-border-background']", "borderBottomColor: theme['c-border-background']", 1)
     # Keep the Music wordmark reproducible from a clean pinned upstream checkout.
-    if "fontSize: 42, fontWeight: '700'" not in source:
+    if "fontSize: 26, fontWeight: '700'" not in source:
         source, count = re.subn(
             r'(<Icon\s+name=["\']logo["\']\s+color=\{theme\[["\']c-primary-dark-100-alpha-300["\']\]\}\s+size=\{\d+\}\s*/>)',
             r"\1\n        <Text style={{ marginLeft: 12, fontSize: 42, fontWeight: '700', color: theme['c-primary-dark-100-alpha-300'] }}>Music</Text>",
@@ -305,7 +305,7 @@ export default () => {
     flexGrow: 0,
     flexShrink: 0,
     paddingLeft: 0,
-    alignItems: 'center',
+    alignItems: 'flex-start',
     marginTop: 8,
   },
   homeRight: {
@@ -324,7 +324,7 @@ export default () => {
     source = pic.read_text(encoding="utf-8")
     source = replace_once(source, """  const musicInfo = usePlayerMusicInfo()
   const handlePress""", """  const musicInfo = usePlayerMusicInfo()
-  const picSize = isHome ? scaleSizeH(230) : PIC_HEIGHT
+  const picSize = isHome ? scaleSizeH(180) : PIC_HEIGHT
   const handlePress""", "large home player artwork")
     source = replace_once(source, """<Image url={musicInfo.pic} nativeID={NAV_SHEAR_NATIVE_IDS.playDetail_pic} style={styles.image} onError={handleError} />""", """<Image url={musicInfo.pic} nativeID={NAV_SHEAR_NATIVE_IDS.playDetail_pic} style={[styles.image, { width: picSize, height: picSize, borderRadius: picSize / 2, borderWidth: isHome ? 2 : 0, borderColor: '#25C76A' }]} onError={handleError} />""", "home player artwork size")
     pic.write_text(source, encoding="utf-8")
