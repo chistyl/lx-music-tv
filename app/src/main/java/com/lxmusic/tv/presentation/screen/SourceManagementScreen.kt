@@ -989,6 +989,7 @@ fun ImportSourceDialog(
     onDismiss: () -> Unit
 ) {
     var sourceUrl by remember { mutableStateOf("") }
+    var validationMessage by remember { mutableStateOf<String?>(null) }
     val urlFocusRequester = remember { FocusRequester() }
 
     LaunchedEffect(Unit) {
@@ -1013,13 +1014,20 @@ fun ImportSourceDialog(
                 )
                 OutlinedTextField(
                     value = sourceUrl,
-                    onValueChange = { sourceUrl = it },
+                    onValueChange = {
+                        sourceUrl = it
+                        validationMessage = null
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .focusRequester(urlFocusRequester),
                     singleLine = true,
                     label = { Text("音源網址") },
                     placeholder = { Text("https://.../source.js") },
+                    isError = validationMessage != null,
+                    supportingText = validationMessage?.let { message ->
+                        { Text(message, color = MaterialTheme.colorScheme.error) }
+                    },
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = LXPrimary,
                         cursorColor = LXPrimary
@@ -1029,9 +1037,16 @@ fun ImportSourceDialog(
         },
         confirmButton = {
             Button(
-                onClick = { onImport(sourceUrl.trim()) },
-                enabled = sourceUrl.trim().startsWith("https://", true) ||
-                    sourceUrl.trim().startsWith("http://", true),
+                onClick = {
+                    val url = sourceUrl.trim()
+                    if (url.isBlank()) {
+                        validationMessage = "請先輸入音源 JS 直接連結網址"
+                    } else if (!url.startsWith("https://", true) && !url.startsWith("http://", true)) {
+                        validationMessage = "網址需以 http:// 或 https:// 開頭"
+                    } else {
+                        onImport(url)
+                    }
+                },
                 modifier = Modifier.lxSelectorFocus(
                     shape = RoundedCornerShape(10.dp),
                     glow = false,
