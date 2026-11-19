@@ -111,6 +111,148 @@ object QuickJSPreload {
     });
   };
 
+  // ===== 通用 Web API：非同步 XMLHttpRequest =====
+  // 僅支援非同步請求；底層仍使用 Android HTTP bridge。
+  function LXXMLHttpRequest() {
+    this.readyState = 0;
+    this.status = 0;
+    this.statusText = '';
+    this.responseText = '';
+    this.response = null;
+    this.responseType = '';
+    this.timeout = 0;
+    this.withCredentials = false;
+    this.onreadystatechange = null;
+    this.onloadstart = null;
+    this.onprogress = null;
+    this.onload = null;
+    this.onerror = null;
+    this.ontimeout = null;
+    this.onabort = null;
+    this.onloadend = null;
+    this._method = 'GET';
+    this._url = '';
+    this._headers = {};
+    this._responseHeaders = {};
+    this._sendFlag = false;
+    this._aborted = false;
+    this._listeners = {};
+  }
+
+  LXXMLHttpRequest.UNSENT = 0;
+  LXXMLHttpRequest.OPENED = 1;
+  LXXMLHttpRequest.HEADERS_RECEIVED = 2;
+  LXXMLHttpRequest.LOADING = 3;
+  LXXMLHttpRequest.DONE = 4;
+
+  LXXMLHttpRequest.prototype.addEventListener = function (type, listener) {
+    if (typeof listener !== 'function') return;
+    (this._listeners[type] || (this._listeners[type] = [])).push(listener);
+  };
+  LXXMLHttpRequest.prototype.removeEventListener = function (type, listener) {
+    var list = this._listeners[type] || [];
+    this._listeners[type] = list.filter(function (item) { return item !== listener; });
+  };
+  LXXMLHttpRequest.prototype._emit = function (type) {
+    var event = { type: type, target: this, currentTarget: this };
+    var handler = this['on' + type];
+    if (typeof handler === 'function') {
+      try { handler.call(this, event); } catch (e) {}
+    }
+    (this._listeners[type] || []).slice().forEach(function (listener) {
+      try { listener.call(this, event); } catch (e) {}
+    }, this);
+  };
+  LXXMLHttpRequest.prototype._change = function (state) {
+    this.readyState = state;
+    this._emit('readystatechange');
+  };
+  LXXMLHttpRequest.prototype.open = function (method, url, async) {
+    if (async === false) throw new Error('Synchronous XMLHttpRequest is not supported');
+    if (this._sendFlag) throw new Error('InvalidStateError');
+    this._method = String(method || 'GET').toUpperCase();
+    this._url = String(url);
+    this.status = 0;
+    this.statusText = '';
+    this.responseText = '';
+    this.response = null;
+    this._headers = {};
+    this._responseHeaders = {};
+    this._aborted = false;
+    this._sendFlag = false;
+    this._change(LXXMLHttpRequest.OPENED);
+  };
+  LXXMLHttpRequest.prototype.setRequestHeader = function (name, value) {
+    if (this.readyState !== LXXMLHttpRequest.OPENED || this._sendFlag) throw new Error('InvalidStateError');
+    var key = String(name);
+    this._headers[key] = this._headers[key] ? this._headers[key] + ', ' + String(value) : String(value);
+  };
+  LXXMLHttpRequest.prototype.getResponseHeader = function (name) {
+    if (this.readyState < LXXMLHttpRequest.HEADERS_RECEIVED) return null;
+    var target = String(name).toLowerCase();
+    var keys = Object.keys(this._responseHeaders);
+    for (var i = 0; i < keys.length; i++) {
+      if (keys[i].toLowerCase() === target) return String(this._responseHeaders[keys[i]]);
+    }
+    return null;
+  };
+  LXXMLHttpRequest.prototype.getAllResponseHeaders = function () {
+    if (this.readyState < LXXMLHttpRequest.HEADERS_RECEIVED) return '';
+    return Object.keys(this._responseHeaders).map(function (key) {
+      return key + ': ' + this._responseHeaders[key] + '\\r\\n';
+    }, this).join('');
+  };
+  LXXMLHttpRequest.prototype.send = function (body) {
+    if (this.readyState !== LXXMLHttpRequest.OPENED || this._sendFlag) throw new Error('InvalidStateError');
+    this._sendFlag = true;
+    this._emit('loadstart');
+    var self = this;
+    lxRequest(this._url, {
+      method: this._method,
+      headers: this._headers,
+      body: body == null ? '' : body,
+      timeout: this.timeout || 0
+    }, function (err, response, responseBody) {
+      if (self._aborted) return;
+      self._sendFlag = false;
+      if (err) {
+        if (String(err).toLowerCase().indexOf('timeout') >= 0) self._emit('timeout');
+        else self._emit('error');
+        self._change(LXXMLHttpRequest.DONE);
+        self._emit('loadend');
+        return;
+      }
+      self._responseHeaders = response && response.headers ? response.headers : {};
+      self._change(LXXMLHttpRequest.HEADERS_RECEIVED);
+      self._change(LXXMLHttpRequest.LOADING);
+      self.status = response ? Number(response.statusCode) || 0 : 0;
+      self.statusText = response ? (response.statusMessage || '') : '';
+      self.responseText = typeof responseBody === 'string'
+        ? responseBody : JSON.stringify(responseBody == null ? '' : responseBody);
+      try {
+        self.response = self.responseType === 'json'
+          ? JSON.parse(self.responseText) : self.responseText;
+      } catch (e) {
+        self.response = null;
+      }
+      self._change(LXXMLHttpRequest.DONE);
+      self._emit('load');
+      self._emit('loadend');
+    });
+  };
+  LXXMLHttpRequest.prototype.abort = function () {
+    if (!this._sendFlag && this.readyState === LXXMLHttpRequest.UNSENT) return;
+    this._aborted = true;
+    this._sendFlag = false;
+    this.status = 0;
+    this.response = null;
+    this.responseText = '';
+    this._change(LXXMLHttpRequest.UNSENT);
+    this._emit('abort');
+    this._emit('loadend');
+  };
+  globalThis.XMLHttpRequest = LXXMLHttpRequest;
+
   // ===== 定时器 =====
   var timerCallbacks = {};
   var timerSeq = 0;
