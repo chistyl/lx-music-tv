@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - feature/lx-mobile-auto-source-tv-r1
+      - feature/lx-tv-top-nav-left-player-r1
   workflow_dispatch:
 
 permissions:
