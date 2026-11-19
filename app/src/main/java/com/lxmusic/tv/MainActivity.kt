@@ -50,6 +50,7 @@ import com.lxmusic.tv.presentation.screen.CacheManageScreen
 import com.lxmusic.tv.presentation.screen.PlayerScreen
 import com.lxmusic.tv.presentation.screen.SearchResultScreen
 import com.lxmusic.tv.presentation.screen.SourceManagementScreen
+import com.lxmusic.tv.presentation.screen.SourceBrowseScreen
 import com.lxmusic.tv.presentation.screen.InterfaceSettingsScreen
 import com.lxmusic.tv.presentation.screen.DiscCoverButton
 import com.lxmusic.tv.presentation.theme.FocusBorder
@@ -546,6 +547,7 @@ fun LXMusicApp() {
                     }
                 },
                 onClearSourceBrowseItems = { viewModel.clearSourceBrowseItems() },
+                onOpenSourceBrowse = { navController.navigate("source_browse") },
                 serverRunning = serverRunning,
                 serverUrl = serverUrl,
                 onToggleServer = { viewModel.toggleServer() },
@@ -566,6 +568,21 @@ fun LXMusicApp() {
                     context.getSharedPreferences("lx_settings", Context.MODE_PRIVATE)
                         .edit().putBoolean(MainViewModel.KEY_PLATFORM_SWITCH, enabled).apply()
                 }
+            )
+        }
+
+        // 自訂音源正式瀏覽頁：只呈現已由使用者明確映射的資料，不推測播放欄位。
+        composable("source_browse") {
+            val items by viewModel.sourceBrowseItems.collectAsState()
+            val loading by viewModel.sourceBrowseLoading.collectAsState()
+            val error by viewModel.sourceBrowseError.collectAsState()
+            SourceBrowseScreen(
+                items = items,
+                loading = loading,
+                error = error,
+                onBack = { navController.popBackStack() },
+                onFocusFloatingBall = { floatingBallRequester.requestFocus() },
+                modifier = Modifier.fillMaxSize()
             )
         }
 
