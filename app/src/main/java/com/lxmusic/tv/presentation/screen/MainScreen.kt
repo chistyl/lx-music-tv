@@ -277,10 +277,6 @@ fun MainScreen(
                 },
                 // 侧栏焦点状态上报（返回键逻辑用）
                 onNavBarFocusChanged = onNavBarFocusChanged,
-                currentSong = currentSong,
-                isPlaying = isPlaying,
-                onNavigateToPlayer = onNavigateToPlayer,
-                onPlayPause = onPlayPause,
                 modifier = Modifier
                     // 2.6 窄图标栏：宽度只够放 1 个图标（选中时底部才显示文字），参考 blbl/BBLL
                     .width(72.dp)
@@ -401,10 +397,6 @@ fun NavigationSidebar(
     onLogoFocusChanged: (Boolean) -> Unit = {},
     // 侧栏是否持有焦点（MainActivity 返回键逻辑用：焦点在内容区时第一次返回先回 tab）
     onNavBarFocusChanged: (Boolean) -> Unit = {},
-    currentSong: com.lxmusic.tv.data.model.Song? = null,
-    isPlaying: Boolean = false,
-    onNavigateToPlayer: () -> Unit = {},
-    onPlayPause: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val navItems = listOf(
