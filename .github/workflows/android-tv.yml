@@ -1,0 +1,68 @@
+name: Android TV build
+
+on:
+  push:
+    branches:
+      - feature/lx-mobile-auto-source-tv-r1
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout TV project and pinned upstream
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: npm
+          cache-dependency-path: upstream/lx-music-mobile-auto-source/package-lock.json
+
+      - name: Install JavaScript dependencies
+        working-directory: upstream/lx-music-mobile-auto-source
+        run: npm ci
+
+      - name: Run upstream custom-source tests
+        working-directory: upstream/lx-music-mobile-auto-source
+        run: npm run test:custom-sources
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Generate Android JS bundle
+        working-directory: upstream/lx-music-mobile-auto-source
+        run: npm run bundle-android
+
+      - name: Assemble debug APK
+        working-directory: upstream/lx-music-mobile-auto-source/android
+        run: ./gradlew --no-daemon assembleDebug
+
+      - name: Package complete source tree
+        run: |
+          mkdir -p dist
+          zip -qr dist/lx-music-tv-source.zip . \
+            -x './.git/*' './**/.git/*' './**/node_modules/*' \
+               './**/build/*' './**/.gradle/*' './dist/*'
+
+      - name: Upload APK and source ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: lx-music-tv-build
+          path: |
+            upstream/lx-music-mobile-auto-source/android/app/build/outputs/apk/debug/*.apk
+            dist/lx-music-tv-source.zip
+          if-no-files-found: error
+          retention-days: 30
