@@ -56,6 +56,61 @@ object QuickJSPreload {
     return function () {};
   }
 
+  // ===== 通用 Web API：fetch / Response-like =====
+  // 使用同一個受控 HTTP bridge，讓非洛雪腳本可採用常見 fetch 介面。
+  // 不暴露任意 socket；請求仍由 Android HttpClient 統一執行與控管。
+  globalThis.fetch = function (input, init) {
+    var opts = init || {};
+    var url = (typeof input === 'string') ? input : (input && input.url) || String(input);
+    var method = opts.method || (input && input.method) || 'GET';
+    var headers = opts.headers || (input && input.headers) || {};
+    var body = (opts.body !== undefined) ? opts.body : '';
+    return new Promise(function (resolve, reject) {
+      lxRequest(url, {
+        method: method,
+        headers: headers,
+        body: body,
+        timeout: opts.timeout || 0
+      }, function (err, response, responseBody) {
+        if (err) {
+          reject(new Error(String(err)));
+          return;
+        }
+        var textBody = (typeof responseBody === 'string')
+          ? responseBody
+          : JSON.stringify(responseBody == null ? '' : responseBody);
+        var responseHeaders = response && response.headers ? response.headers : {};
+        resolve({
+          ok: !!(response && response.statusCode >= 200 && response.statusCode < 300),
+          status: response ? Number(response.statusCode) || 0 : 0,
+          statusText: response ? (response.statusMessage || '') : '',
+          url: url,
+          headers: {
+            get: function (name) {
+              var target = String(name).toLowerCase();
+              var keys = Object.keys(responseHeaders);
+              for (var i = 0; i < keys.length; i++) {
+                if (keys[i].toLowerCase() === target) return String(responseHeaders[keys[i]]);
+              }
+              return null;
+            },
+            forEach: function (callback) {
+              Object.keys(responseHeaders).forEach(function (key) {
+                callback(String(responseHeaders[key]), key);
+              });
+            }
+          },
+          text: function () { return Promise.resolve(textBody); },
+          json: function () {
+            try { return Promise.resolve(JSON.parse(textBody)); }
+            catch (e) { return Promise.reject(e); }
+          },
+          clone: function () { return this; }
+        });
+      });
+    });
+  };
+
   // ===== 定时器 =====
   var timerCallbacks = {};
   var timerSeq = 0;
