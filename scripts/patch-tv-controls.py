@@ -207,6 +207,7 @@ export default () => {
     source = replace_once(source, """      <ScrollView style={styles.menus}>
         <View style={styles.list}>""", """      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.menus}>
         <View style={styles.list}>""", "horizontal navigation scrolling")
+    source = source.replace("  const showExitBtn = useSettingValue('common.showExitBtn')\n", "", 1)
     source = replace_once(source, """      {
         showBackBtn ? <MenuItem id="back_home" icon="home" onPress={handlePress} /> : null
       }
@@ -214,8 +215,7 @@ export default () => {
         showExitBtn ? <MenuItem id="nav_exit" icon="exit2" onPress={handlePress} /> : null
       }""", """      <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 6 }}>
         {showBackBtn ? <MenuItem id="back_home" icon="home" onPress={handlePress} /> : null}
-        {showExitBtn ? <MenuItem id="nav_exit" icon="exit2" onPress={handlePress} /> : null}
-      </View>""", "top navigation utility buttons")
+      </View>""", "remove right-side exit button")
     source = source.replace("borderRightColor: theme['c-border-background']", "borderBottomColor: theme['c-border-background']", 1)
     source = source.replace("borderRightColor: theme['c-border-background']", "borderBottomColor: theme['c-border-background']", 1)
     # Keep the Music wordmark reproducible from a clean pinned upstream checkout.
