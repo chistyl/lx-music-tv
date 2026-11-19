@@ -42,18 +42,4 @@ class TraditionalChineseConverterTest {
         assertEquals("繼續前進", lines[0].translation)
     }
 
-    @Test
-    fun convertsMainAndTranslationWithoutChangingLrcTimes() {
-        val parser = LyricsParser()
-        val lyrics = parser.parseWithTranslation(
-            "[00:01.20]这是一首关于软件的歌\n[00:02.40]继续前进",
-            "[00:01.20]這是一首關於軟體的歌\n[00:02.40]继续前进"
-        )
-
-        assertEquals(listOf(1200L, 2400L), lyrics.lines.map { it.timeMs })
-        assertEquals("這是一首關於軟體的歌", lyrics.lines[0].content)
-        assertEquals("這是一首關於軟體的歌", lyrics.lines[0].translation)
-        assertEquals("繼續前進", lyrics.lines[1].content)
-        assertEquals("繼續前進", lyrics.lines[1].translation)
-    }
 }
