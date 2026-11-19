@@ -14,6 +14,40 @@ class ScriptParserTest {
     private val parser = ScriptParser()
 
     @Test
+    fun `test accepts non LX JavaScript source during import`() {
+        val scriptContent = """
+            // Generic provider script without an LX host API
+            const provider = {
+                id: 'custom-provider',
+                async resolve(track) {
+                    return { url: 'https://example.com/audio.mp3', title: track.title }
+                }
+            };
+            globalThis.customProvider = provider;
+        """.trimIndent()
+
+        val result = parser.parse(scriptContent)
+        assertTrue("Generic JavaScript must not be rejected for lacking LX globals", result is ParseResult.Success)
+        assertTrue((result as ParseResult.Success).declaredPlatforms.isEmpty())
+        assertEquals(
+            SourceProtocol.GENERIC_JAVASCRIPT,
+            SourceProtocolDetector.detect(scriptContent)
+        )
+    }
+
+    @Test
+    fun `test detects CommonJS and ES module protocols`() {
+        assertEquals(
+            SourceProtocol.COMMON_JS,
+            SourceProtocolDetector.detect("module.exports = { search: async () => [] }")
+        )
+        assertEquals(
+            SourceProtocol.ES_MODULE,
+            SourceProtocolDetector.detect("export default async function resolve() {}")
+        )
+    }
+
+    @Test
     fun `test parse valid script`() {
         val scriptContent = """
             /**
