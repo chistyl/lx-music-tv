@@ -110,4 +110,23 @@ edit("src/screens/Home/Views/Setting/Vertical/Main.tsx",
 # Version modal implementation remains in source but is unreachable: the settings entry is removed and first-launch checks are disabled.
 
 # Ensure no app entry point calls the update checker.
+
+# Drop upstream tests that asserted the now-removed automatic subscription recovery behavior.
+test_path = ROOT / "scripts/custom-sources.test.cjs"
+tests = test_path.read_text()
+for title in [
+    "all imported sources fail, saved subscription updates, then retry succeeds in user order",
+    "updated scripts failing again stop after the second local pass",
+]:
+    marker = "test('" + title + "',"
+    start = tests.find(marker)
+    if start < 0:
+        raise SystemExit(f"Obsolete recovery test not found: {title}")
+    next_test = tests.find("\ntest(", start + len(marker))
+    if next_test < 0:
+        raise SystemExit(f"Next test boundary not found after: {title}")
+    tests = tests[:start] + tests[next_test + 1:]
+test_path.write_text(tests)
+print("Applied: align source tests with disabled automatic subscription recovery")
+
 print("LX TV feature patch completed.")
