@@ -280,6 +280,15 @@ class SourceExecutor(
             Log.i(TAG, "获取播放URL: musicId=$musicId, quality=${quality.key}")
 
             if (useEventDrivenModel) {
+                val platformInfo = sourceInfoFromInit[source] as? JSONObject
+                    ?: return@withContext SourceExecutionResult.Error("音源未宣告平台：$source")
+                val declaredActions = platformInfo.optJSONArray("actions")
+                    ?: return@withContext SourceExecutionResult.Error("平台「$source」未宣告任何 action")
+                val supportsMusicUrl = (0 until declaredActions.length())
+                    .any { declaredActions.optString(it) == "musicUrl" }
+                if (!supportsMusicUrl) {
+                    return@withContext SourceExecutionResult.Error("平台「$source」未宣告 musicUrl，無法播放")
+                }
                 return@withContext dispatchMusicUrlRequest(musicId, quality, source, songName, singer)
             }
 
