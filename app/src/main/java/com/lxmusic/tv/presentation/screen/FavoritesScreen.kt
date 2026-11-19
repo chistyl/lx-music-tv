@@ -223,9 +223,8 @@ fun FavoriteTabSelector(
 ) {
     val tabs = listOf("歌曲" to Icons.Default.MusicNote, "歌单" to Icons.Default.PlaylistPlay)
     Row(
-        modifier = modifier,
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        modifier = modifier.focusGroup()
+        modifier = modifier.focusGroup(),
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         tabs.forEachIndexed { index, (title, _) ->
             val isSelected = selectedTab == index
@@ -605,8 +604,8 @@ fun FavoritePlaylistRow(
             // ① 进入歌单（加载该歌单的歌曲列表）——沿用 ChevronRight 图标
             Box(
                 modifier = Modifier
-                    .size(40.dp)
-                    // 统一圆形聚焦（填充+焦点环一次性绘制，无空带、边框粗细统一）
+                    .size(52.dp)
+                    // 統一圓形焦點，放大電視遙控器操作區
                     .lxCircleButtonFocus()
                     .clickable { onClick() },
                 contentAlignment = Alignment.Center
