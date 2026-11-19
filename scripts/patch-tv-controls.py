@@ -271,7 +271,7 @@ export default () => {
         )
         if count != 1:
             raise SystemExit(f"Failed to add Music wordmark: matched {count} logo anchors")
-    if "fontSize: 25, fontWeight: '700'" not in source:
+    if "fontSize: 42, fontWeight: '700'" not in source:
         raise SystemExit("Music wordmark verification failed")
 
     aside.write_text(source, encoding="utf-8")
