@@ -117,6 +117,7 @@ tests = test_path.read_text()
 for title in [
     "all imported sources fail, saved subscription updates, then retry succeeds in user order",
     "updated scripts failing again stop after the second local pass",
+    "single subscribed source refreshes without enabling multi-source switching",
 ]:
     marker = "test('" + title + "',"
     start = tests.find(marker)
