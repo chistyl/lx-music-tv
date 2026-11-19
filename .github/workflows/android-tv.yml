@@ -78,6 +78,13 @@ jobs:
         working-directory: upstream/lx-music-mobile-auto-source/android
         run: |
           set -o pipefail
+          echo "=== Build environment diagnostics ==="
+          date -u
+          java -version 2>&1
+          ./gradlew --version
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          ls -la "$ANDROID_HOME/platforms" "$ANDROID_HOME/build-tools" "$ANDROID_HOME/ndk" || true
+          echo "=== Gradle build starts ==="
           for attempt in 1 2; do
             echo "Gradle build attempt ${attempt}/2"
             if timeout 20m ./gradlew --no-daemon --stacktrace --console=plain --warning-mode all -PreactNativeArchitectures=x86,x86_64 assembleDebug 2>&1 | tee "gradle-build-attempt-${attempt}.log"; then
