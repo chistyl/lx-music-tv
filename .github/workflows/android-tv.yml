@@ -42,6 +42,16 @@ jobs:
       - name: Build release APK
         run: ./gradlew --no-daemon clean assembleRelease
 
+      - name: Verify APK signature
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK="$(find app/build/outputs/apk/release -maxdepth 1 -type f -name '*.apk' | head -n 1)"
+          test -n "$APK"
+          APKSIGNER="$(find "$ANDROID_HOME/build-tools" -type f -name apksigner | sort -V | tail -n 1)"
+          test -n "$APKSIGNER"
+          "$APKSIGNER" verify --verbose --print-certs "$APK"
+
       - name: Verify APK and native ABI payloads
         shell: bash
         run: |
