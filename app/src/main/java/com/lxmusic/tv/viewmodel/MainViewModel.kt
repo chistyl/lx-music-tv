@@ -1365,12 +1365,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         action: String,
         info: org.json.JSONObject,
         fields: SourceBrowseFieldMap,
-        sourceId: String? = null
+        sourceId: String? = null,
+        append: Boolean = false
     ) {
         sourceBrowseJob?.cancel()
         val requestId = ++sourceBrowseRequestId
         sourceBrowseJob = viewModelScope.launch {
-            _sourceBrowseItems.value = emptyList()
+            if (!append) _sourceBrowseItems.value = emptyList()
             _sourceBrowseError.value = null
             _sourceBrowseLoading.value = true
             val result = try {
@@ -1392,7 +1393,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
             if (requestId == sourceBrowseRequestId) {
                 when (result) {
-                    is SourceBrowseItemsResult.Success -> _sourceBrowseItems.value = result.items
+                    is SourceBrowseItemsResult.Success -> {
+                        _sourceBrowseItems.value = if (append) _sourceBrowseItems.value + result.items else result.items
+                    }
                     is SourceBrowseItemsResult.Error -> _sourceBrowseError.value = result.message
                     null -> _sourceBrowseError.value = "音源回應逾時，請稍後重試"
                 }
