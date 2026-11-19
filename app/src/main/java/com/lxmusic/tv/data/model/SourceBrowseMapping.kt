@@ -13,7 +13,15 @@ data class SourceBrowseFieldMap(
     val countPath: String? = null,
     val descriptionPath: String? = null,
     val durationPath: String? = null,
-    val albumPath: String? = null
+    val albumPath: String? = null,
+    // 歌曲播放資料必須由使用者明確映射；不沿用清單 ID/title 猜測。
+    val songIdPath: String? = null,
+    val songNamePath: String? = null,
+    val singerPath: String? = null,
+    val songAlbumNamePath: String? = null,
+    val songAlbumIdPath: String? = null,
+    val songPicPath: String? = null,
+    val songDurationPath: String? = null
 )
 
 sealed class SourceBrowseItemsResult {
@@ -36,5 +44,31 @@ data class SourceBrowseItem(
     val count: Int? = null,
     val description: String? = null,
     val durationMs: Long? = null,
-    val album: String? = null
-)
+    val album: String? = null,
+    val songId: String? = null,
+    val songName: String? = null,
+    val singer: String? = null,
+    val songAlbumName: String? = null,
+    val songAlbumId: String? = null,
+    val songPicUrl: String? = null,
+    val songDurationMs: Long? = null
+) {
+    /** 只有明確映射了歌曲 ID、歌名與歌手，才允許進入既有播放流程。 */
+    fun toSongOrNull(): Song? {
+        val mappedId = songId?.takeIf { it.isNotBlank() } ?: return null
+        val mappedName = songName?.takeIf { it.isNotBlank() } ?: return null
+        val mappedSinger = singer?.takeIf { it.isNotBlank() } ?: return null
+        val mappedPlatform = MusicPlatform.entries.firstOrNull { it.key == platformKey } ?: MusicPlatform.LOCAL
+        return Song(
+            id = mappedId,
+            name = mappedName,
+            singer = mappedSinger,
+            albumName = songAlbumName ?: album,
+            albumId = songAlbumId,
+            picUrl = songPicUrl ?: coverUrl,
+            duration = songDurationMs ?: durationMs,
+            platform = mappedPlatform,
+            platformKey = platformKey
+        )
+    }
+}
