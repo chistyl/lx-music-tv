@@ -1,28 +1,26 @@
 #!/usr/bin/env python3
-"""Patch shared LX Music Pressable controls with visible Android TV focus state."""
+"""Patch LX Music shared controls and primary navigation for Android TV focus."""
 from pathlib import Path
 
-target = Path("upstream/lx-music-mobile-auto-source/src/components/common/Button.tsx")
-source = target.read_text(encoding="utf-8")
+ROOT = Path("upstream/lx-music-mobile-auto-source")
 
-old_import = "import { useMemo, useRef, useImperativeHandle, forwardRef } from 'react'"
-new_import = "import { useMemo, useRef, useImperativeHandle, forwardRef, useState } from 'react'"
-if old_import not in source:
-    if new_import not in source:
-        raise SystemExit("Unexpected Button.tsx React import; refusing unsafe patch")
-else:
-    source = source.replace(old_import, new_import, 1)
-
-old_sig = "({ ripple: propsRipple = {}, disabled, children, style, ...props }, ref) => {"
-new_sig = "({ ripple: propsRipple = {}, disabled, children, style, onFocus, onBlur, ...props }, ref) => {"
-if old_sig not in source:
-    if new_sig not in source:
-        raise SystemExit("Unexpected Button.tsx component signature; refusing unsafe patch")
-else:
-    source = source.replace(old_sig, new_sig, 1)
-
-anchor = "  const theme = useTheme()\n"
-focus_state = """  const theme = useTheme()
+def patch_button() -> None:
+    target = ROOT / "src/components/common/Button.tsx"
+    source = target.read_text(encoding="utf-8")
+    source = source.replace(
+        "import { useMemo, useRef, useImperativeHandle, forwardRef } from 'react'",
+        "import { useMemo, useRef, useImperativeHandle, forwardRef, useState } from 'react'",
+        1,
+    )
+    source = source.replace(
+        "({ ripple: propsRipple = {}, disabled, children, style, ...props }, ref) => {",
+        "({ ripple: propsRipple = {}, disabled, children, style, onFocus, onBlur, ...props }, ref) => {",
+        1,
+    )
+    if "const [tvFocused, setTvFocused] = useState(false)" not in source:
+        source = source.replace(
+            "  const theme = useTheme()\n",
+            """  const theme = useTheme()
   const [tvFocused, setTvFocused] = useState(false)
   const handleFocus = (event: any) => {
     setTvFocused(true)
@@ -32,17 +30,15 @@ focus_state = """  const theme = useTheme()
     setTvFocused(false)
     onBlur?.(event)
   }
-"""
-if focus_state not in source:
-    if anchor not in source:
-        raise SystemExit("Unexpected Button.tsx theme anchor; refusing unsafe patch")
-    source = source.replace(anchor, focus_state, 1)
-
-old_pressable = """      disabled={disabled}
+""",
+            1,
+        )
+    source = source.replace(
+        """      disabled={disabled}
       style={StyleSheet.compose({ opacity: disabled ? 0.3 : 1 }, style)}
       {...props}
-"""
-new_pressable = """      disabled={disabled}
+""",
+        """      disabled={disabled}
       focusable
       onFocus={handleFocus}
       onBlur={handleBlur}
@@ -51,11 +47,43 @@ new_pressable = """      disabled={disabled}
         tvFocused ? { borderWidth: 2, borderColor: theme['c-primary-font-active'], borderRadius: 6 } : undefined,
       )}
       {...props}
-"""
-if old_pressable in source:
-    source = source.replace(old_pressable, new_pressable, 1)
-elif new_pressable not in source:
-    raise SystemExit("Unexpected Button.tsx Pressable block; refusing unsafe patch")
+""",
+        1,
+    )
+    if "focusable" not in source or "tvFocused" not in source:
+        raise SystemExit("Failed to patch shared Button.tsx focus handling")
+    target.write_text(source, encoding="utf-8")
 
-target.write_text(source, encoding="utf-8")
-print("Android TV focus support applied to shared Pressable button component.")
+def patch_navigation(relative_path: str) -> None:
+    target = ROOT / relative_path
+    source = target.read_text(encoding="utf-8")
+    source = source.replace("import { memo } from 'react'", "import { memo, useState } from 'react'", 1)
+    old = """  const activeId = useNavActiveId()
+  const theme = useTheme()
+
+  return activeId == id"""
+    new = """  const activeId = useNavActiveId()
+  const theme = useTheme()
+  const [tvFocused, setTvFocused] = useState(false)
+
+  return activeId == id"""
+    if old in source:
+        source = source.replace(old, new, 1)
+    old_open = """    : <TouchableOpacity style={styles.menuItem} onPress={() => { onPress(id) }}>"""
+    new_open = """    : <TouchableOpacity
+        focusable
+        onFocus={() => setTvFocused(true)}
+        onBlur={() => setTvFocused(false)}
+        style={[styles.menuItem, tvFocused ? { borderWidth: 2, borderColor: theme['c-primary-font-active'], borderRadius: 6 } : undefined]}
+        onPress={() => { onPress(id) }}
+      >"""
+    if old_open in source:
+        source = source.replace(old_open, new_open, 1)
+    if "focusable" not in source:
+        raise SystemExit(f"Failed to add focusable navigation item: {relative_path}")
+    target.write_text(source, encoding="utf-8")
+
+patch_button()
+patch_navigation("src/screens/Home/Horizontal/Aside.tsx")
+patch_navigation("src/screens/Home/Vertical/DrawerNav.tsx")
+print("Android TV focus support applied to shared buttons and both navigation layouts.")
