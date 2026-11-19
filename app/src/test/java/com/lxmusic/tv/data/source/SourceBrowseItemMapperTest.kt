@@ -113,6 +113,7 @@ class SourceBrowseItemMapperTest {
         val song = items[0].toSongOrNull()
         assertEquals("song-9", song?.id)
         assertEquals("indie-radio", song?.platformKey)
+        assertEquals("source-song", song?.sourceId)
         assertEquals("夜空", song?.name)
         assertEquals("歌手甲", song?.singer)
         assertEquals("星光", song?.albumName)
