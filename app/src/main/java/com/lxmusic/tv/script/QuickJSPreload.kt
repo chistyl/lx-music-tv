@@ -390,6 +390,74 @@ object QuickJSPreload {
     return out;
   }
 
+  // ===== 通用 Web API：Base64 與 UTF-8 編碼 =====
+  if (typeof globalThis.atob !== 'function') {
+    globalThis.atob = function (input) {
+      var bytes = base64ToBytes(String(input).replace(/[\\t\\n\\f\\r ]/g, ''));
+      return bytes.map(function (value) { return String.fromCharCode(value); }).join('');
+    };
+  }
+  if (typeof globalThis.btoa !== 'function') {
+    globalThis.btoa = function (input) {
+      var value = String(input);
+      var bytes = [];
+      for (var i = 0; i < value.length; i++) {
+        var code = value.charCodeAt(i);
+        if (code > 255) throw new Error('InvalidCharacterError');
+        bytes.push(code);
+      }
+      return bytesToBase64(bytes);
+    };
+  }
+
+  if (typeof globalThis.TextEncoder !== 'function') {
+    globalThis.TextEncoder = function () {};
+    globalThis.TextEncoder.prototype.encoding = 'utf-8';
+    globalThis.TextEncoder.prototype.encode = function (input) {
+      return new Uint8Array(stringToBytes(String(input == null ? '' : input)));
+    };
+  }
+
+  if (typeof globalThis.TextDecoder !== 'function') {
+    globalThis.TextDecoder = function (label, options) {
+      var encoding = String(label || 'utf-8').toLowerCase();
+      if (encoding !== 'utf-8' && encoding !== 'utf8') throw new Error('Only UTF-8 decoding is supported');
+      this.encoding = 'utf-8';
+      this.fatal = !!(options && options.fatal);
+      this.ignoreBOM = !!(options && options.ignoreBOM);
+    };
+    globalThis.TextDecoder.prototype.decode = function (input) {
+      var bytes = input == null ? [] : Array.prototype.slice.call(input);
+      var out = '';
+      for (var i = 0; i < bytes.length;) {
+        var a = bytes[i++] & 255;
+        if (a < 128) { out += String.fromCharCode(a); continue; }
+        var code = 0, needed = 0, min = 0;
+        if ((a & 224) === 192) { code = a & 31; needed = 1; min = 128; }
+        else if ((a & 240) === 224) { code = a & 15; needed = 2; min = 2048; }
+        else if ((a & 248) === 240) { code = a & 7; needed = 3; min = 65536; }
+        else { if (this.fatal) throw new Error('EncodingError'); out += '\\uFFFD'; continue; }
+        var valid = true;
+        for (var j = 0; j < needed; j++) {
+          if (i >= bytes.length || ((bytes[i] & 192) !== 128)) { valid = false; break; }
+          code = (code << 6) | (bytes[i++] & 63);
+        }
+        if (!valid || code < min || code > 1114111 || (code >= 55296 && code <= 57343)) {
+          if (this.fatal) throw new Error('EncodingError');
+          out += '\\uFFFD';
+          continue;
+        }
+        if (code <= 65535) out += String.fromCharCode(code);
+        else {
+          code -= 65536;
+          out += String.fromCharCode(55296 + (code >> 10), 56320 + (code & 1023));
+        }
+      }
+      if (!this.ignoreBOM && out.charCodeAt(0) === 65279) out = out.slice(1);
+      return out;
+    };
+  }
+
   // Buffer/字符串 -> base64（crypto 入参统一走这里，与洛雪 dataToB64 一致）
   function dataToB64(data) {
     if (typeof data === 'string') return bytesToBase64(stringToBytes(data));
