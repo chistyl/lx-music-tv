@@ -20,7 +20,7 @@ class SourceExecutorMusicIdTest {
 
     @Test
     fun `QQ combined ids retain existing normalization`() {
-        assertEquals("songmid123", normalizeMusicIdForPlatform("songmid123_medi amid".replace(" ", ""), "tx"))
+        assertEquals("songmid123", normalizeMusicIdForPlatform("songmid123_media123", "tx"))
     }
 
     @Test
