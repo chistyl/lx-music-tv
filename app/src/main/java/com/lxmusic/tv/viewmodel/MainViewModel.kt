@@ -77,6 +77,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     // 自訂音源瀏覽資料：獨立於內建平台 BrowseDataService，保留來源與動態平台資訊。
     private val _sourceBrowseItems = MutableStateFlow<List<SourceBrowseItem>>(emptyList())
     val sourceBrowseItems: StateFlow<List<SourceBrowseItem>> = _sourceBrowseItems.asStateFlow()
+    private val _sourceBrowseHistory = MutableStateFlow<List<List<SourceBrowseItem>>>(emptyList())
+    val sourceBrowseCanGoBack: StateFlow<Boolean> = _sourceBrowseHistory
+        .map { it.isNotEmpty() }.stateIn(viewModelScope, SharingStarted.Eagerly, false)
     private val _sourceBrowseError = MutableStateFlow<String?>(null)
     val sourceBrowseError: StateFlow<String?> = _sourceBrowseError.asStateFlow()
     private val _sourceBrowseLoading = MutableStateFlow(false)
@@ -1366,12 +1369,18 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         info: org.json.JSONObject,
         fields: SourceBrowseFieldMap,
         sourceId: String? = null,
-        append: Boolean = false
+        append: Boolean = false,
+        pushHistory: Boolean = false
     ) {
         sourceBrowseJob?.cancel()
         val requestId = ++sourceBrowseRequestId
         sourceBrowseJob = viewModelScope.launch {
-            if (!append) _sourceBrowseItems.value = emptyList()
+            if (!append) {
+                if (pushHistory && _sourceBrowseItems.value.isNotEmpty()) {
+                    _sourceBrowseHistory.value = _sourceBrowseHistory.value + listOf(_sourceBrowseItems.value)
+                }
+                _sourceBrowseItems.value = emptyList()
+            }
             _sourceBrowseError.value = null
             _sourceBrowseLoading.value = true
             val result = try {
@@ -1404,7 +1413,18 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    fun backSourceBrowseLevel() {
+        val previous = _sourceBrowseHistory.value.lastOrNull() ?: return
+        _sourceBrowseHistory.value = _sourceBrowseHistory.value.dropLast(1)
+        sourceBrowseJob?.cancel()
+        sourceBrowseRequestId++
+        _sourceBrowseItems.value = previous
+        _sourceBrowseError.value = null
+        _sourceBrowseLoading.value = false
+    }
+
     fun clearSourceBrowseItems() {
+        _sourceBrowseHistory.value = emptyList()
         sourceBrowseJob?.cancel()
         sourceBrowseRequestId++
         _sourceBrowseItems.value = emptyList()
