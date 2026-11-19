@@ -56,6 +56,78 @@ object QuickJSPreload {
     return function () {};
   }
 
+  // ===== 通用 Web API：Headers =====
+  function LXHeaders(init) {
+    this._entries = [];
+    var self = this;
+    function add(name, value) { self.append(name, value); }
+    if (init instanceof LXHeaders) {
+      init.forEach(function (value, name) { add(name, value); });
+    } else if (Array.isArray(init)) {
+      init.forEach(function (pair) { if (pair && pair.length >= 2) add(pair[0], pair[1]); });
+    } else if (init && typeof init === 'object') {
+      Object.keys(init).forEach(function (name) { add(name, init[name]); });
+    }
+  }
+  LXHeaders.prototype.append = function (name, value) {
+    name = String(name).toLowerCase();
+    if (!/^[!#$%&'*+.^_`|~0-9a-z-]+$/.test(name)) throw new TypeError('Invalid header name');
+    var text = String(value).trim();
+    for (var i = 0; i < this._entries.length; i++) {
+      if (this._entries[i][0] === name) {
+        this._entries[i][1] += ', ' + text;
+        return;
+      }
+    }
+    this._entries.push([name, text]);
+  };
+  LXHeaders.prototype.set = function (name, value) {
+    name = String(name).toLowerCase();
+    this.delete(name);
+    this._entries.push([name, String(value).trim()]);
+  };
+  LXHeaders.prototype.get = function (name) {
+    name = String(name).toLowerCase();
+    for (var i = 0; i < this._entries.length; i++) if (this._entries[i][0] === name) return this._entries[i][1];
+    return null;
+  };
+  LXHeaders.prototype.has = function (name) {
+    name = String(name).toLowerCase();
+    return this._entries.some(function (entry) { return entry[0] === name; });
+  };
+  LXHeaders.prototype.delete = function (name) {
+    name = String(name).toLowerCase();
+    this._entries = this._entries.filter(function (entry) { return entry[0] !== name; });
+  };
+  LXHeaders.prototype.forEach = function (callback, thisArg) {
+    this._entries.slice().forEach(function (entry) { callback.call(thisArg, entry[1], entry[0], this); }, this);
+  };
+  LXHeaders.prototype.keys = function () { return this._entries.map(function (entry) { return entry[0]; }); };
+  LXHeaders.prototype.values = function () { return this._entries.map(function (entry) { return entry[1]; }); };
+  LXHeaders.prototype.entries = function () { return this._entries.map(function (entry) { return [entry[0], entry[1]]; }); };
+  LXHeaders.prototype.toJSON = function () {
+    var result = {};
+    this.forEach(function (value, name) { result[name] = value; });
+    return result;
+  };
+  if (typeof globalThis.Headers !== 'function') globalThis.Headers = LXHeaders;
+
+  function headersToObject(headers) {
+    if (!headers) return {};
+    if (headers instanceof LXHeaders) return headers.toJSON();
+    if (Array.isArray(headers)) {
+      var converted = {};
+      headers.forEach(function (pair) {
+        if (pair && pair.length >= 2) {
+          var key = String(pair[0]);
+          converted[key] = converted[key] ? converted[key] + ', ' + String(pair[1]) : String(pair[1]);
+        }
+      });
+      return converted;
+    }
+    return headers;
+  }
+
   // ===== 通用 Web API：fetch / Response-like =====
   // 使用同一個受控 HTTP bridge，讓非洛雪腳本可採用常見 fetch 介面。
   // 不暴露任意 socket；請求仍由 Android HttpClient 統一執行與控管。
