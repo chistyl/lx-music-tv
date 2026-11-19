@@ -34,6 +34,245 @@ def patch_player_bar() -> None:
     path.write_text(source, encoding="utf-8")
 
 
+
+def patch_home_layout() -> None:
+    # Landscape home: navigation becomes a top horizontal strip; the player occupies
+    # a dedicated left pane beside the active content.
+    home = ROOT / "src/screens/Home/Horizontal/index.tsx"
+    home.write_text("""import { View } from 'react-native'
+import Aside from './Aside'
+import PlayerBar from '@/components/player/PlayerBar'
+import StatusBar from '@/components/common/StatusBar'
+import Header from './Header'
+import Main from './Main'
+import { createStyle } from '@/utils/tools'
+
+const styles = createStyle({
+  container: {
+    flex: 1,
+    flexDirection: 'column',
+    overflow: 'hidden',
+  },
+  body: {
+    flex: 1,
+    flexDirection: 'row',
+    overflow: 'hidden',
+  },
+  playerPane: {
+    width: 260,
+    flexGrow: 0,
+    flexShrink: 0,
+    overflow: 'hidden',
+  },
+  content: {
+    flex: 1,
+    overflow: 'hidden',
+  },
+})
+
+export default () => {
+  return (
+    <>
+      <StatusBar />
+      <View style={styles.container}>
+        <Aside />
+        <View style={styles.body}>
+          <View style={styles.playerPane}>
+            <PlayerBar isHome />
+          </View>
+          <View style={styles.content}>
+            <Header />
+            <Main />
+          </View>
+        </View>
+      </View>
+    </>
+  )
+}
+""", encoding="utf-8")
+
+    aside = ROOT / "src/screens/Home/Horizontal/Aside.tsx"
+    source = aside.read_text(encoding="utf-8")
+    source = source.replace("import { memo } from 'react'", "import { memo, useState } from 'react'", 1)
+    source = replace_once(source, "const NAV_WIDTH = 68", "const NAV_HEIGHT = 68", "top navigation height")
+    source = replace_once(source, """  container: {
+    flexGrow: 0,
+    // flex: 1,
+    // alignItems: 'center',
+    // justifyContent: 'center',
+    // padding: 10,
+    borderRightWidth: BorderWidths.normal,
+    paddingBottom: 10,
+    width: NAV_WIDTH,
+  },""", """  container: {
+    flexGrow: 0,
+    flexShrink: 0,
+    width: '100%',
+    height: NAV_HEIGHT,
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderBottomWidth: BorderWidths.normal,
+  },""", "top navigation container")
+    source = replace_once(source, """  header: {
+    paddingTop: 15,
+    paddingBottom: 15,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },""", """  header: {
+    width: 76,
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },""", "top navigation logo")
+    source = replace_once(source, """  menus: {
+    flex: 1,
+  },
+  list: {
+    // paddingTop: 10,
+    paddingBottom: 15,
+  },
+  menuItem: {
+    flexDirection: 'row',
+    paddingTop: 15,
+    paddingBottom: 15,
+    // paddingLeft: 25,
+    // paddingRight: 25,
+    justifyContent: 'center',
+    alignItems: 'center',
+    // backgroundColor: 'rgba(0, 0, 0, 0.2)',
+  },""", """  menus: {
+    flex: 1,
+    height: '100%',
+  },
+  list: {
+    height: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+  },
+  menuItem: {
+    flexDirection: 'row',
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    marginHorizontal: 3,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 8,
+  },""", "horizontal navigation items")
+    source = replace_once(source, """  text: {
+    paddingLeft: 15,
+    // fontWeight: '500',
+  },""", """  text: {
+    paddingLeft: 15,
+  },""", "navigation text style")
+    start = source.index("const MenuItem =")
+    end = source.index("\\nexport default memo", start)
+    menu_component = """const MenuItem = ({ id, icon, onPress }: {
+  id: IdType
+  icon: string
+  onPress: (id: IdType) => void
+}) => {
+  const activeId = useNavActiveId()
+  const theme = useTheme()
+  const [tvFocused, setTvFocused] = useState(false)
+  const active = activeId == id
+
+  return (
+    <TouchableOpacity
+      focusable
+      onFocus={() => setTvFocused(true)}
+      onBlur={() => setTvFocused(false)}
+      style={[
+        styles.menuItem,
+        active ? { backgroundColor: theme['c-primary-font-active'] + '18' } : undefined,
+        tvFocused ? { borderWidth: 2, borderColor: theme['c-primary-font-active'] } : undefined,
+      ]}
+      onPress={() => onPress(id)}
+    >
+      <View style={styles.iconContent}>
+        <Icon
+          name={icon}
+          size={20}
+          color={active || tvFocused ? theme['c-primary-font-active'] : theme['c-font-label']}
+        />
+      </View>
+    </TouchableOpacity>
+  )
+}
+"""
+    source = source[:start] + menu_component + source[end:]
+    source = replace_once(source, """      <ScrollView style={styles.menus}>
+        <View style={styles.list}>""", """      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.menus}>
+        <View style={styles.list}>""", "horizontal navigation scrolling")
+    source = replace_once(source, """      {
+        showBackBtn ? <MenuItem id="back_home" icon="home" onPress={handlePress} /> : null
+      }
+      {
+        showExitBtn ? <MenuItem id="nav_exit" icon="exit2" onPress={handlePress} /> : null
+      }""", """      <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 6 }}>
+        {showBackBtn ? <MenuItem id="back_home" icon="home" onPress={handlePress} /> : null}
+        {showExitBtn ? <MenuItem id="nav_exit" icon="exit2" onPress={handlePress} /> : null}
+      </View>""", "top navigation utility buttons")
+    source = source.replace("borderRightColor: theme['c-border-background']", "borderBottomColor: theme['c-border-background']", 1)
+    source = source.replace("borderRightColor: theme['c-border-background']", "borderBottomColor: theme['c-border-background']", 1)
+    aside.write_text(source, encoding="utf-8")
+
+    player = ROOT / "src/components/player/PlayerBar/index.tsx"
+    source = player.read_text(encoding="utf-8")
+    source = replace_once(source, """    <View style={{ ...styles.container, backgroundColor: theme['c-content-background'] }}>
+      <Pic isHome={isHome} />
+      <View style={styles.center}>""", """    <View style={{ ...styles.container, ...(isHome ? styles.homeContainer : {}), backgroundColor: theme['c-content-background'] }}>
+      <Pic isHome={isHome} />
+      <View style={{ ...styles.center, ...(isHome ? styles.homeCenter : {}) }}>""", "left player panel container")
+    source = replace_once(source, """      <View style={styles.right}>
+        <ControlBtn />
+      </View>""", """      <View style={{ ...styles.right, ...(isHome ? styles.homeRight : {}) }}>
+        <ControlBtn />
+      </View>""", "left player panel controls")
+    source = replace_once(source, """  left: {
+    // borderRadius: 3,""", """  homeContainer: {
+    width: '100%',
+    height: '100%',
+    paddingVertical: 18,
+    paddingHorizontal: 14,
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderTopRightRadius: 0,
+    borderTopLeftRadius: 0,
+  },
+  homeCenter: {
+    width: '100%',
+    flexGrow: 0,
+    flexShrink: 0,
+    paddingLeft: 0,
+    alignItems: 'center',
+    marginTop: 14,
+  },
+  homeRight: {
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    paddingLeft: 0,
+    paddingRight: 0,
+    marginTop: 12,
+  },
+  left: {
+    // borderRadius: 3,""", "left player panel styles")
+    player.write_text(source, encoding="utf-8")
+
+    pic = ROOT / "src/components/player/PlayerBar/components/Pic.tsx"
+    source = pic.read_text(encoding="utf-8")
+    source = replace_once(source, """  const musicInfo = usePlayerMusicInfo()
+  const handlePress""", """  const musicInfo = usePlayerMusicInfo()
+  const picSize = isHome ? scaleSizeH(150) : PIC_HEIGHT
+  const handlePress""", "large home player artwork")
+    source = replace_once(source, """<Image url={musicInfo.pic} nativeID={NAV_SHEAR_NATIVE_IDS.playDetail_pic} style={styles.image} onError={handleError} />""", """<Image url={musicInfo.pic} nativeID={NAV_SHEAR_NATIVE_IDS.playDetail_pic} style={[styles.image, { width: picSize, height: picSize }]} onError={handleError} />""", "home player artwork size")
+    pic.write_text(source, encoding="utf-8")
+
+    print("Applied LX Music TV home layout: top navigation, left-side player panel, and enlarged player artwork.")
+
 def patch_button() -> None:
     target = ROOT / "src/components/common/Button.tsx"
     source = target.read_text(encoding="utf-8")
@@ -143,4 +382,5 @@ patch_button()
 patch_player_controls()
 patch_player_bar()
 patch_my_lists()
+patch_home_layout()
 print("Applied TV remote focus and larger selection targets to player controls, playlist rows, song rows, and menu buttons.")
