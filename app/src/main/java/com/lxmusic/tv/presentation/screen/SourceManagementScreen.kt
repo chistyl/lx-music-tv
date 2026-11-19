@@ -390,7 +390,11 @@ private fun DeclaredSourceActionsCard(
                                 entries.forEach { entry ->
                                     val selected = selectedAction == entry
                                     Button(
-                                        onClick = { selectedAction = entry; onClearResult() },
+                                        onClick = {
+                                            selectedAction = entry
+                                            onClearResult()
+                                            onClearBrowseItems()
+                                        },
                                         modifier = Modifier.lxSelectorFocus(
                                             shape = RoundedCornerShape(8.dp),
                                             glow = false,
