@@ -253,6 +253,128 @@ object QuickJSPreload {
   };
   globalThis.XMLHttpRequest = LXXMLHttpRequest;
 
+  // ===== 通用 Web API：URL / URLSearchParams =====
+  function LXURLSearchParams(init) {
+    this._items = [];
+    var self = this;
+    if (init instanceof LXURLSearchParams) {
+      init._items.forEach(function (pair) { self._items.push([pair[0], pair[1]]); });
+    } else if (typeof init === 'string') {
+      var query = init.charAt(0) === '?' ? init.slice(1) : init;
+      if (query) query.split('&').forEach(function (part) {
+        if (!part) return;
+        var index = part.indexOf('=');
+        var key = index < 0 ? part : part.slice(0, index);
+        var value = index < 0 ? '' : part.slice(index + 1);
+        try { key = decodeURIComponent(key.replace(/\\+/g, ' ')); } catch (e) {}
+        try { value = decodeURIComponent(value.replace(/\\+/g, ' ')); } catch (e) {}
+        self._items.push([key, value]);
+      });
+    } else if (Array.isArray(init)) {
+      init.forEach(function (pair) {
+        if (pair && pair.length >= 2) self.append(pair[0], pair[1]);
+      });
+    } else if (init && typeof init === 'object') {
+      Object.keys(init).forEach(function (key) { self.append(key, init[key]); });
+    }
+  }
+  LXURLSearchParams.prototype.append = function (name, value) {
+    this._items.push([String(name), String(value)]);
+  };
+  LXURLSearchParams.prototype.delete = function (name) {
+    name = String(name);
+    this._items = this._items.filter(function (pair) { return pair[0] !== name; });
+  };
+  LXURLSearchParams.prototype.get = function (name) {
+    name = String(name);
+    for (var i = 0; i < this._items.length; i++) if (this._items[i][0] === name) return this._items[i][1];
+    return null;
+  };
+  LXURLSearchParams.prototype.getAll = function (name) {
+    name = String(name);
+    return this._items.filter(function (pair) { return pair[0] === name; }).map(function (pair) { return pair[1]; });
+  };
+  LXURLSearchParams.prototype.has = function (name) {
+    name = String(name);
+    return this._items.some(function (pair) { return pair[0] === name; });
+  };
+  LXURLSearchParams.prototype.set = function (name, value) {
+    name = String(name); value = String(value);
+    var found = false;
+    var next = [];
+    this._items.forEach(function (pair) {
+      if (pair[0] !== name) next.push(pair);
+      else if (!found) { next.push([name, value]); found = true; }
+    });
+    if (!found) next.push([name, value]);
+    this._items = next;
+  };
+  LXURLSearchParams.prototype.sort = function () {
+    this._items.sort(function (a, b) { return a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0; });
+  };
+  LXURLSearchParams.prototype.forEach = function (callback, thisArg) {
+    this._items.slice().forEach(function (pair) { callback.call(thisArg, pair[1], pair[0], this); }, this);
+  };
+  LXURLSearchParams.prototype.toString = function () {
+    return this._items.map(function (pair) {
+      return encodeURIComponent(pair[0]).replace(/%20/g, '+') + '=' +
+        encodeURIComponent(pair[1]).replace(/%20/g, '+');
+    }).join('&');
+  };
+  if (typeof globalThis.URLSearchParams !== 'function') globalThis.URLSearchParams = LXURLSearchParams;
+
+  function LXURL(input, base) {
+    if (!(this instanceof LXURL)) throw new TypeError("URL constructor requires 'new'");
+    var raw = String(input);
+    if (base) {
+      var baseUrl = base instanceof LXURL ? base.href : String(base);
+      if (!/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(raw)) {
+        if (raw.slice(0, 2) === '//') {
+          var scheme = baseUrl.match(/^([a-zA-Z][a-zA-Z0-9+.-]*:)/);
+          raw = (scheme ? scheme[1] : 'https:') + raw;
+        } else if (raw.charAt(0) === '/') {
+          var origin = baseUrl.match(/^([a-zA-Z][a-zA-Z0-9+.-]*:\/\/[^/]+)/);
+          if (!origin) throw new TypeError('Invalid base URL');
+          raw = origin[1] + raw;
+        } else {
+          var prefix = baseUrl.replace(/[?#].*$/, '');
+          raw = prefix.slice(0, prefix.lastIndexOf('/') + 1) + raw;
+        }
+      }
+    }
+    var match = raw.match(/^([a-zA-Z][a-zA-Z0-9+.-]*:)\\/\\/([^/?#]*)([^?#]*)(?:\\?([^#]*))?(?:#(.*))?$/);
+    if (!match) throw new TypeError('Invalid URL: ' + raw);
+    this.protocol = match[1].toLowerCase();
+    var authority = match[2];
+    var at = authority.lastIndexOf('@');
+    this.username = at >= 0 ? authority.slice(0, at).split(':')[0] : '';
+    this.password = at >= 0 && authority.slice(0, at).indexOf(':') >= 0
+      ? authority.slice(0, at).slice(authority.slice(0, at).indexOf(':') + 1) : '';
+    var hostPort = at >= 0 ? authority.slice(at + 1) : authority;
+    var hostMatch = hostPort.match(/^([^:]+)(?::(\\d+))?$/);
+    if (!hostMatch) throw new TypeError('Invalid URL authority');
+    this.hostname = hostMatch[1].toLowerCase();
+    this.port = hostMatch[2] || '';
+    this.host = this.hostname + (this.port ? ':' + this.port : '');
+    this.origin = this.protocol + '//' + this.host;
+    this.pathname = match[3] || '/';
+    this.search = match[4] ? '?' + match[4] : '';
+    this.hash = match[5] ? '#' + match[5] : '';
+    this.searchParams = new globalThis.URLSearchParams(this.search);
+    this._sync = function () {
+      this.search = this.searchParams.toString() ? '?' + this.searchParams.toString() : '';
+      this.href = this.origin + this.pathname + this.search + this.hash;
+    };
+    this._sync();
+  }
+  Object.defineProperty(LXURL.prototype, 'href', {
+    get: function () { return this._href || ''; },
+    set: function (value) { this._href = String(value); }
+  });
+  LXURL.prototype.toString = function () { return this.href; };
+  LXURL.prototype.toJSON = function () { return this.href; };
+  if (typeof globalThis.URL !== 'function') globalThis.URL = LXURL;
+
   // ===== 定时器 =====
   var timerCallbacks = {};
   var timerSeq = 0;
