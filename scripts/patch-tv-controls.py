@@ -31,10 +31,21 @@ def patch_player_mode_button() -> None:
 
     mode = ROOT / "src/screens/PlayDetail/Horizontal/MoreBtn/Btn.tsx"
     source = mode.read_text(encoding="utf-8")
+    source = source.replace(
+        "import { TouchableOpacity } from 'react-native'",
+        "import { TouchableOpacity } from 'react-native'\\nimport { useState } from 'react'",
+        1,
+    )
+    source = replace_once(
+        source,
+        "  const theme = useTheme()\\n  return (",
+        "  const theme = useTheme()\\n  const [tvFocused, setTvFocused] = useState(false)\\n  return (",
+        "TV play mode focus state",
+    )
     source = replace_once(
         source,
         "<TouchableOpacity style={{ ...styles.cotrolBtn, width: BTN_WIDTH, height: BTN_WIDTH }}",
-        "<TouchableOpacity focusable style={{ ...styles.cotrolBtn, width: 60, height: 60, borderRadius: 30 }}",
+        "<TouchableOpacity focusable onFocus={() => setTvFocused(true)} onBlur={() => setTvFocused(false)} style={{ ...styles.cotrolBtn, width: 60, height: 60, borderRadius: 30, borderWidth: tvFocused ? 2 : 0, borderColor: '#25C76A' }}",
         "TV play mode remote focus target",
     )
     mode.write_text(source, encoding="utf-8")
