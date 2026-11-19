@@ -37,7 +37,7 @@ jobs:
 
       - name: Add Traditional Chinese conversion dependency
         working-directory: upstream/lx-music-mobile-auto-source
-        run: npm install --package-lock-only opencc-js@1.4.2
+        run: npm install --save-exact opencc-js@1.4.2
 
       - name: Install JavaScript dependencies
         working-directory: upstream/lx-music-mobile-auto-source
