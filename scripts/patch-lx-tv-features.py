@@ -143,3 +143,31 @@ edit("src/screens/Home/Views/Setting/Vertical/Main.tsx",
      "import About from '../settings/About'\n", "", "remove vertical About import")
 edit("src/screens/Home/Views/Setting/Vertical/Main.tsx",
      "    case 'about': return <About />\n", "", "remove vertical About screen")
+
+# Convert every shared text component from Simplified Chinese to Taiwan Traditional Chinese.
+traditional_util = ROOT / "src/utils/chineseTraditional.ts"
+traditional_util.write_text("""import { Children, type ReactNode } from 'react'
+import OpenCC from 'opencc-js'
+
+const convertToTraditional = OpenCC.Converter({ from: 'cn', to: 'twp' })
+
+export const toTraditionalText = (value: ReactNode): ReactNode => Children.map(value, item => {
+  return typeof item === 'string' ? convertToTraditional(item) : item
+})
+""")
+
+edit("src/components/common/Text.tsx",
+     "import { memo, type ComponentProps } from 'react'\n",
+     "import { memo, Children, type ComponentProps } from 'react'\nimport { toTraditionalText } from '@/utils/chineseTraditional'\n",
+     "enable Traditional Chinese conversion in shared text components")
+edit("src/components/common/Text.tsx",
+     ">{children}</Text>", ">{toTraditionalText(children)}</Text>", "convert common Text content")
+edit("src/components/common/Text.tsx",
+     "{children}</Animated.Text>", "{toTraditionalText(children)}</Animated.Text>", "convert animated Text content")
+
+# Default the application interface to Taiwan Traditional Chinese.
+edit("src/core/init/i18n.ts",
+     "  let lang = setting['common.langId']",
+     "  let lang: I18n['locale'] = 'zh_tw'\n  updateSetting({ 'common.langId': lang })",
+     "set Taiwan Traditional Chinese as default interface language")
+print("Applied: Simplified-to-Traditional Chinese display conversion")
