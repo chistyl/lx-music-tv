@@ -1,0 +1,3 @@
+[submodule "upstream/lx-music-mobile-auto-source"]
+	path = upstream/lx-music-mobile-auto-source
+	url = https://github.com/shellsec/lx-music-mobile-auto-source.git
