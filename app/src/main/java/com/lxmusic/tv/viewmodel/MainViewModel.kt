@@ -1825,7 +1825,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                         platform = song.platform,
                         platformKey = song.platformKey,
                         duration = song.duration ?: 0L,
-                        sourceId = sourceManager.getEnabledSource()?.id ?: ""
+                        sourceId = song.sourceId ?: sourceManager.getEnabledSource()?.id ?: ""
                     )
                 )
             } catch (e: kotlin.coroutines.cancellation.CancellationException) { throw e } catch (e: Exception) {
@@ -1887,6 +1887,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             // 记录 URL 来源源 id：播放失败时加入黑名单，重试跳过该源
             currentPlaySourceId = urlResult.data.sourceId
             playNeedsReFetch = false
+            val resolvedSong = song.copy(sourceId = urlResult.data.sourceId ?: song.sourceId)
+            _currentSong.value = resolvedSong
             // 2.8 播放来源提示：toast 显示最终成功的源名（用户可确认用了哪个源；URL 缓存命中无 sourceId 不提示）
             urlResult.data.sourceId?.let { sid ->
                 val srcName = runCatching { sourceManager.getSourceById(sid)?.name }.getOrNull()
@@ -1913,7 +1915,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 )
             )
             // 持久化当前歌曲：后台播放后进程重建可恢复左下角播放卡片
-            saveCurrentSongPrefs(song)
+            saveCurrentSongPrefs(resolvedSong)
             return true
         }
         // 2.8 所有播放源均失败：Toast 提示 5 秒后自动播放下一曲，不卡在失败歌曲上。
@@ -2501,6 +2503,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 put("duration", song.duration ?: 0L)
                 put("platform", song.platform.name)
                 put("platformKey", song.platformKey)
+                put("sourceId", song.sourceId ?: "")
             }.toString()
             // 同时保存当前播放队列：后台播放进程重建后恢复播放列表（下一曲/上一曲可用）
             val listJson = org.json.JSONArray().apply {
@@ -2515,6 +2518,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                         put("duration", s.duration ?: 0L)
                         put("platform", s.platform.name)
                         put("platformKey", s.platformKey)
+                        put("sourceId", s.sourceId ?: "")
                     })
                 }
             }.toString()
@@ -2545,7 +2549,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 picUrl = json.optString("picUrl").ifBlank { null },
                 duration = json.optLong("duration", 0L).takeIf { it > 0 },
                 platform = MusicPlatform.entries.firstOrNull { it.key.equals(json.optString("platformKey", json.optString("platform")), true) || it.name.equals(json.optString("platform"), true) } ?: MusicPlatform.LOCAL,
-                platformKey = json.optString("platformKey").ifBlank { json.optString("platform").lowercase() }
+                platformKey = json.optString("platformKey").ifBlank { json.optString("platform").lowercase() },
+                sourceId = json.optString("sourceId").takeIf { it.isNotBlank() }
             )
         } catch (e: kotlin.coroutines.cancellation.CancellationException) { throw e } catch (e: Exception) {
             Log.e("LX-MainViewModel", "恢复当前歌曲失败: ${e.message}", e)
@@ -2573,7 +2578,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                         picUrl = j.optString("picUrl").ifBlank { null },
                         duration = j.optLong("duration", 0L).takeIf { it > 0 },
                         platform = MusicPlatform.entries.firstOrNull { it.key.equals(j.optString("platformKey", j.optString("platform")), true) || it.name.equals(j.optString("platform"), true) } ?: MusicPlatform.LOCAL,
-                        platformKey = j.optString("platformKey").ifBlank { j.optString("platform").lowercase() }
+                        platformKey = j.optString("platformKey").ifBlank { j.optString("platform").lowercase() },
+                        sourceId = j.optString("sourceId").takeIf { it.isNotBlank() }
                     )
                 }.getOrNull()
             }
