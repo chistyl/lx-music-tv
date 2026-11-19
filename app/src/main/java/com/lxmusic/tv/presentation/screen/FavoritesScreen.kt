@@ -481,12 +481,13 @@ fun FavoritePlaylistsView(
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
-        items(playlists, key = { it.playlistId }) { playlist ->
+        itemsIndexed(playlists, key = { _, playlist -> playlist.playlistId }) { index, playlist ->
             FavoritePlaylistRow(
                 playlist = playlist,
                 onClick = { onOpenPlaylist(playlist) },
                 onToggleFavorite = { onToggleFavorite(playlist.toPlaylist()) },
-                onExitToNav = onExitToNav,
+                // 左側第一欄最左側按鈕才回側欄；第二欄保留左右跨欄移動
+                onExitToNav = if (index % 2 == 0) onExitToNav else null,
                 modifier = Modifier.fillMaxWidth()
             )
         }
@@ -507,20 +508,7 @@ fun FavoritePlaylistRow(
     val brandColor = platformBrandColor(playlist.platform)
 
     Card(
-        modifier = modifier
-            .fillMaxWidth()
-            // 根节点拦截左键：无论焦点落在卡片内哪个按钮，左键都精确返回当前选中 tab
-            //（不拦截会走默认空间导航，焦点乱跳到其它 tab，如定位到「搜索」）
-            .then(
-                if (onExitToNav != null) {
-                    Modifier.onPreviewKeyEvent { keyEvent ->
-                        if (keyEvent.type == KeyEventType.KeyDown && keyEvent.key == Key.DirectionLeft) {
-                            onExitToNav()
-                            true
-                        } else false
-                    }
-                } else Modifier
-            ),
+        modifier = modifier.fillMaxWidth(),
         // 点6：深色卡片（仿播放页播放列表暗色面板）；卡片本身不再作为焦点目标，
         // 焦点落在卡片上的操作按钮（仿 PlaylistItem：选中按钮而非整行卡片）
         colors = CardDefaults.cardColors(containerColor = LXCardDark),
@@ -605,7 +593,17 @@ fun FavoritePlaylistRow(
             Box(
                 modifier = Modifier
                     .size(52.dp)
-                    // 統一圓形焦點，放大電視遙控器操作區
+                    // 左側第一欄最左側操作按鈕可精確返回側欄
+                    .then(
+                        if (onExitToNav != null) {
+                            Modifier.onPreviewKeyEvent { event ->
+                                if (event.type == KeyEventType.KeyDown && event.key == Key.DirectionLeft) {
+                                    onExitToNav()
+                                    true
+                                } else false
+                            }
+                        } else Modifier
+                    )
                     .lxCircleButtonFocus()
                     .clickable { onClick() },
                 contentAlignment = Alignment.Center
