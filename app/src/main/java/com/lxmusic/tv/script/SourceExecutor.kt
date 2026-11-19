@@ -517,17 +517,18 @@ class SourceExecutor(
                 // 欄位格式不同時，交由下方別名映射處理。
             }
 
-            val root = JSONObject(jsonStr)
-            val rows = sequenceOf("musicList", "songs", "list", "results", "data")
-                .mapNotNull { key -> root.opt(key) }
-                .firstOrNull { it is org.json.JSONArray }
-                as? org.json.JSONArray
-                ?: if (root.has("id") || root.has("songmid") || root.has("musicId")) {
-                    org.json.JSONArray().put(root)
-                } else {
-                    null
-                }
-                ?: return emptyList()
+            val parsedRoot = org.json.JSONTokener(jsonStr).nextValue()
+            val root = parsedRoot as? JSONObject
+            val rows = when (parsedRoot) {
+                is org.json.JSONArray -> parsedRoot
+                is JSONObject -> sequenceOf("musicList", "songs", "list", "results", "data")
+                    .mapNotNull { key -> parsedRoot.opt(key) }
+                    .firstOrNull { it is org.json.JSONArray } as? org.json.JSONArray
+                    ?: if (parsedRoot.has("id") || parsedRoot.has("songmid") || parsedRoot.has("musicId")) {
+                        org.json.JSONArray().put(parsedRoot)
+                    } else null
+                else -> null
+            } ?: return emptyList()
 
             fun firstText(item: JSONObject, vararg keys: String): String {
                 for (key in keys) {
