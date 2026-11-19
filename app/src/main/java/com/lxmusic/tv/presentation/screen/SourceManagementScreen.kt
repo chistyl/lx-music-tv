@@ -487,6 +487,11 @@ private fun DeclaredSourceActionsCard(
                             unfocusedLabelColor = LXTextSecondary
                         )
                     )
+                    Text(
+                        text = "作為下一層瀏覽 Action 時，可在 JSON 字串值使用 {{item.id}}、{{item.title}}、{{item.subtitle}}，並以 {{page}} 表示頁碼；載入時會依所選項目自動代入。",
+                        fontSize = 12.sp,
+                        color = LXOnCardDarkSecondary
+                    )
                     Button(
                         onClick = { onExecute(selected, requestJson) },
                         enabled = !testLoading,
