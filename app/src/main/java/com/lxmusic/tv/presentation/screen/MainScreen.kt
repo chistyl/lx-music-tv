@@ -691,24 +691,6 @@ fun NowPlayingBar(
             }
         }
 
-        // 進入完整播放頁：獨立大按鈕，遙控器可直接選取
-        Box(
-            modifier = Modifier
-                .size(54.dp)
-                .lxCircleButtonFocus()
-                .clickable { onClick() },
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = Icons.Default.OpenInFull,
-                contentDescription = "開啟播放頁",
-                tint = LXOnCardDark,
-                modifier = Modifier.size(26.dp)
-            )
-        }
-
-        Spacer(modifier = Modifier.width(18.dp))
-
         // 播放／暫停：底部播放列主要操作
         Box(
             modifier = Modifier
