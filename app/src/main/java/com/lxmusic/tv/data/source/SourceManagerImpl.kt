@@ -580,7 +580,8 @@ class SourceManagerImpl(
         sourceId: String? = null,
         // 2.8 歌曲信息透传给 JS 源（按歌名搜索的源需要，缺失报「没歌名搜不了」）
         songName: String = "",
-        singer: String = ""
+        singer: String = "",
+        rawSongData: String? = null
     ): SourceExecutionResult {
         val executor = sourceExecutor ?: return SourceExecutionResult.Error("源执行器未初始化")
 
@@ -607,7 +608,7 @@ class SourceManagerImpl(
             }
         }
 
-        return executor.getMusicUrl(musicId, quality, source, songName, singer)
+        return executor.getMusicUrl(musicId, quality, source, songName, singer, rawSongData)
     }
 
     /**
