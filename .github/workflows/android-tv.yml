@@ -80,7 +80,7 @@ jobs:
           set -o pipefail
           for attempt in 1 2; do
             echo "Gradle build attempt ${attempt}/2"
-            if timeout 20m ./gradlew --no-daemon --stacktrace --console=plain -PreactNativeArchitectures=x86,x86_64 assembleDebug 2>&1 | tee "gradle-build-attempt-${attempt}.log"; then
+            if timeout 20m ./gradlew --no-daemon --stacktrace --console=plain --warning-mode all -PreactNativeArchitectures=x86,x86_64 assembleDebug 2>&1 | tee "gradle-build-attempt-${attempt}.log"; then
               exit 0
             else
               status=$?
@@ -93,6 +93,15 @@ jobs:
           done
           echo "Both Gradle build attempts failed. See gradle-build-attempt-*.log above."
           exit 1
+
+      - name: Upload Gradle diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lx-music-tv-gradle-diagnostics
+          path: upstream/lx-music-mobile-auto-source/android/gradle-build-attempt-*.log
+          if-no-files-found: warn
+          retention-days: 14
 
       - name: Package complete source tree
         run: |
