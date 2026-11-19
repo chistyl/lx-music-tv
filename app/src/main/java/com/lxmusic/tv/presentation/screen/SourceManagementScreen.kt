@@ -496,14 +496,14 @@ private fun DeclaredSourceActionsCard(
                         color = LXOnCardDarkSecondary
                     )
                     SourceMappingField("清單路徑 collectionPath", collectionPath, { collectionPath = it })
-                    mappingField("項目 ID idPath", idPath, { idPath = it }, required = true)
-                    mappingField("標題 titlePath", titlePath, { titlePath = it }, required = true)
-                    mappingField("副標題 subtitlePath", subtitlePath, { subtitlePath = it })
-                    mappingField("封面 coverPath", coverPath, { coverPath = it })
-                    mappingField("數量 countPath", countPath, { countPath = it })
-                    mappingField("描述 descriptionPath", descriptionPath, { descriptionPath = it })
-                    mappingField("時長 durationPath", durationPath, { durationPath = it })
-                    mappingField("專輯 albumPath", albumPath, { albumPath = it })
+                    SourceMappingField("項目 ID idPath", idPath, { idPath = it }, required = true)
+                    SourceMappingField("標題 titlePath", titlePath, { titlePath = it }, required = true)
+                    SourceMappingField("副標題 subtitlePath", subtitlePath, { subtitlePath = it })
+                    SourceMappingField("封面 coverPath", coverPath, { coverPath = it })
+                    SourceMappingField("數量 countPath", countPath, { countPath = it })
+                    SourceMappingField("描述 descriptionPath", descriptionPath, { descriptionPath = it })
+                    SourceMappingField("時長 durationPath", durationPath, { durationPath = it })
+                    SourceMappingField("專輯 albumPath", albumPath, { albumPath = it })
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
