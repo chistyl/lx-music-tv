@@ -123,6 +123,25 @@ jobs:
         working-directory: upstream/lx-music-mobile-auto-source
         run: npm run bundle-android
 
+      - name: Configure Maven Central mirror fallback
+        run: |
+          cat > "$RUNNER_TEMP/lx-maven-mirror.init.gradle" <<'EOF'
+          allprojects {
+            buildscript.repositories {
+              maven {
+                name = "GoogleMavenCentralMirror"
+                url = uri("https://maven-central.storage-download.googleapis.com/maven2")
+              }
+            }
+            repositories {
+              maven {
+                name = "GoogleMavenCentralMirror"
+                url = uri("https://maven-central.storage-download.googleapis.com/maven2")
+              }
+            }
+          }
+          EOF
+
       - name: Assemble debug APK
         timeout-minutes: 50
         working-directory: upstream/lx-music-mobile-auto-source/android
@@ -137,7 +156,7 @@ jobs:
           echo "=== Gradle build starts ==="
           for attempt in 1 2; do
             echo "Gradle build attempt ${attempt}/2"
-            if timeout 20m ./gradlew --no-daemon --stacktrace --console=plain --warning-mode all -PreactNativeArchitectures=x86,x86_64 assembleDebug 2>&1 | tee "gradle-build-attempt-${attempt}.log"; then
+            if timeout 20m ./gradlew --init-script "$RUNNER_TEMP/lx-maven-mirror.init.gradle" --no-daemon --stacktrace --console=plain --warning-mode all -PreactNativeArchitectures=x86,x86_64 assembleDebug 2>&1 | tee "gradle-build-attempt-${attempt}.log"; then
               exit 0
             else
               status=$?
