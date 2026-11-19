@@ -88,4 +88,40 @@ class SourceBrowseItemMapperTest {
         )
         assertTrue(items.isEmpty())
     }
+    @Test
+    fun `maps explicit song playback metadata without guessing list fields`() {
+        val parsed = parser.parse(
+            "source-song", "indie-radio", "playlistDetail",
+            """[{"catalogId":"pl-1","display":"清單名稱","track":{"mid":"song-9","title":"夜空","artist":"歌手甲","album":"星光","cover":"https://img.example/song.jpg","duration":201000}}]"""
+        ) as SourceBrowseActionResult.Success
+
+        val items = mapper.map(
+            parsed.payload,
+            SourceBrowseFieldMap(
+                idPath = "catalogId",
+                titlePath = "display",
+                songIdPath = "track.mid",
+                songNamePath = "track.title",
+                singerPath = "track.artist",
+                songAlbumNamePath = "track.album",
+                songPicPath = "track.cover",
+                songDurationPath = "track.duration"
+            )
+        )
+
+        assertEquals(1, items.size)
+        assertEquals(null, items[0].toSongOrNull())
+        val song = items[0].copy(
+            songId = "song-9",
+            songName = "夜空",
+            singer = "歌手甲"
+        ).toSongOrNull()
+        assertEquals("song-9", song?.id)
+        assertEquals("indie-radio", song?.platformKey)
+        assertEquals("夜空", song?.name)
+        assertEquals("歌手甲", song?.singer)
+        assertEquals("星光", song?.albumName)
+        assertEquals(201000L, song?.duration)
+    }
+
 }
