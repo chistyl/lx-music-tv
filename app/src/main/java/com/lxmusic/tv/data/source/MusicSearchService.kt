@@ -840,7 +840,7 @@ class MusicSearchService(
 /**
  * MusicItem 转 Song 扩展函数
  */
-private fun MusicItem.toSong(): Song {
+internal fun MusicItem.toSong(): Song {
     return Song(
         id = id,
         name = name,
