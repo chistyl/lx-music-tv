@@ -23,6 +23,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lxmusic.tv.data.model.SourceBrowseItem
+import com.lxmusic.tv.data.model.Song
 import com.lxmusic.tv.presentation.component.lxBackButtonFocus
 import com.lxmusic.tv.presentation.component.lxSelectorFocus
 import com.lxmusic.tv.presentation.theme.LXPrimary
@@ -37,6 +38,7 @@ fun SourceBrowseScreen(
     loading: Boolean,
     error: String?,
     onBack: () -> Unit,
+    onPlaySong: (Song) -> Unit = {},
     onFocusFloatingBall: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
@@ -125,7 +127,22 @@ fun SourceBrowseScreen(
                             Text("平台：${item.platformKey}", color = LXTextSecondary, fontSize = 12.sp)
                             Text("音源：${item.sourceId}", color = LXTextSecondary, fontSize = 12.sp)
                             Text("Action：${item.action}", color = LXTextSecondary, fontSize = 12.sp)
-                            Text("目前為瀏覽資料項目；尚未宣告歌曲播放資料，因此不會直接播放。", color = LXTextSecondary, fontSize = 13.sp)
+                            val playableSong = item.toSongOrNull()
+                            if (playableSong != null) {
+                                Button(
+                                    onClick = { onPlaySong(playableSong) },
+                                    modifier = Modifier.fillMaxWidth().height(50.dp)
+                                        .lxSelectorFocus(shape = RoundedCornerShape(10.dp), glow = false, animated = false),
+                                    colors = ButtonDefaults.buttonColors(containerColor = LXPrimary)
+                                ) {
+                                    Icon(Icons.Default.PlayArrow, contentDescription = null)
+                                    Spacer(Modifier.width(8.dp))
+                                    Text("播放這首歌曲")
+                                }
+                                Text("歌曲 ID、名稱及歌手均已明確映射，可交由既有音源播放流程解析。", color = LXTextSecondary, fontSize = 13.sp)
+                            } else {
+                                Text("目前為瀏覽資料項目；若要播放，請在音源管理頁明確設定歌曲 ID、名稱及歌手欄位。", color = LXTextSecondary, fontSize = 13.sp)
+                            }
                         }
                     }
                 }
