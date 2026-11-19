@@ -578,13 +578,16 @@ fun LXMusicApp() {
             val items by viewModel.sourceBrowseItems.collectAsState()
             val loading by viewModel.sourceBrowseLoading.collectAsState()
             val error by viewModel.sourceBrowseError.collectAsState()
+            val canGoBack by viewModel.sourceBrowseCanGoBack.collectAsState()
             SourceBrowseScreen(
                 items = items,
                 loading = loading,
                 error = error,
                 onBack = { navController.popBackStack() },
                 declaredActions = declaredActions,
-                onLoadBrowseAction = { option, infoJson, fields, append ->
+                canGoBack = canGoBack,
+                onBackLevel = { viewModel.backSourceBrowseLevel() },
+                onLoadBrowseAction = { option, infoJson, fields, append, pushHistory ->
                     try {
                         viewModel.loadSourceBrowseItems(
                             platformKey = option.platformKey,
@@ -592,7 +595,8 @@ fun LXMusicApp() {
                             info = org.json.JSONObject(infoJson.ifBlank { "{}" }),
                             fields = fields,
                             sourceId = option.sourceId,
-                            append = append
+                            append = append,
+                            pushHistory = pushHistory
                         )
                     } catch (e: Exception) {
                         Toast.makeText(context, "請求 JSON 格式錯誤：${e.message}", Toast.LENGTH_LONG).show()
