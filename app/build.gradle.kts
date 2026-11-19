@@ -131,6 +131,9 @@ dependencies {
     // OkHttp (network requests)
     implementation("com.squareup.okhttp3:okhttp:5.4.0")
 
+    // OpenCC：台灣繁體中文詞彙轉換（歌詞顯示層）
+    implementation("com.github.houbb:opencc4j:1.14.0")
+
     // JSON parsing
     implementation("org.json:json:20260719")
 
