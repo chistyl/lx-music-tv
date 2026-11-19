@@ -6,6 +6,7 @@ on:
       - feature/apple-music-tv-r1-android9
       - feature/lx-tv-remote-source-import-r2
       - feature/lx-tv-no-update-no-platform-r3
+      - feature/lx-mobile-original-ui-r1
   pull_request:
     branches:
       - feature/apple-music-tv-r1-android9
