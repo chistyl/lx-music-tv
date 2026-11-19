@@ -28,6 +28,10 @@ jobs:
           cache: npm
           cache-dependency-path: upstream/lx-music-mobile-auto-source/package-lock.json
 
+      - name: Add Traditional Chinese conversion dependency
+        working-directory: upstream/lx-music-mobile-auto-source
+        run: npm install --package-lock-only opencc-js@1.4.2
+
       - name: Install JavaScript dependencies
         working-directory: upstream/lx-music-mobile-auto-source
         run: npm ci
