@@ -548,6 +548,7 @@ fun LXMusicApp() {
                 onToggleSource = { sourceId, enabled -> viewModel.toggleSource(sourceId, enabled) },
                 onDeleteSource = { sourceId -> viewModel.deleteSource(sourceId) },
                 onPreviewSourceFromUrl = { url -> viewModel.previewSourceFromUrl(url) },
+                onImportLocalSource = { content, fileName -> viewModel.importSource(content, fileName) },
                 sourceImportPreview = sourceImportPreview,
                 onConfirmImportSource = { viewModel.confirmImportSourcePreview() },
                 onCancelImportPreview = { viewModel.cancelSourceImportPreview() },
