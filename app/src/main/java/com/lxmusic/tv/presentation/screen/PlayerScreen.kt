@@ -1,5 +1,7 @@
 package com.lxmusic.tv.presentation.screen
 
+import com.lxmusic.tv.presentation.lyrics.TraditionalChineseConverter
+
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -1531,7 +1533,7 @@ fun parseLrc(lrc: String?): List<LyricLine> {
                 1 -> (fracStr.toLongOrNull() ?: 0L) * 100
                 else -> 0L
             }
-            lines.add(LyricLine(min * 60000 + sec * 1000 + frac, text))
+            lines.add(LyricLine(min * 60000 + sec * 1000 + frac, TraditionalChineseConverter.convert(text)))
         }
     }
     return lines.sortedBy { it.timeMs }
