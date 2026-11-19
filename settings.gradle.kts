@@ -5,6 +5,8 @@ pluginManagement {
                 includeGroupByRegex("com\\.android.*")
                 includeGroupByRegex("com\\.google.*")
                 includeGroupByRegex("androidx.*")
+                // KSP artifacts are published to Maven Central; keep them out of Google's repository filter.
+                excludeGroupByRegex("com\\.google\\.devtools\\.ksp.*")
             }
         }
         mavenCentral()
