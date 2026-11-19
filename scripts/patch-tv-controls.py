@@ -49,7 +49,7 @@ def patch_button() -> None:
     )
     if "const [tvFocused, setTvFocused] = useState(false)" not in source:
         source = source.replace(
-            "  const theme = useTheme()\\n",
+            "  const theme = useTheme()\n",
             """  const theme = useTheme()
   const [tvFocused, setTvFocused] = useState(false)
   const handleFocus = (event: any) => {
