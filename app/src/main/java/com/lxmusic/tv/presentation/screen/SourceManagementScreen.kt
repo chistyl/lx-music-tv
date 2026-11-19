@@ -74,6 +74,7 @@ fun SourceManagementScreen(
     sourceBrowseLoading: Boolean = false,
     onLoadSourceBrowseItems: (SourceActionOption, String, SourceBrowseFieldMap) -> Unit = { _, _, _ -> },
     onClearSourceBrowseItems: () -> Unit = {},
+    onOpenSourceBrowse: () -> Unit = {},
     serverRunning: Boolean,
     serverUrl: String?,
     onToggleServer: () -> Unit,
@@ -220,6 +221,21 @@ fun SourceManagementScreen(
                     onClearBrowseItems = onClearSourceBrowseItems,
                     modifier = Modifier.fillMaxWidth()
                 )
+            }
+
+            if (sourceBrowseItems.isNotEmpty()) {
+                item {
+                    Button(
+                        onClick = onOpenSourceBrowse,
+                        modifier = Modifier.fillMaxWidth().height(52.dp)
+                            .lxSelectorFocus(shape = RoundedCornerShape(12.dp), glow = false, animated = false),
+                        colors = ButtonDefaults.buttonColors(containerColor = LXPrimary)
+                    ) {
+                        Icon(Icons.Default.OpenInNew, contentDescription = null)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("在正式瀏覽頁開啟（${sourceBrowseItems.size} 筆）", fontWeight = FontWeight.SemiBold)
+                    }
+                }
             }
 
             // 2.9 播放失败尝试切换平台开关（开启后 JS 源解析失败时自动用同一源尝试其他平台版本）
