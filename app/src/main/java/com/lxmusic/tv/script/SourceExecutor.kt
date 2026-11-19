@@ -2,6 +2,7 @@ package com.lxmusic.tv.script
 
 import android.util.Log
 import com.lxmusic.tv.data.model.*
+import com.lxmusic.tv.data.source.SourceProtocolDetector
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
@@ -105,8 +106,24 @@ class SourceExecutor(
                             SourceExecutionResult.Success("播放源初始化成功（函数调用模式）")
                         }
                         is JavaScriptResult.Error -> {
-                            Log.e(TAG, "播放源初始化失败: ${lxCheck.message}")
-                            SourceExecutionResult.Error("播放源初始化失败: ${lxCheck.message}")
+                            // 通用 JS 明確採用全域函式契約：
+                            // search(keyword, page, limit) -> MusicItem[] 或 { musicList: MusicItem[] }
+                            // getMusicUrl(musicId, quality) -> URL 字串
+                            // getLyric(musicId) -> LRC 字串（選用）
+                            // 不猜測其他函式名稱；CommonJS / ESM 尚需模組載入器，不能當作已支援。
+                            val protocol = SourceProtocolDetector.detect(scriptContent)
+                            val hasSearch = javaScriptEngine.hasFunction("search")
+                            val hasMusicUrl = javaScriptEngine.hasFunction("getMusicUrl")
+                            if (protocol == SourceProtocol.GENERIC_JAVASCRIPT && hasSearch && hasMusicUrl) {
+                                useEventDrivenModel = false
+                                Log.i(TAG, "播放源使用通用全域函式協議")
+                                SourceExecutionResult.Success("播放源初始化成功（通用函式協議）")
+                            } else {
+                                Log.e(TAG, "播放源初始化失败: ${lxCheck.message}")
+                                SourceExecutionResult.Error(
+                                    "播放源缺少可識別的音源協議：通用 JS 必須同時提供 search() 與 getMusicUrl()；CommonJS/ESM 尚未支援"
+                                )
+                            }
                         }
                     }
                 }
