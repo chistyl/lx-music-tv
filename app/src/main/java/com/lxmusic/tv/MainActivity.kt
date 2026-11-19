@@ -508,6 +508,9 @@ fun LXMusicApp() {
             val declaredSourceActions = remember(sources) { viewModel.getDeclaredSourceActions() }
             val sourceActionTestResult by viewModel.sourceActionTestResult.collectAsState()
             val sourceActionTestLoading by viewModel.sourceActionTestLoading.collectAsState()
+            val sourceBrowseItems by viewModel.sourceBrowseItems.collectAsState()
+            val sourceBrowseError by viewModel.sourceBrowseError.collectAsState()
+            val sourceBrowseLoading by viewModel.sourceBrowseLoading.collectAsState()
             val context = LocalContext.current
             // 2.9 播放失败尝试切换平台开关状态（Compose state 驱动 UI 即时刷新，见下方注释）
             val platformSwitchState = remember {
@@ -526,6 +529,23 @@ fun LXMusicApp() {
                     viewModel.executeDeclaredSourceAction(option, infoJson)
                 },
                 onClearActionTestResult = { viewModel.clearSourceActionTestResult() },
+                sourceBrowseItems = sourceBrowseItems,
+                sourceBrowseError = sourceBrowseError,
+                sourceBrowseLoading = sourceBrowseLoading,
+                onLoadSourceBrowseItems = { option, infoJson, fields ->
+                    try {
+                        viewModel.loadSourceBrowseItems(
+                            platformKey = option.platformKey,
+                            action = option.action,
+                            info = org.json.JSONObject(infoJson.ifBlank { "{}" }),
+                            fields = fields,
+                            sourceId = option.sourceId
+                        )
+                    } catch (e: Exception) {
+                        Toast.makeText(this, "請求 JSON 格式錯誤：${e.message}", Toast.LENGTH_LONG).show()
+                    }
+                },
+                onClearSourceBrowseItems = { viewModel.clearSourceBrowseItems() },
                 serverRunning = serverRunning,
                 serverUrl = serverUrl,
                 onToggleServer = { viewModel.toggleServer() },
