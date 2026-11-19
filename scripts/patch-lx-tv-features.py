@@ -131,3 +131,15 @@ test_path.write_text(tests)
 print("Applied: align source tests with disabled automatic subscription recovery")
 
 print("LX TV feature patch completed.")
+
+# Remove the About LX Music settings entry from both horizontal and vertical layouts.
+edit("src/screens/Home/Views/Setting/Main.tsx",
+     "import About from './settings/About'\\n", "", "remove horizontal About import")
+edit("src/screens/Home/Views/Setting/Main.tsx",
+     "  'about',\\n", "", "remove About settings tab")
+edit("src/screens/Home/Views/Setting/Main.tsx",
+     "      case 'about': return <About />\\n", "", "remove horizontal About screen")
+edit("src/screens/Home/Views/Setting/Vertical/Main.tsx",
+     "import About from '../settings/About'\\n", "", "remove vertical About import")
+edit("src/screens/Home/Views/Setting/Vertical/Main.tsx",
+     "    case 'about': return <About />\\n", "", "remove vertical About screen")
