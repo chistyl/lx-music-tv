@@ -49,7 +49,7 @@ def patch_button() -> None:
     )
     if "const [tvFocused, setTvFocused] = useState(false)" not in source:
         source = source.replace(
-            "  const theme = useTheme()\n",
+            "  const theme = useTheme()",
             """  const theme = useTheme()
   const [tvFocused, setTvFocused] = useState(false)
   const handleFocus = (event: any) => {
@@ -59,15 +59,13 @@ def patch_button() -> None:
   const handleBlur = (event: any) => {
     setTvFocused(false)
     onBlur?.(event)
-  }
-""",
+  }""",
             1,
         )
     source = source.replace(
         """      disabled={disabled}
       style={StyleSheet.compose({ opacity: disabled ? 0.3 : 1 }, style)}
-      {...props}
-""",
+      {...props}""",
         """      disabled={disabled}
       focusable
       onFocus={handleFocus}
@@ -76,8 +74,7 @@ def patch_button() -> None:
         StyleSheet.compose({ opacity: disabled ? 0.3 : 1 }, style),
         tvFocused ? { borderWidth: 2, borderColor: theme['c-primary-font-active'], borderRadius: 6 } : undefined,
       )}
-      {...props}
-""",
+      {...props}""",
         1,
     )
     if "focusable" not in source or "tvFocused" not in source:
