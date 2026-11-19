@@ -503,15 +503,99 @@ class SourceExecutor(
      */
     private fun parseSearchResult(jsonStr: String): List<MusicItem> {
         return try {
-            val jsonObject = json.parseToJsonElement(jsonStr) as? JsonObject
-            val musicListJson = jsonObject?.get("musicList")?.toString()
-            if (musicListJson != null) {
-                json.decodeFromString<List<MusicItem>>(musicListJson)
-            } else {
-                json.decodeFromString<List<MusicItem>>(jsonStr)
+            // 先保留既有 MusicItem 格式的原生解碼路徑，避免影響既有音源。
+            try {
+                val root = json.parseToJsonElement(jsonStr)
+                val listElement = (root as? JsonObject)?.get("musicList")
+                if (listElement != null) {
+                    return json.decodeFromString(listElement.toString())
+                }
+                if (root is kotlinx.serialization.json.JsonArray) {
+                    return json.decodeFromString(root.toString())
+                }
+            } catch (_: Exception) {
+                // 欄位格式不同時，交由下方別名映射處理。
+            }
+
+            val root = JSONObject(jsonStr)
+            val rows = sequenceOf("musicList", "songs", "list", "results", "data")
+                .mapNotNull { key -> root.opt(key) }
+                .firstOrNull { it is org.json.JSONArray }
+                as? org.json.JSONArray
+                ?: if (root.has("id") || root.has("songmid") || root.has("musicId")) {
+                    org.json.JSONArray().put(root)
+                } else {
+                    null
+                }
+                ?: return emptyList()
+
+            fun firstText(item: JSONObject, vararg keys: String): String {
+                for (key in keys) {
+                    val value = item.opt(key)
+                    if (value != null && value != JSONObject.NULL) {
+                        val text = when (value) {
+                            is JSONObject -> value.optString("name", "")
+                            is org.json.JSONArray -> (0 until value.length()).mapNotNull { index ->
+                                val entry = value.opt(index)
+                                when (entry) {
+                                    is JSONObject -> entry.optString("name").takeIf { it.isNotBlank() }
+                                    null, JSONObject.NULL -> null
+                                    else -> entry.toString().takeIf { it.isNotBlank() }
+                                }
+                            }.joinToString("/")
+                            else -> value.toString()
+                        }
+                        if (text.isNotBlank() && text != "null") return text
+                    }
+                }
+                return ""
+            }
+
+            fun firstLong(item: JSONObject, vararg keys: String): Long {
+                for (key in keys) {
+                    val value = item.opt(key)
+                    val parsed = when (value) {
+                        is Number -> value.toLong()
+                        else -> value?.toString()?.toLongOrNull()
+                    }
+                    if (parsed != null && parsed >= 0) return parsed
+                }
+                return 0L
+            }
+
+            buildList {
+                for (index in 0 until rows.length()) {
+                    val item = rows.optJSONObject(index) ?: continue
+                    val id = firstText(item, "id", "songmid", "musicId", "mid", "hash", "rid", "songId")
+                    val name = firstText(item, "name", "title", "songName", "musicName")
+                    val artist = firstText(item, "artist", "singer", "artists", "author", "subtitle")
+                    if (id.isBlank() || name.isBlank()) continue
+                    val album = firstText(item, "album", "albumName", "albumname")
+                        .ifBlank { null }
+                    val duration = firstLong(item, "duration", "dt", "interval", "length")
+                    val platform = firstText(item, "platform", "source", "sourceKey").ifBlank { "custom" }
+                    val url = firstText(item, "url", "playUrl", "musicUrl").ifBlank { null }
+                    val pic = firstText(item, "picUrl", "pic", "cover", "coverUrl", "artwork").ifBlank { null }
+                    val lyric = firstText(item, "lyricUrl", "lyric").ifBlank { null }
+                    val sourceId = firstText(item, "sourceId", "providerId").ifBlank { platform }
+                    add(
+                        MusicItem(
+                            id = id,
+                            name = name,
+                            artist = artist,
+                            album = album,
+                            duration = duration,
+                            platform = platform,
+                            sourceId = sourceId,
+                            url = url,
+                            picUrl = pic,
+                            lyricUrl = lyric
+                        )
+                    )
+                }
             }
         } catch (e: kotlin.coroutines.cancellation.CancellationException) { throw e } catch (e: Exception) {
-            Log.e(TAG, "解析搜索结果失败: ${e.message}")
+            Log.e(TAG, "解析搜索結果失敗: ${e.message}", e)
             emptyList()
         }
     }
