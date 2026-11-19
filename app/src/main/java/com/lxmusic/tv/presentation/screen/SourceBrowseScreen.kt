@@ -215,7 +215,10 @@ fun SourceBrowseScreen(
                                 }
                             }
                             val playableSong = item.toSongOrNull()
-                            if (playableSong != null) {
+                            val hasDeclaredMusicUrl = declaredActions.any {
+                                it.platformKey == item.platformKey && it.action == "musicUrl"
+                            }
+                            if (playableSong != null && hasDeclaredMusicUrl) {
                                 Button(
                                     onClick = { onPlaySong(playableSong) },
                                     modifier = Modifier.fillMaxWidth().height(50.dp)
@@ -227,6 +230,8 @@ fun SourceBrowseScreen(
                                     Text("播放這首歌曲")
                                 }
                                 Text("歌曲 ID、名稱及歌手均已明確映射，可交由既有音源播放流程解析。", color = LXTextSecondary, fontSize = 13.sp)
+                            } else if (playableSong != null) {
+                                Text("歌曲資料已完成映射，但目前沒有任何已啟用音源為「${item.platformKey}」宣告 musicUrl Action，因此暫不可播放。", color = MaterialTheme.colorScheme.error, fontSize = 13.sp)
                             } else {
                                 Text("目前為瀏覽資料項目；若要播放，請在音源管理頁明確設定歌曲 ID、名稱及歌手欄位。", color = LXTextSecondary, fontSize = 13.sp)
                             }
