@@ -265,13 +265,13 @@ export default () => {
     if "fontSize: 26, fontWeight: '700'" not in source:
         source, count = re.subn(
             r'(<Icon\s+name=["\']logo["\']\s+color=\{theme\[["\']c-primary-dark-100-alpha-300["\']\]\}\s+size=\{\d+\}\s*/>)',
-            r"\1\n        <Text style={{ marginLeft: 12, fontSize: 42, fontWeight: '700', color: theme['c-primary-dark-100-alpha-300'] }}>Music</Text>",
+            r"\1\n        <Text style={{ marginLeft: 12, fontSize: 26, fontWeight: '700', color: theme['c-primary-dark-100-alpha-300'] }}>Music</Text>",
             source,
             count=1,
         )
         if count != 1:
             raise SystemExit(f"Failed to add Music wordmark: matched {count} logo anchors")
-    if "fontSize: 42, fontWeight: '700'" not in source:
+    if "fontSize: 26, fontWeight: '700'" not in source:
         raise SystemExit("Music wordmark verification failed")
 
     aside.write_text(source, encoding="utf-8")
