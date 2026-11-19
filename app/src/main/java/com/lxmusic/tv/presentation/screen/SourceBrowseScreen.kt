@@ -1,5 +1,7 @@
 package com.lxmusic.tv.presentation.screen
 
+import android.content.Context
+import org.json.JSONObject
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -17,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -24,6 +27,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lxmusic.tv.data.model.SourceBrowseItem
 import com.lxmusic.tv.data.model.Song
+import com.lxmusic.tv.data.model.SourceActionOption
+import com.lxmusic.tv.data.model.SourceBrowseFieldMap
 import com.lxmusic.tv.presentation.component.lxBackButtonFocus
 import com.lxmusic.tv.presentation.component.lxSelectorFocus
 import com.lxmusic.tv.presentation.theme.LXPrimary
@@ -39,11 +44,16 @@ fun SourceBrowseScreen(
     error: String?,
     onBack: () -> Unit,
     onPlaySong: (Song) -> Unit = {},
+    declaredActions: List<SourceActionOption> = emptyList(),
+    onLoadBrowseAction: (SourceActionOption, String, SourceBrowseFieldMap, Boolean) -> Unit = { _, _, _, _ -> },
     onFocusFloatingBall: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val backRequester = remember { FocusRequester() }
+    val context = LocalContext.current
     var selectedItem by remember(items) { mutableStateOf<SourceBrowseItem?>(null) }
+    var activeBrowseAction by remember { mutableStateOf<SourceActionOption?>(null) }
+    var activePage by remember { mutableIntStateOf(1) }
     BackHandler(onBack = onBack)
 
     Column(
@@ -87,7 +97,7 @@ fun SourceBrowseScreen(
                             modifier = Modifier.fillMaxWidth()
                                 .background(if (selected) LXPrimary.copy(alpha = 0.14f) else Color.White, RoundedCornerShape(12.dp))
                                 .lxSelectorFocus(shape = RoundedCornerShape(12.dp), glow = false, animated = false)
-                                .clickable { selectedItem = item }
+                                .clickable { selectedItem = item; activeBrowseAction = null; activePage = 1 }
                                 .focusable()
                                 .padding(16.dp),
                             verticalAlignment = Alignment.CenterVertically
@@ -127,6 +137,51 @@ fun SourceBrowseScreen(
                             Text("平台：${item.platformKey}", color = LXTextSecondary, fontSize = 12.sp)
                             Text("音源：${item.sourceId}", color = LXTextSecondary, fontSize = 12.sp)
                             Text("Action：${item.action}", color = LXTextSecondary, fontSize = 12.sp)
+                            val compatibleActions = declaredActions.filter {
+                                it.sourceId == item.sourceId && it.platformKey == item.platformKey && it.action != item.action
+                            }
+                            if (compatibleActions.isNotEmpty()) {
+                                Divider()
+                                Text("可用的下一層 Action", color = LXTextPrimary, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                                Text("請先在音源管理頁為該 Action 保存請求 JSON 與欄位映射。", color = LXTextSecondary, fontSize = 12.sp)
+                                compatibleActions.forEach { option ->
+                                    val config = readSavedMapping(context, option)
+                                    val fields = config?.let { parseSavedFields(it) }
+                                    if (config != null && fields != null) {
+                                        Button(
+                                            onClick = {
+                                                val request = buildItemRequest(config.optString("requestJson", "{}"), item, 1)
+                                                activeBrowseAction = option
+                                                activePage = 1
+                                                onLoadBrowseAction(option, request, fields, false)
+                                            },
+                                            modifier = Modifier.fillMaxWidth().height(46.dp)
+                                                .lxSelectorFocus(shape = RoundedCornerShape(8.dp), glow = false, animated = false),
+                                            colors = ButtonDefaults.buttonColors(containerColor = LXPrimary)
+                                        ) { Text("載入：${option.action}") }
+                                    }
+                                }
+                            }
+                            activeBrowseAction?.let { option ->
+                                if (option.sourceId == item.sourceId && option.platformKey == item.platformKey) {
+                                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                        Text("目前：${option.action} · 第 ${activePage} 頁", color = LXTextSecondary, fontSize = 12.sp)
+                                        Button(
+                                            onClick = {
+                                                val config = readSavedMapping(context, option)
+                                                val fields = config?.let { parseSavedFields(it) }
+                                                if (config != null && fields != null) {
+                                                    val nextPage = activePage + 1
+                                                    onLoadBrowseAction(option, buildItemRequest(config.optString("requestJson", "{}"), item, nextPage), fields, true)
+                                                    activePage = nextPage
+                                                }
+                                            },
+                                            modifier = Modifier.height(42.dp).lxSelectorFocus(shape = RoundedCornerShape(8.dp), glow = false, animated = false),
+                                            colors = ButtonDefaults.buttonColors(containerColor = LXPrimary)
+                                        ) { Text("下一頁") }
+                                    }
+                                }
+                            }
                             val playableSong = item.toSongOrNull()
                             if (playableSong != null) {
                                 Button(
@@ -149,4 +204,44 @@ fun SourceBrowseScreen(
             }
         }
     }
+}
+
+private fun readSavedMapping(context: Context, option: SourceActionOption): JSONObject? {
+    val key = "mapping_${option.sourceId}_${option.platformKey}_${option.action}"
+    return try {
+        context.getSharedPreferences("lx_source_browse_mappings", Context.MODE_PRIVATE)
+            .getString(key, null)?.let(::JSONObject)
+    } catch (_: Exception) { null }
+}
+
+private fun parseSavedFields(config: JSONObject): SourceBrowseFieldMap? {
+    val id = config.optString("idPath").takeIf { it.isNotBlank() } ?: return null
+    val title = config.optString("titlePath").takeIf { it.isNotBlank() } ?: return null
+    fun optional(key: String) = config.optString(key).takeIf { it.isNotBlank() }
+    return SourceBrowseFieldMap(
+        collectionPath = config.optString("collectionPath"),
+        idPath = id,
+        titlePath = title,
+        subtitlePath = optional("subtitlePath"),
+        coverPath = optional("coverPath"),
+        countPath = optional("countPath"),
+        descriptionPath = optional("descriptionPath"),
+        durationPath = optional("durationPath"),
+        albumPath = optional("albumPath"),
+        songIdPath = optional("songIdPath"),
+        songNamePath = optional("songNamePath"),
+        singerPath = optional("singerPath"),
+        songAlbumNamePath = optional("songAlbumNamePath"),
+        songAlbumIdPath = optional("songAlbumIdPath"),
+        songPicPath = optional("songPicPath"),
+        songDurationPath = optional("songDurationPath")
+    )
+}
+
+private fun buildItemRequest(template: String, item: SourceBrowseItem, page: Int): String {
+    return template
+        .replace("{{item.id}}", JSONObject.quote(item.id))
+        .replace("{{item.title}}", JSONObject.quote(item.title))
+        .replace("{{item.subtitle}}", JSONObject.quote(item.subtitle.orEmpty()))
+        .replace("{{page}}", page.toString())
 }
