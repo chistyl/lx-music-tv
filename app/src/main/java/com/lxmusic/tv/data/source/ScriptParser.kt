@@ -35,9 +35,10 @@ class ScriptParser {
                 MusicPlatform.entries.firstOrNull { it.key == key }?.let { it to info }
             }.toMap()
 
-            // 3. 验证脚本格式（用解码后的内容，否则 globalThis['\x6c\x78'] 匹配不上字面量）
-            if (!validateScript(decoded)) {
-                return ParseResult.Error("脚本格式不正确")
+            // 匯入階段不綁定特定宿主協議。只拒絕空白檔案；
+            // JavaScript 語法與實際 API 能力由 QuickJS 初始化階段驗證。
+            if (scriptContent.isBlank()) {
+                return ParseResult.Error("音源檔案內容是空的")
             }
 
             ParseResult.Success(
