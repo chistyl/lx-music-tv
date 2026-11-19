@@ -59,8 +59,8 @@ jobs:
         run: |
           python3 scripts/prepare-android-tv.py
           python3 scripts/patch-tv-controls.py
-          grep -n "LEANBACK_LAUNCHER\|android.software.leanback\|screenOrientation" upstream/lx-music-mobile-auto-source/android/app/src/main/AndroidManifest.xml
-          grep -n "focusable\|tvFocused\|handleFocus" upstream/lx-music-mobile-auto-source/src/components/common/Button.tsx
+          grep -n "LEANBACK_LAUNCHER\\|android.software.leanback\\|screenOrientation" upstream/lx-music-mobile-auto-source/android/app/src/main/AndroidManifest.xml
+          grep -n "focusable\\|tvFocused\\|handleFocus" upstream/lx-music-mobile-auto-source/src/components/common/Button.tsx
 
       - name: Generate Android JS bundle
         working-directory: upstream/lx-music-mobile-auto-source
@@ -88,12 +88,50 @@ jobs:
             -x './.git/*' './**/.git/*' './**/node_modules/*' \
                './**/build/*' './**/.gradle/*' './dist/*'
 
-      - name: Upload APK and source ZIP
+      - name: Upload APK - arm64-v8a
         uses: actions/upload-artifact@v4
         with:
-          name: lx-music-tv-build
-          path: |
-            upstream/lx-music-mobile-auto-source/android/app/build/outputs/apk/debug/*.apk
-            dist/lx-music-tv-source.zip
+          name: lx-music-tv-apk-arm64-v8a
+          path: upstream/lx-music-mobile-auto-source/android/app/build/outputs/apk/debug/*arm64-v8a.apk
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Upload APK - armeabi-v7a
+        uses: actions/upload-artifact@v4
+        with:
+          name: lx-music-tv-apk-armeabi-v7a
+          path: upstream/lx-music-mobile-auto-source/android/app/build/outputs/apk/debug/*armeabi-v7a.apk
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Upload APK - universal
+        uses: actions/upload-artifact@v4
+        with:
+          name: lx-music-tv-apk-universal
+          path: upstream/lx-music-mobile-auto-source/android/app/build/outputs/apk/debug/*universal.apk
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Upload APK - x86
+        uses: actions/upload-artifact@v4
+        with:
+          name: lx-music-tv-apk-x86
+          path: upstream/lx-music-mobile-auto-source/android/app/build/outputs/apk/debug/*x86.apk
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Upload APK - x86_64
+        uses: actions/upload-artifact@v4
+        with:
+          name: lx-music-tv-apk-x86_64
+          path: upstream/lx-music-mobile-auto-source/android/app/build/outputs/apk/debug/*x86_64.apk
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Upload complete source ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: lx-music-tv-source
+          path: dist/lx-music-tv-source.zip
           if-no-files-found: error
           retention-days: 30
