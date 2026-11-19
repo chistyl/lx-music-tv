@@ -581,6 +581,10 @@ fun LXMusicApp() {
                 loading = loading,
                 error = error,
                 onBack = { navController.popBackStack() },
+                onPlaySong = { song ->
+                    viewModel.playSong(song)
+                    navController.navigate("player")
+                },
                 onFocusFloatingBall = { floatingBallRequester.requestFocus() },
                 modifier = Modifier.fillMaxSize()
             )
