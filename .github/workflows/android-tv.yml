@@ -1,17 +1,24 @@
+# TV build pipeline; pushes to the feature branches below trigger artifact generation.
 name: Android TV build
 
 on:
   push:
     branches:
       - feature/lx-mobile-auto-source-tv-r1
+      - feature/lx-tv-top-nav-left-player-r1
   workflow_dispatch:
 
 permissions:
   contents: read
 
+concurrency:
+  group: lx-music-tv-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 75
     steps:
       - name: Checkout TV project and pinned upstream
         uses: actions/checkout@v4
@@ -30,11 +37,61 @@ jobs:
 
       - name: Add Traditional Chinese conversion dependency
         working-directory: upstream/lx-music-mobile-auto-source
-        run: npm install --package-lock-only opencc-js@1.4.2
+        timeout-minutes: 5
+        run: |
+          set -o pipefail
+          for attempt in 1 2 3; do
+            echo "OpenCC npm install attempt ${attempt}/3"
+            if timeout 90s npm install --save-exact --fetch-retries=1 --fetch-timeout=30000 opencc-js@1.4.2 2>&1 | tee "opencc-install-attempt-${attempt}.log"; then
+              exit 0
+            else
+              status=$?
+            fi
+            echo "OpenCC install attempt ${attempt} failed with exit code ${status}."
+            if [ "$attempt" -lt 3 ]; then sleep 5; fi
+          done
+          echo "OpenCC dependency installation failed after 3 attempts."
+          exit 1
+
+      - name: Upload dependency installation diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lx-music-tv-dependency-diagnostics
+          path: upstream/lx-music-mobile-auto-source/opencc-install-attempt-*.log
+          if-no-files-found: warn
+          retention-days: 14
 
       - name: Install JavaScript dependencies
         working-directory: upstream/lx-music-mobile-auto-source
-        run: npm ci
+        timeout-minutes: 15
+        run: |
+          set -o pipefail
+          for attempt in 1 2; do
+            echo "npm ci attempt ${attempt}/2"
+            if timeout 7m npm ci --fetch-retries=2 --fetch-timeout=60000 --prefer-offline 2>&1 | tee "npm-ci-attempt-${attempt}.log"; then
+              exit 0
+            else
+              status=$?
+            fi
+            echo "npm ci attempt ${attempt} failed with exit code ${status}."
+            if [ "$attempt" -lt 2 ]; then
+              echo "Clearing npm cache and retrying once."
+              npm cache clean --force
+              sleep 5
+            fi
+          done
+          echo "npm ci failed after 2 attempts."
+          exit 1
+
+      - name: Upload npm installation diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lx-music-tv-npm-ci-diagnostics
+          path: upstream/lx-music-mobile-auto-source/npm-ci-attempt-*.log
+          if-no-files-found: warn
+          retention-days: 14
 
       - name: Run upstream custom-source tests
         working-directory: upstream/lx-music-mobile-auto-source
@@ -53,7 +110,7 @@ jobs:
           test -n "$SDKMANAGER"
           echo "Using SDK manager: $SDKMANAGER"
           yes | "$SDKMANAGER" --licenses
-          "$SDKMANAGER" --install "platform-tools" "platforms;android-34" "build-tools;34.0.0"
+          "$SDKMANAGER" --install "platform-tools" "platforms;android-36" "build-tools;35.0.0" "ndk;26.1.10909125"
 
       - name: Prepare Android TV manifest
         run: |
@@ -66,20 +123,61 @@ jobs:
         working-directory: upstream/lx-music-mobile-auto-source
         run: npm run bundle-android
 
+      - name: Configure Maven Central mirror fallback
+        run: |
+          cat > "$RUNNER_TEMP/lx-maven-mirror.init.gradle" <<'EOF'
+          allprojects {
+            buildscript.repositories {
+              maven {
+                name = "GoogleMavenCentralMirror"
+                url = uri("https://maven-central.storage-download.googleapis.com/maven2")
+              }
+            }
+            repositories {
+              maven {
+                name = "GoogleMavenCentralMirror"
+                url = uri("https://maven-central.storage-download.googleapis.com/maven2")
+              }
+            }
+          }
+          EOF
+
       - name: Assemble debug APK
+        timeout-minutes: 50
         working-directory: upstream/lx-music-mobile-auto-source/android
         run: |
-          for attempt in 1 2 3; do
-            echo "Gradle build attempt ${attempt}/3"
-            if ./gradlew --no-daemon --refresh-dependencies -PreactNativeArchitectures=x86,x86_64 assembleDebug; then
+          set -o pipefail
+          echo "=== Build environment diagnostics ==="
+          date -u
+          java -version 2>&1
+          ./gradlew --version
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          ls -la "$ANDROID_HOME/platforms" "$ANDROID_HOME/build-tools" "$ANDROID_HOME/ndk" || true
+          echo "=== Gradle build starts ==="
+          for attempt in 1 2; do
+            echo "Gradle build attempt ${attempt}/2"
+            if timeout 20m ./gradlew --init-script "$RUNNER_TEMP/lx-maven-mirror.init.gradle" --no-daemon --stacktrace --console=plain --warning-mode all -PreactNativeArchitectures=x86,x86_64 assembleDebug 2>&1 | tee "gradle-build-attempt-${attempt}.log"; then
               exit 0
+            else
+              status=$?
             fi
-            if [ "$attempt" -lt 3 ]; then
-              echo "Gradle dependency/build attempt failed; retrying in 20 seconds."
-              sleep 20
+            echo "Gradle build attempt ${attempt} failed with exit code ${status}."
+            if [ "$attempt" -lt 2 ]; then
+              echo "Retrying once after 15 seconds."
+              sleep 15
             fi
           done
+          echo "Both Gradle build attempts failed. See gradle-build-attempt-*.log above."
           exit 1
+
+      - name: Upload Gradle diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lx-music-tv-gradle-diagnostics
+          path: upstream/lx-music-mobile-auto-source/android/gradle-build-attempt-*.log
+          if-no-files-found: warn
+          retention-days: 14
 
       - name: Package complete source tree
         run: |
