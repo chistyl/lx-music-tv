@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Apply Android TV manifest declarations and the requested launcher name."""
+"""Apply Android TV manifest declarations and force the launcher name to LX Music."""
 from pathlib import Path
 import xml.etree.ElementTree as ET
 
@@ -29,7 +29,7 @@ app = root.find("application")
 if app is None:
     raise SystemExit("AndroidManifest.xml has no application element")
 
-# Force the actual packaged launcher label, not merely the outer repository's resources.
+# Force the packaged application and launcher activity labels to the requested name.
 app.set(android + "label", "@string/app_name")
 
 # Update every app_name resource variant so locale-specific resources cannot override it.
@@ -52,6 +52,7 @@ activity = app.find("activity")
 if activity is None:
     raise SystemExit("AndroidManifest.xml has no launcher activity")
 
+activity.set(android + "label", "@string/app_name")
 activity.set(android + "screenOrientation", "landscape")
 launcher = False
 for intent in activity.findall("intent-filter"):
