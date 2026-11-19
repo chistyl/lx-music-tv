@@ -177,7 +177,4 @@ edit("src/components/common/Text.tsx",
      "import { memo, Children, type ComponentProps } from 'react'\n",
      "import { memo, type ComponentProps } from 'react'\n",
      "clean shared text imports")
-edit("src/components/common/Text.tsx",
-     ">{children}</Animated.Text>",
-     ">{toTraditionalText(children)}</Animated.Text>",
-     "convert animated color text content")
+# AnimatedColorText is used by the built-in lyric renderer; leave lyric text untouched.
