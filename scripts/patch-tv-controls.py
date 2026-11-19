@@ -122,10 +122,11 @@ export default () => {
     justifyContent: 'center',
     alignItems: 'center',
   },""", """  header: {
-    width: 300,
+    width: 360,
     height: '100%',
     justifyContent: 'center',
-    alignItems: 'center',
+    alignItems: 'flex-start',
+    paddingLeft: 58,
   },""", "top navigation logo")
     source = replace_once(source, """  menus: {
     flex: 1,
