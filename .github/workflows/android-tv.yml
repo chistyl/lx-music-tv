@@ -82,8 +82,9 @@ jobs:
             echo "Gradle build attempt ${attempt}/2"
             if timeout 20m ./gradlew --no-daemon --stacktrace --console=plain -PreactNativeArchitectures=x86,x86_64 assembleDebug 2>&1 | tee "gradle-build-attempt-${attempt}.log"; then
               exit 0
+            else
+              status=$?
             fi
-            status=$?
             echo "Gradle build attempt ${attempt} failed with exit code ${status}."
             if [ "$attempt" -lt 2 ]; then
               echo "Retrying once after 15 seconds."
