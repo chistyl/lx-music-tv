@@ -289,10 +289,6 @@ fun MainScreen(
             Column(
                 modifier = Modifier.weight(1f).fillMaxHeight()
             ) {
-            HorizontalPageHeader(
-                selectedTab = selectedTab,
-                modifier = Modifier.fillMaxWidth()
-            )
             // 主內容區域
             MainContent(
                 selectedTab = selectedTab,
@@ -601,42 +597,6 @@ fun DiscCoverButton(
         ) {
             content()
         }
-    }
-}
-
-/**
- * 洛雪音樂橫向版共用頁面標題列。
- * 對應官方手機版 Horizontal/Header：只呈現目前導覽頁標題，
- * 不額外加入新的操作項，避免破壞既有遙控器焦點順序。
- */
-@Composable
-private fun HorizontalPageHeader(
-    selectedTab: Int,
-    modifier: Modifier = Modifier
-) {
-    val title = when (selectedTab) {
-        0 -> "搜尋"
-        1 -> "歌單"
-        2 -> "排行榜"
-        3 -> "我的收藏"
-        4 -> "本地"
-        5 -> "設定"
-        else -> "洛雪音樂"
-    }
-    Row(
-        modifier = modifier
-            .height(56.dp)
-            .background(LXSurfaceMain)
-            .padding(horizontal = 28.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = title,
-            color = LXTextPrimary,
-            fontSize = 20.sp,
-            fontWeight = FontWeight.SemiBold,
-            maxLines = 1
-        )
     }
 }
 
