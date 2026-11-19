@@ -99,7 +99,7 @@ const styles = createStyle({
     overflow: 'hidden',
   },
   playerPane: {
-    width: '32%',
+    width: '36%',
     flexGrow: 0,
     flexShrink: 0,
     overflow: 'hidden',
@@ -135,6 +135,11 @@ export default () => {
     source = aside.read_text(encoding="utf-8")
     source = source.replace("import { memo } from 'react'", "import { memo, useState } from 'react'", 1)
     source = source.replace("import { ScrollView, TouchableOpacity, View } from 'react-native'", "import { ScrollView, TouchableOpacity, View, Text } from 'react-native'", 1)
+    # Match the supplied reference: keep the brand and icon on one line and remove
+    # the extra status-bar spacer that was pushing the navigation down.
+    source = source.replace("import { useNavActiveId, useStatusbarHeight } from '@/store/common/hook'", "import { useNavActiveId } from '@/store/common/hook'", 1)
+    source = source.replace("  const statusBarHeight = useStatusbarHeight()\\n", "", 1)
+    source = source.replace("<View style={{ paddingTop: statusBarHeight }}>\\n      <View style={styles.header}>", "<View>\\n      <View style={[styles.header, { flexDirection: 'row' }]}>", 1)
     source = replace_once(source, "const NAV_WIDTH = 68", "const NAV_HEIGHT = 72", "top navigation height")
     source = replace_once(source, """  container: {
     flexGrow: 0,
@@ -161,11 +166,11 @@ export default () => {
     justifyContent: 'center',
     alignItems: 'center',
   },""", """  header: {
-    width: 190,
+    width: 150,
     height: '100%',
     justifyContent: 'center',
     alignItems: 'flex-start',
-    paddingLeft: 36,
+    paddingLeft: 20,
   },""", "top navigation logo")
     source = replace_once(source, """  menus: {
     flex: 1,
@@ -239,7 +244,7 @@ export default () => {
           color={active ? '#FFFFFF' : tvFocused ? theme['c-primary-font-active'] : theme['c-font-label']}
         />
       </View>
-      <Text style={{ marginLeft: 12, fontSize: 18, color: active ? '#FFFFFF' : tvFocused ? theme['c-primary-font-active'] : theme['c-font-label'] }}>
+      <Text style={{ marginLeft: 12, fontSize: 16, color: active ? '#FFFFFF' : tvFocused ? theme['c-primary-font-active'] : theme['c-font-label'] }}>
         {global.i18n.t(id)}
       </Text>
     </TouchableOpacity>
@@ -324,7 +329,7 @@ export default () => {
     source = pic.read_text(encoding="utf-8")
     source = replace_once(source, """  const musicInfo = usePlayerMusicInfo()
   const handlePress""", """  const musicInfo = usePlayerMusicInfo()
-  const picSize = isHome ? scaleSizeH(180) : PIC_HEIGHT
+  const picSize = isHome ? scaleSizeH(120) : PIC_HEIGHT
   const handlePress""", "large home player artwork")
     source = replace_once(source, """<Image url={musicInfo.pic} nativeID={NAV_SHEAR_NATIVE_IDS.playDetail_pic} style={styles.image} onError={handleError} />""", """<Image url={musicInfo.pic} nativeID={NAV_SHEAR_NATIVE_IDS.playDetail_pic} style={[styles.image, { width: picSize, height: picSize, borderRadius: picSize / 2, borderWidth: isHome ? 2 : 0, borderColor: '#25C76A' }]} onError={handleError} />""", "home player artwork size")
     pic.write_text(source, encoding="utf-8")
