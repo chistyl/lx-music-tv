@@ -87,6 +87,28 @@ class ScriptParserTest {
     }
 
     @Test
+    fun `test parse unicode escaped lx host api`() {
+        val scriptContent = """
+            var api = globalThis['\\u006cx'];
+            api['\\u0073end'](api.EVENT_NAMES['\\u0069nited'], {
+                sources: {
+                    custom: {
+                        name: 'Unicode Source',
+                        type: 'music',
+                        actions: ['musicUrl'],
+                        qualitys: ['320k']
+                    }
+                }
+            });
+        """.trimIndent()
+
+        val result = parser.parse(scriptContent)
+        assertTrue(result is ParseResult.Success)
+        val success = result as ParseResult.Success
+        assertTrue(success.declaredPlatforms.containsKey("custom"))
+    }
+
+    @Test
     fun `test parse invalid script`() {
         val scriptContent = "console.log('not a valid source script')"
 
