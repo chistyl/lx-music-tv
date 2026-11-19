@@ -32,6 +32,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lxmusic.tv.data.model.MusicSource
 import com.lxmusic.tv.data.model.SourceActionOption
+import com.lxmusic.tv.data.model.SourceBrowseFieldMap
+import com.lxmusic.tv.data.model.SourceBrowseItem
 import com.lxmusic.tv.data.source.ParseResult
 import com.lxmusic.tv.data.source.ScriptParser
 import com.lxmusic.tv.viewmodel.SourceImportPreview
@@ -64,6 +66,11 @@ fun SourceManagementScreen(
     sourceActionTestLoading: Boolean = false,
     onExecuteDeclaredAction: (SourceActionOption, String) -> Unit = { _, _ -> },
     onClearActionTestResult: () -> Unit = {},
+    sourceBrowseItems: List<SourceBrowseItem> = emptyList(),
+    sourceBrowseError: String? = null,
+    sourceBrowseLoading: Boolean = false,
+    onLoadSourceBrowseItems: (SourceActionOption, String, SourceBrowseFieldMap) -> Unit = { _, _, _ -> },
+    onClearSourceBrowseItems: () -> Unit = {},
     serverRunning: Boolean,
     serverUrl: String?,
     onToggleServer: () -> Unit,
@@ -203,6 +210,11 @@ fun SourceManagementScreen(
                     testLoading = sourceActionTestLoading,
                     onExecute = onExecuteDeclaredAction,
                     onClearResult = onClearActionTestResult,
+                    browseItems = sourceBrowseItems,
+                    browseError = sourceBrowseError,
+                    browseLoading = sourceBrowseLoading,
+                    onLoadBrowseItems = onLoadSourceBrowseItems,
+                    onClearBrowseItems = onClearSourceBrowseItems,
                     modifier = Modifier.fillMaxWidth()
                 )
             }
@@ -286,10 +298,24 @@ private fun DeclaredSourceActionsCard(
     testLoading: Boolean,
     onExecute: (SourceActionOption, String) -> Unit,
     onClearResult: () -> Unit,
+    browseItems: List<SourceBrowseItem>,
+    browseError: String?,
+    browseLoading: Boolean,
+    onLoadBrowseItems: (SourceActionOption, String, SourceBrowseFieldMap) -> Unit,
+    onClearBrowseItems: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     var selectedAction by remember(actions) { mutableStateOf(actions.firstOrNull()) }
     var requestJson by remember(selectedAction) { mutableStateOf("{}") }
+    var collectionPath by remember(selectedAction) { mutableStateOf("") }
+    var idPath by remember(selectedAction) { mutableStateOf("") }
+    var titlePath by remember(selectedAction) { mutableStateOf("") }
+    var subtitlePath by remember(selectedAction) { mutableStateOf("") }
+    var coverPath by remember(selectedAction) { mutableStateOf("") }
+    var countPath by remember(selectedAction) { mutableStateOf("") }
+    var descriptionPath by remember(selectedAction) { mutableStateOf("") }
+    var durationPath by remember(selectedAction) { mutableStateOf("") }
+    var albumPath by remember(selectedAction) { mutableStateOf("") }
     Card(
         modifier = modifier,
         colors = CardDefaults.cardColors(containerColor = LXCardDark),
@@ -407,11 +433,101 @@ private fun DeclaredSourceActionsCard(
                             verticalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
                             Text("回傳結果", fontWeight = FontWeight.SemiBold, color = LXTextPrimary)
-                            Text(
-                                text = result,
-                                color = LXTextPrimary,
-                                fontSize = 12.sp
+                            Text(text = result, color = LXTextPrimary, fontSize = 12.sp)
+                        }
+                    }
+
+                    Divider(color = LXOnCardDarkSecondary.copy(alpha = 0.35f))
+                    Text("瀏覽資料欄位映射", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = LXOnCardDark)
+                    Text(
+                        "依照上方 Action 回傳的 JSON 結構填寫路徑。支援 data.items、result.list[0] 等路徑；不填的選填欄位會略過。",
+                        fontSize = 12.sp,
+                        color = LXOnCardDarkSecondary
+                    )
+                    @Composable
+                    fun mappingField(label: String, value: String, onValueChange: (String) -> Unit, required: Boolean = false) {
+                        OutlinedTextField(
+                            value = value,
+                            onValueChange = onValueChange,
+                            modifier = Modifier.fillMaxWidth()
+                                .lxSelectorFocus(shape = RoundedCornerShape(8.dp), glow = false, animated = false),
+                            label = { Text(if (required) "$label（必填）" else "$label（選填）") },
+                            singleLine = true,
+                            textStyle = androidx.compose.ui.text.TextStyle(fontSize = 14.sp),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedTextColor = LXTextPrimary,
+                                unfocusedTextColor = LXTextPrimary,
+                                focusedBorderColor = LXPrimary,
+                                unfocusedBorderColor = LXBorder,
+                                focusedLabelColor = LXPrimary,
+                                unfocusedLabelColor = LXTextSecondary
                             )
+                        )
+                    }
+                    mappingField("清單路徑 collectionPath", collectionPath, { collectionPath = it })
+                    mappingField("項目 ID idPath", idPath, { idPath = it }, required = true)
+                    mappingField("標題 titlePath", titlePath, { titlePath = it }, required = true)
+                    mappingField("副標題 subtitlePath", subtitlePath, { subtitlePath = it })
+                    mappingField("封面 coverPath", coverPath, { coverPath = it })
+                    mappingField("數量 countPath", countPath, { countPath = it })
+                    mappingField("描述 descriptionPath", descriptionPath, { descriptionPath = it })
+                    mappingField("時長 durationPath", durationPath, { durationPath = it })
+                    mappingField("專輯 albumPath", albumPath, { albumPath = it })
+
+                    Button(
+                        onClick = {
+                            selectedAction?.let { action ->
+                                onLoadBrowseItems(
+                                    action,
+                                    requestJson,
+                                    SourceBrowseFieldMap(
+                                        collectionPath = collectionPath.trim(),
+                                        idPath = idPath.trim(),
+                                        titlePath = titlePath.trim(),
+                                        subtitlePath = subtitlePath.trim().ifBlank { null },
+                                        coverPath = coverPath.trim().ifBlank { null },
+                                        countPath = countPath.trim().ifBlank { null },
+                                        descriptionPath = descriptionPath.trim().ifBlank { null },
+                                        durationPath = durationPath.trim().ifBlank { null },
+                                        albumPath = albumPath.trim().ifBlank { null }
+                                    )
+                                )
+                            }
+                        },
+                        enabled = !browseLoading && selectedAction != null && idPath.isNotBlank() && titlePath.isNotBlank(),
+                        modifier = Modifier.lxSelectorFocus(shape = RoundedCornerShape(8.dp), glow = false, animated = false),
+                        colors = ButtonDefaults.buttonColors(containerColor = LXPrimary)
+                    ) {
+                        Text(if (browseLoading) "轉換中…" else "執行欄位映射")
+                    }
+                    browseError?.let { error ->
+                        Text("映射失敗：$error", color = LXError, fontSize = 13.sp)
+                    }
+                    if (browseItems.isNotEmpty()) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text("映射結果（${browseItems.size} 筆）", color = LXOnCardDark, fontWeight = FontWeight.SemiBold)
+                            Spacer(modifier = Modifier.weight(1f))
+                            TextButton(onClick = onClearBrowseItems) { Text("清除") }
+                        }
+                        browseItems.take(20).forEach { item ->
+                            Column(
+                                modifier = Modifier.fillMaxWidth()
+                                    .background(LXSurfaceVariant, RoundedCornerShape(8.dp))
+                                    .padding(10.dp),
+                                verticalArrangement = Arrangement.spacedBy(3.dp)
+                            ) {
+                                Text(item.title, color = LXTextPrimary, fontWeight = FontWeight.SemiBold)
+                                Text("ID：${item.id} · 平台：${item.platformKey}", color = LXTextSecondary, fontSize = 11.sp)
+                                item.subtitle?.takeIf { it.isNotBlank() }?.let {
+                                    Text(it, color = LXTextSecondary, fontSize = 12.sp)
+                                }
+                                item.coverUrl?.takeIf { it.isNotBlank() }?.let {
+                                    Text("封面：$it", color = LXTextSecondary, fontSize = 11.sp, maxLines = 1)
+                                }
+                            }
+                        }
+                        if (browseItems.size > 20) {
+                            Text("僅預覽前 20 筆，完整資料保留於瀏覽狀態。", color = LXOnCardDarkSecondary, fontSize = 11.sp)
                         }
                     }
                 }
