@@ -3,7 +3,7 @@
 from pathlib import Path
 import xml.etree.ElementTree as ET
 
-manifest = Path("android/app/src/main/AndroidManifest.xml")
+manifest = Path("upstream/lx-music-mobile-auto-source/android/app/src/main/AndroidManifest.xml")
 ET.register_namespace("android", "http://schemas.android.com/apk/res/android")
 ET.register_namespace("tools", "http://schemas.android.com/tools")
 android = "{http://schemas.android.com/apk/res/android}"
