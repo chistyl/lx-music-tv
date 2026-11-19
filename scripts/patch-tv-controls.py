@@ -15,17 +15,11 @@ def patch_player_controls() -> None:
     path = ROOT / "src/components/player/PlayerBar/components/ControlBtn.tsx"
     source = path.read_text(encoding="utf-8")
     source = source.replace("import { TouchableOpacity } from 'react-native'", "import { TouchableOpacity } from 'react-native'\nimport { useState } from 'react'", 1)
-    for name, handler, icon in [
-        ("PlayPrevBtn", "handlePlayPrev", "prevMusic"),
-        ("PlayNextBtn", "handlePlayNext", "nextMusic"),
-        ("TogglePlayBtn", "togglePlay", None),
-    ]:
+    for name in ("PlayPrevBtn", "PlayNextBtn", "TogglePlayBtn"):
         start = source.index(f"const {name} = () => {{")
         end = source.find("\n}\n", start) + 3
         block = source[start:end]
         block = block.replace("  const theme = useTheme()", "  const theme = useTheme()\n  const [tvFocused, setTvFocused] = useState(false)", 1)
-        if name == "TogglePlayBtn":
-            block = block.replace("  const theme = useTheme()", "  const theme = useTheme()\n  const [tvFocused, setTvFocused] = useState(false)", 1)
         block = block.replace("style={styles.cotrolBtn}", "focusable\n      onFocus={() => setTvFocused(true)}\n      onBlur={() => setTvFocused(false)}\n      style={[styles.cotrolBtn, tvFocused ? styles.focusedControl : undefined]}", 1)
         source = source[:start] + block + source[end:]
     source = replace_once(source, "    width: 46,\n    height: 46,", "    width: 60,\n    height: 60,", "player control target")
