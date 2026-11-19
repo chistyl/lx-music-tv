@@ -194,6 +194,8 @@ fun LXMusicApp() {
         composable("main") {
             val currentSong by viewModel.currentSong.collectAsState()
             val isPlaying by viewModel.isPlaying.collectAsState()
+            val playbackProgress by viewModel.progress.collectAsState()
+            val playbackDurationMs by viewModel.duration.collectAsState()
             val defaultPlatform by viewModel.defaultPlatform.collectAsState()
             val preferredQuality by viewModel.preferredQuality.collectAsState()
             // 2.8 歌词设置：是否显示翻译歌词
@@ -310,7 +312,11 @@ fun LXMusicApp() {
                 },
                 currentSong = currentSong,
                 isPlaying = isPlaying,
+                playbackProgress = playbackProgress,
+                playbackDurationMs = playbackDurationMs,
                 onPlayPause = { viewModel.togglePlayPause() },
+                onPrevious = { viewModel.playPrevious() },
+                onNext = { viewModel.playNext() },
                 defaultPlatform = defaultPlatform,
                 onDefaultPlatformChange = { viewModel.setDefaultPlatform(it) },
                 preferredQuality = preferredQuality,
