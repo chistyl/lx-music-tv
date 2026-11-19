@@ -2,6 +2,7 @@ package com.lxmusic.tv.presentation.screen
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
@@ -22,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lxmusic.tv.presentation.component.lxBackButtonFocus
 import com.lxmusic.tv.presentation.component.lxSelectorFocus
+import com.lxmusic.tv.presentation.component.requestInitialFocus
 import com.lxmusic.tv.presentation.theme.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -51,8 +53,15 @@ fun InterfaceSettingsScreen(
     // 遥控器返回键：返回上一页（与顶部返回箭头一致）
     BackHandler { onBack() }
 
-    // 初始焦点落在顶部返回箭头（仿 source_management 等子页）
-    LaunchedEffect(Unit) { backRequester.requestFocus() }
+    // 初始焦点落在顶部返回箭头；使用全站统一的延迟重试，避免 Compose 尚未 attach 时请求失效
+    var initialFocusRequested by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        requestInitialFocus(
+            focusRequester = backRequester,
+            attempted = { initialFocusRequested },
+            markAttempted = { initialFocusRequested = true }
+        )
+    }
 
     Box(modifier = Modifier.fillMaxSize().background(LXSurfaceMain)) {
         // 顶部氛围渐变（与全站主区一致，主题切换自动适配）
@@ -94,7 +103,10 @@ fun InterfaceSettingsScreen(
                 item {
                     SectionTitle("主题模式")
                     Spacer(modifier = Modifier.height(12.dp))
-                    Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                    Row(
+                        modifier = Modifier.focusGroup(),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
                         LXThemeMode.values().forEach { mode ->
                             ThemeModeCard(
                                 mode = mode,
