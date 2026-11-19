@@ -377,6 +377,13 @@ private fun DeclaredSourceActionsCard(
     var descriptionPath by remember(selectedAction) { mutableStateOf(savedMapping?.optString("descriptionPath") ?: "") }
     var durationPath by remember(selectedAction) { mutableStateOf(savedMapping?.optString("durationPath") ?: "") }
     var albumPath by remember(selectedAction) { mutableStateOf(savedMapping?.optString("albumPath") ?: "") }
+    var songIdPath by remember(selectedAction) { mutableStateOf(savedMapping?.optString("songIdPath") ?: "") }
+    var songNamePath by remember(selectedAction) { mutableStateOf(savedMapping?.optString("songNamePath") ?: "") }
+    var singerPath by remember(selectedAction) { mutableStateOf(savedMapping?.optString("singerPath") ?: "") }
+    var songAlbumNamePath by remember(selectedAction) { mutableStateOf(savedMapping?.optString("songAlbumNamePath") ?: "") }
+    var songAlbumIdPath by remember(selectedAction) { mutableStateOf(savedMapping?.optString("songAlbumIdPath") ?: "") }
+    var songPicPath by remember(selectedAction) { mutableStateOf(savedMapping?.optString("songPicPath") ?: "") }
+    var songDurationPath by remember(selectedAction) { mutableStateOf(savedMapping?.optString("songDurationPath") ?: "") }
     var mappingSaveMessage by remember(selectedAction) { mutableStateOf(if (savedMapping != null) "已載入此音源的儲存設定" else "") }
     var hasSavedMapping by remember(selectedAction) { mutableStateOf(savedMapping != null) }
     Card(
@@ -520,6 +527,14 @@ private fun DeclaredSourceActionsCard(
                     SourceMappingField("描述 descriptionPath", descriptionPath, { descriptionPath = it })
                     SourceMappingField("時長 durationPath", durationPath, { durationPath = it })
                     SourceMappingField("專輯 albumPath", albumPath, { albumPath = it })
+                    Text("歌曲播放欄位（選填；需完整映射才會開放播放）", color = LXOnCardDark, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
+                    SourceMappingField("歌曲 ID 路徑", songIdPath, { songIdPath = it })
+                    SourceMappingField("歌曲名稱路徑", songNamePath, { songNamePath = it })
+                    SourceMappingField("歌手路徑", singerPath, { singerPath = it })
+                    SourceMappingField("歌曲專輯名稱路徑", songAlbumNamePath, { songAlbumNamePath = it })
+                    SourceMappingField("歌曲專輯 ID 路徑", songAlbumIdPath, { songAlbumIdPath = it })
+                    SourceMappingField("歌曲封面路徑", songPicPath, { songPicPath = it })
+                    SourceMappingField("歌曲時長（毫秒）路徑", songDurationPath, { songDurationPath = it })
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -541,6 +556,13 @@ private fun DeclaredSourceActionsCard(
                                         .put("descriptionPath", descriptionPath)
                                         .put("durationPath", durationPath)
                                         .put("albumPath", albumPath)
+                                        .put("songIdPath", songIdPath)
+                                        .put("songNamePath", songNamePath)
+                                        .put("singerPath", singerPath)
+                                        .put("songAlbumNamePath", songAlbumNamePath)
+                                        .put("songAlbumIdPath", songAlbumIdPath)
+                                        .put("songPicPath", songPicPath)
+                                        .put("songDurationPath", songDurationPath)
                                     mappingPrefs.edit().putString(key, config.toString()).apply()
                                     hasSavedMapping = true
                                     mappingSaveMessage = "設定已保存，下次進入仍會自動還原"
@@ -564,6 +586,13 @@ private fun DeclaredSourceActionsCard(
                                 descriptionPath = ""
                                 durationPath = ""
                                 albumPath = ""
+                                songIdPath = ""
+                                songNamePath = ""
+                                singerPath = ""
+                                songAlbumNamePath = ""
+                                songAlbumIdPath = ""
+                                songPicPath = ""
+                                songDurationPath = ""
                                 mappingSaveMessage = "已刪除此組設定，欄位已恢復空白"
                             },
                             enabled = selectedAction != null && hasSavedMapping,
@@ -588,7 +617,14 @@ private fun DeclaredSourceActionsCard(
                                         countPath = countPath.trim().ifBlank { null },
                                         descriptionPath = descriptionPath.trim().ifBlank { null },
                                         durationPath = durationPath.trim().ifBlank { null },
-                                        albumPath = albumPath.trim().ifBlank { null }
+                                        albumPath = albumPath.trim().ifBlank { null },
+                                        songIdPath = songIdPath.trim().ifBlank { null },
+                                        songNamePath = songNamePath.trim().ifBlank { null },
+                                        singerPath = singerPath.trim().ifBlank { null },
+                                        songAlbumNamePath = songAlbumNamePath.trim().ifBlank { null },
+                                        songAlbumIdPath = songAlbumIdPath.trim().ifBlank { null },
+                                        songPicPath = songPicPath.trim().ifBlank { null },
+                                        songDurationPath = songDurationPath.trim().ifBlank { null }
                                     )
                                 )
                             }
