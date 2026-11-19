@@ -60,7 +60,17 @@ fun SourceBrowseScreen(
     var requestContextItem by remember { mutableStateOf<SourceBrowseItem?>(null) }
     var activeBrowseAction by remember { mutableStateOf<SourceActionOption?>(null) }
     var activePage by remember { mutableIntStateOf(1) }
-    BackHandler(onBack = onBack)
+    BackHandler(onBack = {
+        if (canGoBack) {
+            onBackLevel()
+            selectedItem = null
+            requestContextItem = null
+            activeBrowseAction = null
+            activePage = 1
+        } else {
+            onBack()
+        }
+    })
     LaunchedEffect(items, activeBrowseAction) {
         if (activeBrowseAction != null && items.isNotEmpty()) selectedItem = items.first()
     }
