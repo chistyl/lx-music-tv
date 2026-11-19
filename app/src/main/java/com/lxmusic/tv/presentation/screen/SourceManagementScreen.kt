@@ -81,6 +81,7 @@ fun SourceManagementScreen(
     onToggleSource: (String, Boolean) -> Unit,
     onDeleteSource: (String) -> Unit,
     onPreviewSourceFromUrl: (String) -> Unit = {},
+    onPickSourceFile: () -> Unit = {},
     sourceImportPreview: SourceImportPreview? = null,
     onConfirmImportSource: () -> Unit = {},
     onCancelImportPreview: () -> Unit = {},
@@ -266,6 +267,10 @@ fun SourceManagementScreen(
                 onImport = { url ->
                     onPreviewSourceFromUrl(url)
                     showImportDialog = false
+                },
+                onPickFile = {
+                    showImportDialog = false
+                    onPickSourceFile()
                 },
                 onDismiss = { showImportDialog = false }
             )
@@ -986,6 +991,7 @@ fun DeleteConfirmDialog(
 @Composable
 fun ImportSourceDialog(
     onImport: (String) -> Unit,
+    onPickFile: () -> Unit,
     onDismiss: () -> Unit
 ) {
     var sourceUrl by remember { mutableStateOf("") }
@@ -1025,8 +1031,18 @@ fun ImportSourceDialog(
                         cursorColor = LXPrimary
                     )
                 )
+                OutlinedButton(
+                    onClick = onPickFile,
+                    modifier = Modifier.fillMaxWidth().lxSelectorFocus(
+                        shape = RoundedCornerShape(10.dp), glow = false, animated = false
+                    )
+                ) {
+                    Icon(Icons.Default.FolderOpen, contentDescription = null)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("從裝置選擇 JS 音源檔")
+                }
                 Text(
-                    text = "也可以啟動下方 HTTP 伺服器，再透過手機或電腦上傳 JS 音源檔。",
+                    text = "支援網址匯入或從 USB、下載資料夾及其他文件位置選取 .js 檔案。",
                     color = LXTextSecondary,
                     fontSize = 12.sp
                 )
