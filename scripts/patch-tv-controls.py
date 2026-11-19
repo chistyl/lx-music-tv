@@ -135,7 +135,7 @@ export default () => {
     source = aside.read_text(encoding="utf-8")
     source = source.replace("import { memo } from 'react'", "import { memo, useState } from 'react'", 1)
     source = source.replace("import { ScrollView, TouchableOpacity, View } from 'react-native'", "import { ScrollView, TouchableOpacity, View, Text } from 'react-native'", 1)
-    source = replace_once(source, "const NAV_WIDTH = 68", "const NAV_HEIGHT = 104", "top navigation height")
+    source = replace_once(source, "const NAV_WIDTH = 68", "const NAV_HEIGHT = 72", "top navigation height")
     source = replace_once(source, """  container: {
     flexGrow: 0,
     // flex: 1,
@@ -161,11 +161,11 @@ export default () => {
     justifyContent: 'center',
     alignItems: 'center',
   },""", """  header: {
-    width: 360,
+    width: 270,
     height: '100%',
     justifyContent: 'center',
     alignItems: 'flex-start',
-    paddingLeft: 58,
+    paddingLeft: 36,
   },""", "top navigation logo")
     source = replace_once(source, """  menus: {
     flex: 1,
@@ -196,7 +196,7 @@ export default () => {
   menuItem: {
     flexDirection: 'row',
     paddingVertical: 12,
-    paddingHorizontal: 14,
+    paddingHorizontal: 10,
     marginHorizontal: 3,
     justifyContent: 'center',
     alignItems: 'center',
@@ -227,7 +227,7 @@ export default () => {
       onBlur={() => setTvFocused(false)}
       style={[
         styles.menuItem,
-        active ? { borderBottomWidth: 3, borderBottomColor: theme['c-primary-font-active'] } : undefined,
+        active ? { backgroundColor: theme['c-primary-font-active'] } : undefined,
         tvFocused ? { borderWidth: 2, borderColor: theme['c-primary-font-active'] } : undefined,
       ]}
       onPress={() => onPress(id)}
@@ -236,10 +236,10 @@ export default () => {
         <Icon
           name={icon}
           size={24}
-          color={active || tvFocused ? theme['c-primary-font-active'] : theme['c-font-label']}
+          color={active ? '#FFFFFF' : tvFocused ? theme['c-primary-font-active'] : theme['c-font-label']}
         />
       </View>
-      <Text style={{ marginLeft: 12, fontSize: 20, color: active || tvFocused ? theme['c-primary-font-active'] : theme['c-font-label'] }}>
+      <Text style={{ marginLeft: 12, fontSize: 20, color: active ? '#FFFFFF' : tvFocused ? theme['c-primary-font-active'] : theme['c-font-label'] }}>
         {global.i18n.t(id)}
       </Text>
     </TouchableOpacity>
@@ -292,7 +292,7 @@ export default () => {
     // borderRadius: 3,""", """  homeContainer: {
     width: '100%',
     height: '100%',
-    paddingVertical: 18,
+    paddingVertical: 10,
     paddingHorizontal: 14,
     flexDirection: 'column',
     justifyContent: 'center',
@@ -306,7 +306,7 @@ export default () => {
     flexShrink: 0,
     paddingLeft: 0,
     alignItems: 'center',
-    marginTop: 14,
+    marginTop: 8,
   },
   homeRight: {
     width: '100%',
@@ -314,7 +314,7 @@ export default () => {
     justifyContent: 'center',
     paddingLeft: 0,
     paddingRight: 0,
-    marginTop: 12,
+    marginTop: 6,
   },
   left: {
     // borderRadius: 3,""", "left player panel styles")
@@ -324,7 +324,7 @@ export default () => {
     source = pic.read_text(encoding="utf-8")
     source = replace_once(source, """  const musicInfo = usePlayerMusicInfo()
   const handlePress""", """  const musicInfo = usePlayerMusicInfo()
-  const picSize = isHome ? scaleSizeH(350) : PIC_HEIGHT
+  const picSize = isHome ? scaleSizeH(230) : PIC_HEIGHT
   const handlePress""", "large home player artwork")
     source = replace_once(source, """<Image url={musicInfo.pic} nativeID={NAV_SHEAR_NATIVE_IDS.playDetail_pic} style={styles.image} onError={handleError} />""", """<Image url={musicInfo.pic} nativeID={NAV_SHEAR_NATIVE_IDS.playDetail_pic} style={[styles.image, { width: picSize, height: picSize, borderRadius: picSize / 2, borderWidth: isHome ? 2 : 0, borderColor: '#25C76A' }]} onError={handleError} />""", "home player artwork size")
     pic.write_text(source, encoding="utf-8")
