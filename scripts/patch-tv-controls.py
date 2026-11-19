@@ -33,6 +33,13 @@ def patch_player_bar() -> None:
     source = replace_once(source, "    paddingLeft: 5,\n    paddingRight: 5,", "    paddingLeft: 8,\n    paddingRight: 8,", "player bar control spacing")
     path.write_text(source, encoding="utf-8")
 
+def patch_android_abis() -> None:
+    path = ROOT / "android/app/build.gradle"
+    source = path.read_text(encoding="utf-8")
+    source = replace_once(source, 'return value ? value.split(",") : ["armeabi-v7a", "x86", "x86_64", "arm64-v8a"]', 'return value ? value.split(",") : ["x86", "x86_64"]', "default Android TV ABIs")
+    source = replace_once(source, "universalApk true  // If true, also generate a universal APK", "universalApk false // Deliver only the two requested Intel ABI APKs", "disable universal APK")
+    path.write_text(source, encoding="utf-8")
+
 def patch_my_lists() -> None:
     path = ROOT / "src/screens/Home/Views/Mylist/MyList/List.tsx"
     source = path.read_text(encoding="utf-8")
