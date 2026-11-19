@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Apply Android TV remote focus and touch-target adaptations to LX Music RN UI."""
 from pathlib import Path
+import re
 
 ROOT = Path("upstream/lx-music-mobile-auto-source")
 
@@ -217,14 +218,17 @@ export default () => {
     source = source.replace("borderRightColor: theme['c-border-background']", "borderBottomColor: theme['c-border-background']", 1)
     source = source.replace("borderRightColor: theme['c-border-background']", "borderBottomColor: theme['c-border-background']", 1)
     # Keep the Music wordmark reproducible from a clean pinned upstream checkout.
-    if "<Text style={{ marginLeft: 12, fontSize: 25, fontWeight: '700'" not in source:
-        source = source.replace(
-            "<Icon name=\\\"logo\\\" color={theme['c-primary-dark-100-alpha-300']} size={30} />",
-            "<Icon name=\\\"logo\\\" color={theme['c-primary-dark-100-alpha-300']} size={30} />\\n        <Text style={{ marginLeft: 12, fontSize: 25, fontWeight: '700', color: theme['c-primary-dark-100-alpha-300'] }}>Music</Text>",
-            1,
+    if "fontSize: 25, fontWeight: '700'" not in source:
+        source, count = re.subn(
+            r'(<Icon\\s+name=["\\']logo["\\']\\s+color=\\{theme\\[["\\']c-primary-dark-100-alpha-300["\\']\\]\\}\\s+size=\\{30\\}\\s*/>)',
+            r"\\1\n        <Text style={{ marginLeft: 12, fontSize: 25, fontWeight: '700', color: theme['c-primary-dark-100-alpha-300'] }}>Music</Text>",
+            source,
+            count=1,
         )
-    if "<Text style={{ marginLeft: 12, fontSize: 25, fontWeight: '700'" not in source:
-        raise SystemExit("Failed to add Music wordmark to TV navigation header")
+        if count != 1:
+            raise SystemExit(f"Failed to add Music wordmark: matched {count} logo anchors")
+    if "fontSize: 25, fontWeight: '700'" not in source:
+        raise SystemExit("Music wordmark verification failed")
 
     aside.write_text(source, encoding="utf-8")
 
