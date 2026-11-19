@@ -377,6 +377,21 @@ class JavaScriptEngine {
         }
     }
 
+    /** 查詢指定名稱是否為可呼叫的全域函式。 */
+    suspend fun hasFunction(functionName: String): Boolean = withContext(Dispatchers.IO) {
+        try {
+            onEngineThread {
+                val g = global ?: return@onEngineThread false
+                g.getJSFunction(functionName) != null
+            }
+        } catch (e: kotlin.coroutines.cancellation.CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Log.w(TAG, "查詢函式 '$functionName' 失敗: ${e.message}")
+            false
+        }
+    }
+
     /**
      * 获取全局变量（传统函数模式判断 lx 是否存在用）
      */
