@@ -51,7 +51,14 @@ class SourceBrowseItemMapper {
                 count = fields.countPath?.let { readPath(item, it)?.asText()?.toIntOrNull() },
                 description = fields.descriptionPath?.let { readPath(item, it)?.asText() },
                 durationMs = fields.durationPath?.let { readPath(item, it)?.asText()?.toLongOrNull() },
-                album = fields.albumPath?.let { readPath(item, it)?.asText() }
+                album = fields.albumPath?.let { readPath(item, it)?.asText() },
+                songId = fields.songIdPath?.let { readPath(item, it)?.asText() },
+                songName = fields.songNamePath?.let { readPath(item, it)?.asText() },
+                singer = fields.singerPath?.let { readPath(item, it)?.asText() },
+                songAlbumName = fields.songAlbumNamePath?.let { readPath(item, it)?.asText() },
+                songAlbumId = fields.songAlbumIdPath?.let { readPath(item, it)?.asText() },
+                songPicUrl = fields.songPicPath?.let { readPath(item, it)?.asText() },
+                songDurationMs = fields.songDurationPath?.let { readPath(item, it)?.asText()?.toLongOrNull() }
             )
         }
     }
