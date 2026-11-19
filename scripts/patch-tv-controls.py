@@ -167,7 +167,7 @@ export default () => {
     paddingLeft: 15,
   },""", "navigation text style")
     start = source.index("const MenuItem =")
-    end = source.index("\\nexport default memo", start)
+    end = source.index("\nexport default memo", start)
     menu_component = """const MenuItem = ({ id, icon, onPress }: {
   id: IdType
   icon: string
@@ -185,7 +185,7 @@ export default () => {
       onBlur={() => setTvFocused(false)}
       style={[
         styles.menuItem,
-        active ? { backgroundColor: theme['c-primary-font-active'] + '18' } : undefined,
+        active ? { borderBottomWidth: 3, borderBottomColor: theme['c-primary-font-active'] } : undefined,
         tvFocused ? { borderWidth: 2, borderColor: theme['c-primary-font-active'] } : undefined,
       ]}
       onPress={() => onPress(id)}
