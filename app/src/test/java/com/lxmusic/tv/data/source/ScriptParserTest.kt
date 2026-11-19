@@ -144,7 +144,7 @@ class ScriptParserTest {
 
     @Test
     fun `test parse invalid script`() {
-        val scriptContent = "console.log('not a valid source script')"
+        val scriptContent = "   "
 
         val result = parser.parse(scriptContent)
 
@@ -250,30 +250,12 @@ class ScriptParserTest {
 
     @Test
     fun `test validate script format`() {
-        // 有效脚本
-        val validScript = """
-            /**
-             * @name 测试源
-             */
-            globalThis.lx.send('inited', {})
-        """.trimIndent()
+        // 通用 JavaScript 不要求洛雪宿主 API、@name 註解或 send 呼叫。
+        val genericScript = "console.log('test')"
+        assertTrue(parser.parse(genericScript) is ParseResult.Success)
 
-        assertTrue(parser.parse(validScript) is ParseResult.Success)
-
-        // 无效脚本 - 缺少必要的注解
-        val invalidScript1 = "console.log('test')"
-        assertFalse(parser.parse(invalidScript1) is ParseResult.Success)
-
-        // 无效脚本 - 缺少send调用
-        val invalidScript2 = """
-            /**
-             * @name 测试源
-             */
-            console.log('test')
-        """.trimIndent()
-        // 这个应该失败，因为没有send调用
-        // 但根据当前实现，可能仍然会通过验证
-        // 需要根据实际验证逻辑调整
+        // 空白內容才屬於無效匯入。
+        assertTrue(parser.parse("  ") is ParseResult.Error)
     }
 
     @Test
