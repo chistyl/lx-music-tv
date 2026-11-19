@@ -318,24 +318,36 @@ class JavaScriptEngine {
         jsonObject: String
     ): JavaScriptResult = withContext(Dispatchers.IO) {
         try {
-            val result = onEngineThread {
+            val holder = onEngineThread {
                 val ctx = context ?: throw JavaScriptEngineException("JavaScript引擎未初始化")
                 val g = global ?: throw JavaScriptEngineException("JavaScript引擎未初始化")
                 ctx.evaluate(
-                    "globalThis.__lx_call_with_json_arg__ = (name, a, b, raw) => globalThis[name](a, b, JSON.parse(raw));",
+                    "globalThis.__lx_call_with_json_arg__ = (name, a, b, raw) => { const h = { done: false, value: null, error: null }; Promise.resolve().then(() => { const fn = globalThis[name]; if (typeof fn !== 'function') throw new Error('函式不存在: ' + name); return fn(a, b, JSON.parse(raw)); }).then(v => { h.value = typeof v === 'string' ? v : JSON.stringify(v); h.done = true; }, e => { h.error = String(e && e.message || e); h.done = true; }); return h; };",
                     "lx-json-argument-bridge"
                 )
                 val bridge = g.getJSFunction("__lx_call_with_json_arg__")
                     ?: throw JavaScriptEngineException("JSON 參數橋接器初始化失敗")
-                bridge.call(functionName, firstArg, secondArg, jsonObject)
+                bridge.call(functionName, firstArg, secondArg, jsonObject) as? JSObject
+            } ?: throw JavaScriptEngineException("音源函式未回傳等待物件")
+
+            val deadline = System.currentTimeMillis() + DISPATCH_TIMEOUT_MS
+            while (System.currentTimeMillis() < deadline) {
+                injectResponses()
+                injectTimers()
+                onEngineThread { context?.evaluate("0", "generic-function-drain") }
+                val done = onEngineThread { holder.getBooleanProperty("done") ?: false }
+                if (done) {
+                    val error = onEngineThread { holder.getProperty("error")?.toString() }
+                    if (!error.isNullOrBlank() && error != "null") {
+                        return@withContext JavaScriptResult.Error("呼叫函式 '$functionName' 失敗: $error")
+                    }
+                    val value = onEngineThread { holder.getProperty("value")?.toString() ?: "" }
+                    Log.d(TAG, "函式 '$functionName'（JSON 物件參數）完成: ${value.take(200)}")
+                    return@withContext JavaScriptResult.Success(result = value, resultString = value)
+                }
+                Thread.sleep(WAIT_STEP_MS)
             }
-            if (result == null) {
-                JavaScriptResult.Error("函式 '$functionName' 不存在或不是函式")
-            } else {
-                val resultString = result.toString()
-                Log.d(TAG, "函式 '$functionName'（JSON 物件參數）返回: ${resultString.take(200)}")
-                JavaScriptResult.Success(result = result, resultString = resultString)
-            }
+            JavaScriptResult.Error("音源函式 '$functionName' 等待逾時（${DISPATCH_TIMEOUT_MS / 1000}s）")
         } catch (e: kotlin.coroutines.cancellation.CancellationException) { throw e } catch (e: Exception) {
             Log.e(TAG, "以 JSON 物件呼叫函式 '$functionName' 失敗: ${e.message}", e)
             JavaScriptResult.Error("呼叫函式 '$functionName' 失敗: ${e.message}", e)
