@@ -107,27 +107,7 @@ edit("src/screens/Home/Views/Setting/Vertical/Main.tsx",
 edit("src/screens/Home/Views/Setting/Vertical/Main.tsx",
      "    case 'version': return <Version />\n", "", "remove vertical version screen")
 
-# Unregister version modal and remove its navigation entry point.
-edit("src/navigation/registerScreens.tsx",
-     "  VERSION_MODAL,\n", "", "remove version modal registration import")
-edit("src/navigation/registerScreens.tsx",
-     "import VersionModal from './components/VersionModal'\n", "", "remove version modal component import")
-edit("src/navigation/registerScreens.tsx",
-     "  Navigation.registerComponent(VERSION_MODAL, () => WrappedComponent(VersionModal))\n", "", "unregister version modal")
-edit("src/navigation/screenNames.ts",
-     "export const VERSION_MODAL = 'lxm.VersionModal'\n", "", "remove version modal screen name")
-edit("src/navigation/utils.ts",
-     "  VERSION_MODAL,\n", "", "remove version modal navigation import")
-# Delete only the now-unused version overlay function.
-p = ROOT / "src/navigation/utils.ts"
-s = p.read_text()
-start = s.find("export const showVersionModal = () => {")
-if start < 0: raise SystemExit("showVersionModal function not found")
-end = s.find("export const showSyncModeModal = () => {", start)
-if end < 0: raise SystemExit("showSyncModeModal boundary not found")
-s = s[:start] + s[end:]
-p.write_text(s)
-print("Applied: remove version modal navigation")
+# Version modal implementation remains in source but is unreachable: the settings entry is removed and first-launch checks are disabled.
 
 # Ensure no app entry point calls the update checker.
 print("LX TV feature patch completed.")
