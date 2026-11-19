@@ -8,6 +8,8 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
@@ -109,6 +111,29 @@ fun LXMusicApp() {
     val navController = rememberNavController()
     val viewModel: MainViewModel = viewModel()
     val context = LocalContext.current
+
+    // 本機 JS 音源匯入：使用系統文件選擇器，支援 USB／下載資料夾／雲端文件提供者。
+    val sourceFilePicker = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument()
+    ) { uri ->
+        if (uri != null) {
+            try {
+                val fileName = context.contentResolver.query(
+                    uri, arrayOf(android.provider.OpenableColumns.DISPLAY_NAME), null, null, null
+                )?.use { cursor ->
+                    if (cursor.moveToFirst()) cursor.getString(0) else null
+                } ?: "local-source.js"
+                require(fileName.endsWith(".js", ignoreCase = true)) { "請選擇 .js 音源檔" }
+                val content = context.contentResolver.openInputStream(uri)?.bufferedReader(Charsets.UTF_8)?.use { it.readText() }
+                    ?: throw IllegalArgumentException("無法讀取所選檔案")
+                require(content.isNotBlank()) { "音源檔內容是空的" }
+                require(content.toByteArray(Charsets.UTF_8).size <= 2 * 1024 * 1024) { "音源檔案超過 2 MB 上限" }
+                viewModel.importSource(content, fileName)
+            } catch (e: Exception) {
+                Toast.makeText(context, "音源匯入失敗：${e.message ?: "檔案讀取錯誤"}", Toast.LENGTH_LONG).show()
+            }
+        }
+    }
 
     // 2.9 启动默认页面：读取持久化的默认 tab（0搜索/1歌单/2排行/3收藏/4本地/5设置），默认选择歌单(1)
     val defaultStartupTab by viewModel.defaultStartupTab.collectAsState()
@@ -546,6 +571,7 @@ fun LXMusicApp() {
                 onToggleSource = { sourceId, enabled -> viewModel.toggleSource(sourceId, enabled) },
                 onDeleteSource = { sourceId -> viewModel.deleteSource(sourceId) },
                 onPreviewSourceFromUrl = { url -> viewModel.previewSourceFromUrl(url) },
+                onPickSourceFile = { sourceFilePicker.launch(arrayOf("application/javascript", "text/javascript", "text/plain", "application/octet-stream")) },
                 sourceImportPreview = sourceImportPreview,
                 onConfirmImportSource = { viewModel.confirmImportSourcePreview() },
                 onCancelImportPreview = { viewModel.cancelSourceImportPreview() },
