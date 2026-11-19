@@ -312,10 +312,12 @@ class SourceExecutor(
             }
 
             // 传统函数模式
-            val urlResult = javaScriptEngine.callFunction(
+            val songJson = rawSongData ?: JSONObject().put("id", musicId).toString()
+            val urlResult = javaScriptEngine.callFunctionWithJsonObject(
                 "getMusicUrl",
-                // 通用 JS 協議第三參數提供完整原始歌曲物件；舊函式仍可忽略第三參數。
-                arrayOf(musicId, quality.key, rawSongData?.let { JSONObject(it) } ?: JSONObject().put("id", musicId))
+                musicId,
+                quality.key,
+                songJson
             )
 
             when (urlResult) {
