@@ -347,7 +347,7 @@ class SourceExecutor(
             // 参考 lx-music-desktop: info.musicInfo 包含 songmid, hash 等字段
             // 注意: musicId 可能是拼接格式（QQ: songMid_mediaMid, 酷狗: hash_albumId），
             // 而 JS 源只需要纯 ID（songmid/hash），必须拆分，否则请求拼接串会失败
-            val pureId = musicId.substringBefore("_")
+            val pureId = normalizeMusicIdForPlatform(musicId, source)
             val eventData = JSONObject().apply {
                 put("source", source)
                 put("action", "musicUrl")
@@ -521,3 +521,10 @@ sealed class SourceExecutionResult {
     data class PicSuccess(val picUrl: String) : SourceExecutionResult()
     data class ActionSuccess(val result: String) : SourceExecutionResult()
 }
+
+/**
+ * TX 與 KG 的既有內建 ID 可能是「歌曲 ID_媒體／專輯 ID」組合格式；
+ * 自訂平台 ID 不套用內建拆分規則，必須完整保留底線及原始字串。
+ */
+internal fun normalizeMusicIdForPlatform(musicId: String, platformKey: String): String =
+    if (platformKey == "tx" || platformKey == "kg") musicId.substringBefore("_") else musicId
