@@ -95,6 +95,7 @@ export default () => {
     aside = ROOT / "src/screens/Home/Horizontal/Aside.tsx"
     source = aside.read_text(encoding="utf-8")
     source = source.replace("import { memo } from 'react'", "import { memo, useState } from 'react'", 1)
+    source = source.replace("import { ScrollView, TouchableOpacity, View } from 'react-native'", "import { ScrollView, TouchableOpacity, View, Text } from 'react-native'", 1)
     source = replace_once(source, "const NAV_WIDTH = 68", "const NAV_HEIGHT = 68", "top navigation height")
     source = replace_once(source, """  container: {
     flexGrow: 0,
@@ -282,7 +283,7 @@ export default () => {
   const handlePress""", """  const musicInfo = usePlayerMusicInfo()
   const picSize = isHome ? scaleSizeH(150) : PIC_HEIGHT
   const handlePress""", "large home player artwork")
-    source = replace_once(source, """<Image url={musicInfo.pic} nativeID={NAV_SHEAR_NATIVE_IDS.playDetail_pic} style={styles.image} onError={handleError} />""", """<Image url={musicInfo.pic} nativeID={NAV_SHEAR_NATIVE_IDS.playDetail_pic} style={[styles.image, { width: picSize, height: picSize }]} onError={handleError} />""", "home player artwork size")
+    source = replace_once(source, """<Image url={musicInfo.pic} nativeID={NAV_SHEAR_NATIVE_IDS.playDetail_pic} style={styles.image} onError={handleError} />""", """<Image url={musicInfo.pic} nativeID={NAV_SHEAR_NATIVE_IDS.playDetail_pic} style={[styles.image, { width: picSize, height: picSize, borderRadius: picSize / 2, borderWidth: isHome ? 2 : 0, borderColor: '#25C76A' }]} onError={handleError} />""", "home player artwork size")
     pic.write_text(source, encoding="utf-8")
 
     print("Applied LX Music TV home layout: top navigation, left-side player panel, and enlarged player artwork.")
