@@ -48,6 +48,11 @@ jobs:
           yes | "$SDKMANAGER" --licenses
           "$SDKMANAGER" --install "platform-tools" "platforms;android-34" "build-tools;34.0.0"
 
+      - name: Prepare Android TV manifest
+        run: |
+          python3 scripts/prepare-android-tv.py
+          grep -n "LEANBACK_LAUNCHER\|android.software.leanback\|screenOrientation" upstream/lx-music-mobile-auto-source/android/app/src/main/AndroidManifest.xml
+
       - name: Generate Android JS bundle
         working-directory: upstream/lx-music-mobile-auto-source
         run: npm run bundle-android
