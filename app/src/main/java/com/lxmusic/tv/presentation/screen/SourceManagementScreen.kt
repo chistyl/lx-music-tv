@@ -287,6 +287,32 @@ fun SourceManagementScreen(
         }
 }
 
+@Composable
+private fun SourceMappingField(
+    label: String,
+    value: String,
+    onValueChange: (String) -> Unit,
+    required: Boolean = false
+) {
+    OutlinedTextField(
+        value = value,
+        onValueChange = onValueChange,
+        modifier = Modifier.fillMaxWidth()
+            .lxSelectorFocus(shape = RoundedCornerShape(8.dp), glow = false, animated = false),
+        label = { Text(if (required) "$label（必填）" else "$label（選填）") },
+        singleLine = true,
+        textStyle = androidx.compose.ui.text.TextStyle(fontSize = 14.sp),
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedTextColor = LXTextPrimary,
+            unfocusedTextColor = LXTextPrimary,
+            focusedBorderColor = LXPrimary,
+            unfocusedBorderColor = LXBorder,
+            focusedLabelColor = LXPrimary,
+            unfocusedLabelColor = LXTextSecondary
+        )
+    )
+}
+
 /**
  * 顯示目前已啟用音源明確宣告的 Action。
  * 此處只呈現能力，不推測請求參數或直接執行未知 Action。
@@ -444,27 +470,7 @@ private fun DeclaredSourceActionsCard(
                         fontSize = 12.sp,
                         color = LXOnCardDarkSecondary
                     )
-                    @Composable
-                    fun mappingField(label: String, value: String, onValueChange: (String) -> Unit, required: Boolean = false) {
-                        OutlinedTextField(
-                            value = value,
-                            onValueChange = onValueChange,
-                            modifier = Modifier.fillMaxWidth()
-                                .lxSelectorFocus(shape = RoundedCornerShape(8.dp), glow = false, animated = false),
-                            label = { Text(if (required) "$label（必填）" else "$label（選填）") },
-                            singleLine = true,
-                            textStyle = androidx.compose.ui.text.TextStyle(fontSize = 14.sp),
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedTextColor = LXTextPrimary,
-                                unfocusedTextColor = LXTextPrimary,
-                                focusedBorderColor = LXPrimary,
-                                unfocusedBorderColor = LXBorder,
-                                focusedLabelColor = LXPrimary,
-                                unfocusedLabelColor = LXTextSecondary
-                            )
-                        )
-                    }
-                    mappingField("清單路徑 collectionPath", collectionPath, { collectionPath = it })
+                    SourceMappingField("清單路徑 collectionPath", collectionPath, { collectionPath = it })
                     mappingField("項目 ID idPath", idPath, { idPath = it }, required = true)
                     mappingField("標題 titlePath", titlePath, { titlePath = it }, required = true)
                     mappingField("副標題 subtitlePath", subtitlePath, { subtitlePath = it })
@@ -501,7 +507,7 @@ private fun DeclaredSourceActionsCard(
                         Text(if (browseLoading) "轉換中…" else "執行欄位映射")
                     }
                     browseError?.let { error ->
-                        Text("映射失敗：$error", color = LXError, fontSize = 13.sp)
+                        Text("映射失敗：$error", color = Color.Red, fontSize = 13.sp)
                     }
                     if (browseItems.isNotEmpty()) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
