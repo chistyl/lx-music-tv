@@ -1,5 +1,8 @@
 package com.lxmusic.tv.presentation.screen
 
+import android.content.Context
+import androidx.compose.ui.platform.LocalContext
+
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -332,16 +335,33 @@ private fun DeclaredSourceActionsCard(
     modifier: Modifier = Modifier
 ) {
     var selectedAction by remember(actions) { mutableStateOf(actions.firstOrNull()) }
-    var requestJson by remember(selectedAction) { mutableStateOf("{}") }
-    var collectionPath by remember(selectedAction) { mutableStateOf("") }
-    var idPath by remember(selectedAction) { mutableStateOf("") }
-    var titlePath by remember(selectedAction) { mutableStateOf("") }
-    var subtitlePath by remember(selectedAction) { mutableStateOf("") }
-    var coverPath by remember(selectedAction) { mutableStateOf("") }
-    var countPath by remember(selectedAction) { mutableStateOf("") }
-    var descriptionPath by remember(selectedAction) { mutableStateOf("") }
-    var durationPath by remember(selectedAction) { mutableStateOf("") }
-    var albumPath by remember(selectedAction) { mutableStateOf("") }
+    val context = LocalContext.current
+    val mappingPrefs = remember(context) {
+        context.getSharedPreferences("lx_source_browse_mappings", Context.MODE_PRIVATE)
+    }
+    // 每組音源 ID／平台 Key／Action 獨立保存，避免不同腳本間設定互相覆蓋。
+    val mappingPrefKey = remember(selectedAction) {
+        selectedAction?.let { "mapping_${it.sourceId}_${it.platformKey}_${it.action}" }
+    }
+    val savedMapping = remember(selectedAction) {
+        mappingPrefKey?.let { key ->
+            try { mappingPrefs.getString(key, null)?.let { org.json.JSONObject(it) } }
+            catch (_: Exception) { null }
+        }
+    }
+    var requestJson by remember(selectedAction) {
+        mutableStateOf(savedMapping?.optString("requestJson").takeUnless { it.isNullOrBlank() } ?: "{}")
+    }
+    var collectionPath by remember(selectedAction) { mutableStateOf(savedMapping?.optString("collectionPath") ?: "") }
+    var idPath by remember(selectedAction) { mutableStateOf(savedMapping?.optString("idPath") ?: "") }
+    var titlePath by remember(selectedAction) { mutableStateOf(savedMapping?.optString("titlePath") ?: "") }
+    var subtitlePath by remember(selectedAction) { mutableStateOf(savedMapping?.optString("subtitlePath") ?: "") }
+    var coverPath by remember(selectedAction) { mutableStateOf(savedMapping?.optString("coverPath") ?: "") }
+    var countPath by remember(selectedAction) { mutableStateOf(savedMapping?.optString("countPath") ?: "") }
+    var descriptionPath by remember(selectedAction) { mutableStateOf(savedMapping?.optString("descriptionPath") ?: "") }
+    var durationPath by remember(selectedAction) { mutableStateOf(savedMapping?.optString("durationPath") ?: "") }
+    var albumPath by remember(selectedAction) { mutableStateOf(savedMapping?.optString("albumPath") ?: "") }
+    var mappingSaveMessage by remember(selectedAction) { mutableStateOf(if (savedMapping != null) "已載入此音源的儲存設定" else "") }
     Card(
         modifier = modifier,
         colors = CardDefaults.cardColors(containerColor = LXCardDark),
@@ -484,6 +504,56 @@ private fun DeclaredSourceActionsCard(
                     mappingField("時長 durationPath", durationPath, { durationPath = it })
                     mappingField("專輯 albumPath", albumPath, { albumPath = it })
 
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Button(
+                            onClick = {
+                                val key = mappingPrefKey
+                                if (key != null) {
+                                    val config = org.json.JSONObject()
+                                        .put("requestJson", requestJson)
+                                        .put("collectionPath", collectionPath)
+                                        .put("idPath", idPath)
+                                        .put("titlePath", titlePath)
+                                        .put("subtitlePath", subtitlePath)
+                                        .put("coverPath", coverPath)
+                                        .put("countPath", countPath)
+                                        .put("descriptionPath", descriptionPath)
+                                        .put("durationPath", durationPath)
+                                        .put("albumPath", albumPath)
+                                    mappingPrefs.edit().putString(key, config.toString()).apply()
+                                    mappingSaveMessage = "設定已保存，下次進入仍會自動還原"
+                                }
+                            },
+                            enabled = selectedAction != null && idPath.isNotBlank() && titlePath.isNotBlank(),
+                            modifier = Modifier.lxSelectorFocus(shape = RoundedCornerShape(8.dp), glow = false, animated = false),
+                            colors = ButtonDefaults.buttonColors(containerColor = LXPrimary)
+                        ) { Text("保存設定") }
+                        OutlinedButton(
+                            onClick = {
+                                mappingPrefKey?.let { mappingPrefs.edit().remove(it).apply() }
+                                requestJson = "{}"
+                                collectionPath = ""
+                                idPath = ""
+                                titlePath = ""
+                                subtitlePath = ""
+                                coverPath = ""
+                                countPath = ""
+                                descriptionPath = ""
+                                durationPath = ""
+                                albumPath = ""
+                                mappingSaveMessage = "已刪除此組設定，欄位已恢復空白"
+                            },
+                            enabled = selectedAction != null && savedMapping != null,
+                            modifier = Modifier.lxSelectorFocus(shape = RoundedCornerShape(8.dp), glow = false, animated = false)
+                        ) { Text("刪除保存設定") }
+                    }
+                    if (mappingSaveMessage.isNotBlank()) {
+                        Text(mappingSaveMessage, color = LXOnCardDarkSecondary, fontSize = 12.sp)
+                    }
                     Button(
                         onClick = {
                             selectedAction?.let { action ->
