@@ -110,7 +110,12 @@ fun MainScreen(
     onNavigateToPlayer: () -> Unit = {},
     currentSong: com.lxmusic.tv.data.model.Song? = null,
     isPlaying: Boolean = false,
+    playbackProgress: Float = 0f,
+    playbackDurationMs: Long = 0L,
     onPlayPause: () -> Unit = {},
+    onPrevious: () -> Unit = {},
+    onNext: () -> Unit = {},
+
     defaultPlatform: MusicPlatform = MusicPlatform.KW,
     onDefaultPlatformChange: (MusicPlatform) -> Unit = {},
     preferredQuality: AudioQuality = AudioQuality.FLAC,
@@ -367,8 +372,12 @@ fun MainScreen(
             NowPlayingBar(
                 song = currentSong,
                 isPlaying = isPlaying,
+                progress = playbackProgress,
+                durationMs = playbackDurationMs,
                 onClick = onNavigateToPlayer,
                 onPlayPause = onPlayPause,
+                onPrevious = onPrevious,
+                onNext = onNext,
                 modifier = Modifier.fillMaxWidth()
             )
         }
@@ -597,18 +606,22 @@ fun DiscCoverButton(
 fun NowPlayingBar(
     song: com.lxmusic.tv.data.model.Song,
     isPlaying: Boolean,
+    progress: Float,
+    durationMs: Long,
     onClick: () -> Unit,
     onPlayPause: () -> Unit,
+    onPrevious: () -> Unit,
+    onNext: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // TV 橫向底部播放列：封面與歌曲資訊置左，主要播放操作置右
+    // TV 橫向底部播放列：歌曲資訊、播放進度及大尺寸方向鍵操作
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .height(88.dp)
+            .height(104.dp)
             .focusGroup()
             .background(LXCardDark)
-            .padding(horizontal = 28.dp, vertical = 12.dp),
+            .padding(horizontal = 28.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         val coverRotation = remember { Animatable(0f) }
@@ -689,24 +702,81 @@ fun NowPlayingBar(
                     overflow = TextOverflow.Ellipsis
                 )
             }
+            Spacer(modifier = Modifier.height(7.dp))
+            LinearProgressIndicator(
+                progress = progress.coerceIn(0f, 1f),
+                modifier = Modifier.fillMaxWidth().height(4.dp),
+                color = LXPrimary,
+                trackColor = LXOnCardDarkSecondary.copy(alpha = 0.25f)
+            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = formatPlayerTime((progress.coerceIn(0f, 1f) * durationMs).toLong()),
+                    fontSize = 11.sp,
+                    color = LXOnCardDarkSecondary
+                )
+                Text(
+                    text = formatPlayerTime(durationMs),
+                    fontSize = 11.sp,
+                    color = LXOnCardDarkSecondary
+                )
+            }
         }
 
-        // 播放／暫停：底部播放列主要操作
-        Box(
-            modifier = Modifier
-                .size(56.dp)
-                .lxCircleButtonFocus()
-                .clickable { onPlayPause() },
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
-                contentDescription = if (isPlaying) "暫停" else "播放",
-                tint = LXOnCardDark,
-                modifier = Modifier.size(30.dp)
-            )
-        }
+        Spacer(modifier = Modifier.width(28.dp))
+
+        PlayerDockButton(
+            icon = Icons.Default.SkipPrevious,
+            description = "上一首",
+            onClick = onPrevious
+        )
+        Spacer(modifier = Modifier.width(12.dp))
+        PlayerDockButton(
+            icon = if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
+            description = if (isPlaying) "暫停" else "播放",
+            onClick = onPlayPause,
+            emphasized = true
+        )
+        Spacer(modifier = Modifier.width(12.dp))
+        PlayerDockButton(
+            icon = Icons.Default.SkipNext,
+            description = "下一首",
+            onClick = onNext
+        )
     }
+}
+
+@Composable
+private fun PlayerDockButton(
+    icon: ImageVector,
+    description: String,
+    onClick: () -> Unit,
+    emphasized: Boolean = false
+) {
+    Box(
+        modifier = Modifier
+            .size(if (emphasized) 58.dp else 52.dp)
+            .lxCircleButtonFocus()
+            .clickable { onClick() },
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = description,
+            tint = LXOnCardDark,
+            modifier = Modifier.size(if (emphasized) 30.dp else 26.dp)
+        )
+    }
+}
+
+private fun formatPlayerTime(milliseconds: Long): String {
+    val totalSeconds = (milliseconds.coerceAtLeast(0L) / 1000L)
+    val minutes = totalSeconds / 60L
+    val seconds = totalSeconds % 60L
+    return "%d:%02d".format(minutes, seconds)
 }
 
 /**
