@@ -5,11 +5,11 @@
 - Repository: https://github.com/shellsec/lx-music-mobile-auto-source
 - Branch: `main`
 - Pinned commit: `b51debddf09a0d3e20084f59ddbed256d0b455c9`
+- Integration: Git submodule at `upstream/lx-music-mobile-auto-source`
 - License: Apache-2.0 (retain upstream LICENSE, NOTICE, and copyright notices)
 - Application stack: React Native `0.73.11`, React `18.2.0`
-- Android application identity in upstream: `LX Music`
 
-This is the selected application source of truth. Do not replace its screens, navigation, player, lyric rendering, source runtime, or data model with a newly invented native implementation.
+The pinned submodule is the application source of truth. Build and source packaging must initialize submodules recursively. Do not replace its screens, navigation, player, lyric rendering, source runtime, or data model with a newly invented native implementation.
 
 ## TV adaptation requirements
 
@@ -30,7 +30,7 @@ This is the selected application source of truth. Do not replace its screens, na
 
 ## Initial implementation sequence
 
-1. Bring the pinned upstream application source into this project without redesigning it.
+1. Pin and fetch the selected upstream as a Git submodule.
 2. Establish a reproducible Android build from that source.
 3. Remove update and subscription-update paths while preserving local source import and the upstream script runtime.
 4. Add Android TV remote focus and navigation support incrementally, screen by screen.
