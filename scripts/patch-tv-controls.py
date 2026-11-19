@@ -122,7 +122,7 @@ export default () => {
     justifyContent: 'center',
     alignItems: 'center',
   },""", """  header: {
-    width: 76,
+    width: 300,
     height: '100%',
     justifyContent: 'center',
     alignItems: 'center',
@@ -222,7 +222,7 @@ export default () => {
     source = source.replace("borderRightColor: theme['c-border-background']", "borderBottomColor: theme['c-border-background']", 1)
     source = source.replace("borderRightColor: theme['c-border-background']", "borderBottomColor: theme['c-border-background']", 1)
     # Keep the Music wordmark reproducible from a clean pinned upstream checkout.
-    if "fontSize: 25, fontWeight: '700'" not in source:
+    if "fontSize: 42, fontWeight: '700'" not in source:
         source, count = re.subn(
             r'(<Icon\s+name=["\']logo["\']\s+color=\{theme\[["\']c-primary-dark-100-alpha-300["\']\]\}\s+size=\{\d+\}\s*/>)',
             r"\1\n        <Text style={{ marginLeft: 12, fontSize: 25, fontWeight: '700', color: theme['c-primary-dark-100-alpha-300'] }}>Music</Text>",
