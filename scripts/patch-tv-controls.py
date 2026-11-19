@@ -139,6 +139,7 @@ def patch_my_lists() -> None:
     source = replace_once(source, "    height: '80%',\n    paddingLeft: 16,\n    paddingRight: 16,", "    height: '100%',\n    minWidth: 52,\n    paddingLeft: 12,\n    paddingRight: 12,", "song menu target")
     path.write_text(source, encoding="utf-8")
 
+patch_button()
 patch_player_controls()
 patch_player_bar()
 patch_my_lists()
