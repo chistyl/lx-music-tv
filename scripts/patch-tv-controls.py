@@ -225,7 +225,7 @@ export default () => {
     if "fontSize: 42, fontWeight: '700'" not in source:
         source, count = re.subn(
             r'(<Icon\s+name=["\']logo["\']\s+color=\{theme\[["\']c-primary-dark-100-alpha-300["\']\]\}\s+size=\{\d+\}\s*/>)',
-            r"\1\n        <Text style={{ marginLeft: 12, fontSize: 25, fontWeight: '700', color: theme['c-primary-dark-100-alpha-300'] }}>Music</Text>",
+            r"\1\n        <Text style={{ marginLeft: 12, fontSize: 42, fontWeight: '700', color: theme['c-primary-dark-100-alpha-300'] }}>Music</Text>",
             source,
             count=1,
         )
