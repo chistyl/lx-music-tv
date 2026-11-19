@@ -216,6 +216,16 @@ export default () => {
       </View>""", "top navigation utility buttons")
     source = source.replace("borderRightColor: theme['c-border-background']", "borderBottomColor: theme['c-border-background']", 1)
     source = source.replace("borderRightColor: theme['c-border-background']", "borderBottomColor: theme['c-border-background']", 1)
+    # Keep the Music wordmark reproducible from a clean pinned upstream checkout.
+    if "<Text style={{ marginLeft: 12, fontSize: 25, fontWeight: '700'" not in source:
+        source = source.replace(
+            "<Icon name=\\\"logo\\\" color={theme['c-primary-dark-100-alpha-300']} size={30} />",
+            "<Icon name=\\\"logo\\\" color={theme['c-primary-dark-100-alpha-300']} size={30} />\\n        <Text style={{ marginLeft: 12, fontSize: 25, fontWeight: '700', color: theme['c-primary-dark-100-alpha-300'] }}>Music</Text>",
+            1,
+        )
+    if "<Text style={{ marginLeft: 12, fontSize: 25, fontWeight: '700'" not in source:
+        raise SystemExit("Failed to add Music wordmark to TV navigation header")
+
     aside.write_text(source, encoding="utf-8")
 
     player = ROOT / "src/components/player/PlayerBar/index.tsx"
