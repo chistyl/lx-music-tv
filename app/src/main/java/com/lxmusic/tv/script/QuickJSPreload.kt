@@ -342,7 +342,7 @@ object QuickJSPreload {
         }
       }
     }
-    var match = raw.match(/^([a-zA-Z][a-zA-Z0-9+.-]*:)\\/\\/([^/?#]*)([^?#]*)(?:\\?([^#]*))?(?:#(.*))?$/);
+    var match = raw.match(/^([a-zA-Z][a-zA-Z0-9+.-]*:)\/\/([^/?#]*)([^?#]*)(?:\\?([^#]*))?(?:#(.*))?$/);
     if (!match) throw new TypeError('Invalid URL: ' + raw);
     this.protocol = match[1].toLowerCase();
     var authority = match[2];
@@ -351,7 +351,7 @@ object QuickJSPreload {
     this.password = at >= 0 && authority.slice(0, at).indexOf(':') >= 0
       ? authority.slice(0, at).slice(authority.slice(0, at).indexOf(':') + 1) : '';
     var hostPort = at >= 0 ? authority.slice(at + 1) : authority;
-    var hostMatch = hostPort.match(/^([^:]+)(?::(\\d+))?$/);
+    var hostMatch = hostPort.match(/^([^:]+)(?::(\d+))?$/);
     if (!hostMatch) throw new TypeError('Invalid URL authority');
     this.hostname = hostMatch[1].toLowerCase();
     this.port = hostMatch[2] || '';
