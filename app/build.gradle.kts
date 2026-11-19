@@ -8,12 +8,12 @@ plugins {
 
 android {
     namespace = "com.lxmusic.tv"
-    compileSdk = 37
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.lxmusic.tv"
         minSdk = 23
-        targetSdk = 37
+        targetSdk = 36
         versionCode = 268
         versionName = "2.9.202610241701"
 
