@@ -111,6 +111,8 @@ fun MainScreen(
     currentSong: com.lxmusic.tv.data.model.Song? = null,
     isPlaying: Boolean = false,
     onPlayPause: () -> Unit = {},
+    onPlayPrevious: () -> Unit = {},
+    onPlayNext: () -> Unit = {},
     defaultPlatform: MusicPlatform = MusicPlatform.KW,
     onDefaultPlatformChange: (MusicPlatform) -> Unit = {},
     preferredQuality: AudioQuality = AudioQuality.FLAC,
@@ -279,11 +281,15 @@ fun MainScreen(
                 onPlayPause = onPlayPause,
                 modifier = Modifier
                     // 2.6 窄图标栏：宽度只够放 1 个图标（选中时底部才显示文字），参考 blbl/BBLL
-                    .width(72.dp)
+                    .width(68.dp)
                     .fillMaxHeight()
             )
 
-            // 主内容区域
+            // 右側內容依照洛雪手機版橫向首頁結構：Header / Main / 底部 PlayerBar。
+            Column(
+                modifier = Modifier.weight(1f).fillMaxHeight()
+            ) {
+            // 主內容區域
             MainContent(
                 selectedTab = selectedTab,
                 navRequesters = navRequesters,
@@ -363,8 +369,18 @@ fun MainScreen(
                 onDefaultStartupTabChange = onDefaultStartupTabChange,
                 modifier = Modifier
                     .weight(1f)
-                    .fillMaxHeight()
+                    .fillMaxWidth()
             )
+            HorizontalPlayerBar(
+                song = currentSong,
+                isPlaying = isPlaying,
+                onOpenPlayer = onNavigateToPlayer,
+                onPrevious = onPlayPrevious,
+                onPlayPause = onPlayPause,
+                onNext = onPlayNext,
+                modifier = Modifier.fillMaxWidth()
+            )
+            }
         }
     }
 
@@ -544,16 +560,7 @@ fun NavigationSidebar(
 
         Spacer(modifier = Modifier.weight(1f))
 
-        // 正在播放控制条（常驻，窄栏版：封面进播放页 + 播放/暫停）
-        if (currentSong != null) {
-            NowPlayingBar(
-                song = currentSong,
-                isPlaying = isPlaying,
-                onClick = onNavigateToPlayer,
-                onPlayPause = onPlayPause,
-                modifier = Modifier.fillMaxWidth()
-            )
-        }
+        // 播放控制列已移至右側主內容底部，與洛雪手機版橫向 PlayerBar 結構一致。
     }
 }
 }
@@ -590,6 +597,111 @@ fun DiscCoverButton(
         ) {
             content()
         }
+    }
+}
+
+/**
+ * 洛雪音樂橫向首頁底部播放列。
+ * 保留原版「封面／曲名與歌手／上一首／播放暫停／下一首」資訊順序，
+ * 只放大操作熱區以符合 Android TV 遙控器使用。
+ */
+@Composable
+fun HorizontalPlayerBar(
+    song: Song?,
+    isPlaying: Boolean,
+    onOpenPlayer: () -> Unit,
+    onPrevious: () -> Unit,
+    onPlayPause: () -> Unit,
+    onNext: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier
+            .height(76.dp)
+            .background(LXSurfaceSidebar)
+            .padding(horizontal = 18.dp, vertical = 10.dp)
+            .focusGroup(),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            modifier = Modifier
+                .size(52.dp)
+                .clip(RoundedCornerShape(6.dp))
+                .background(LXSurfaceVariant)
+                .clickable(enabled = song != null) { onOpenPlayer() },
+            contentAlignment = Alignment.Center
+        ) {
+            if (song?.picUrl.isNullOrBlank()) {
+                Icon(
+                    imageVector = Icons.Default.MusicNote,
+                    contentDescription = null,
+                    tint = LXTextSecondary,
+                    modifier = Modifier.size(26.dp)
+                )
+            } else {
+                RemoteImage(
+                    url = song!!.picUrl!!,
+                    contentDescription = song.name,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
+            }
+        }
+        Spacer(modifier = Modifier.width(14.dp))
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .clickable(enabled = song != null) { onOpenPlayer() },
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text(
+                text = song?.name ?: "尚未播放歌曲",
+                color = LXTextPrimary,
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Medium,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            Spacer(modifier = Modifier.height(3.dp))
+            Text(
+                text = song?.singer ?: "選擇歌曲即可開始播放",
+                color = LXTextSecondary,
+                fontSize = 12.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
+        PlayerBarButton(Icons.Default.SkipPrevious, "上一首", song != null, onPrevious)
+        PlayerBarButton(
+            if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
+            if (isPlaying) "暫停" else "播放",
+            song != null,
+            onPlayPause
+        )
+        PlayerBarButton(Icons.Default.SkipNext, "下一首", song != null, onNext)
+    }
+}
+
+@Composable
+private fun PlayerBarButton(
+    icon: ImageVector,
+    label: String,
+    enabled: Boolean,
+    onClick: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .size(48.dp)
+            .lxCircleButtonFocus()
+            .clickable(enabled = enabled, onClick = onClick),
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = label,
+            tint = if (enabled) LXTextPrimary else LXTextSecondary.copy(alpha = 0.35f),
+            modifier = Modifier.size(24.dp)
+        )
     }
 }
 
