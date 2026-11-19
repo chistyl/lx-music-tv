@@ -362,6 +362,7 @@ private fun DeclaredSourceActionsCard(
     var durationPath by remember(selectedAction) { mutableStateOf(savedMapping?.optString("durationPath") ?: "") }
     var albumPath by remember(selectedAction) { mutableStateOf(savedMapping?.optString("albumPath") ?: "") }
     var mappingSaveMessage by remember(selectedAction) { mutableStateOf(if (savedMapping != null) "已載入此音源的儲存設定" else "") }
+    var hasSavedMapping by remember(selectedAction) { mutableStateOf(savedMapping != null) }
     Card(
         modifier = modifier,
         colors = CardDefaults.cardColors(containerColor = LXCardDark),
@@ -525,6 +526,7 @@ private fun DeclaredSourceActionsCard(
                                         .put("durationPath", durationPath)
                                         .put("albumPath", albumPath)
                                     mappingPrefs.edit().putString(key, config.toString()).apply()
+                                    hasSavedMapping = true
                                     mappingSaveMessage = "設定已保存，下次進入仍會自動還原"
                                 }
                             },
@@ -535,6 +537,7 @@ private fun DeclaredSourceActionsCard(
                         OutlinedButton(
                             onClick = {
                                 mappingPrefKey?.let { mappingPrefs.edit().remove(it).apply() }
+                                hasSavedMapping = false
                                 requestJson = "{}"
                                 collectionPath = ""
                                 idPath = ""
@@ -547,7 +550,7 @@ private fun DeclaredSourceActionsCard(
                                 albumPath = ""
                                 mappingSaveMessage = "已刪除此組設定，欄位已恢復空白"
                             },
-                            enabled = selectedAction != null && savedMapping != null,
+                            enabled = selectedAction != null && hasSavedMapping,
                             modifier = Modifier.lxSelectorFocus(shape = RoundedCornerShape(8.dp), glow = false, animated = false)
                         ) { Text("刪除保存設定") }
                     }
