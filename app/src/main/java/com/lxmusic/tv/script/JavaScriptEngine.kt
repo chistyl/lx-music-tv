@@ -308,6 +308,41 @@ class JavaScriptEngine {
     }
 
     /**
+     * 以 JSON.parse 在 QuickJS 內建立真正的 JavaScript 物件，再傳給音源函式。
+     * 不直接把 Android JSONObject 傳入 QuickJS，避免被包裝成 Java 物件而非普通 JS object。
+     */
+    suspend fun callFunctionWithJsonObject(
+        functionName: String,
+        firstArg: String,
+        secondArg: String,
+        jsonObject: String
+    ): JavaScriptResult = withContext(Dispatchers.IO) {
+        try {
+            val result = onEngineThread {
+                val ctx = context ?: throw JavaScriptEngineException("JavaScript引擎未初始化")
+                val g = global ?: throw JavaScriptEngineException("JavaScript引擎未初始化")
+                ctx.evaluate(
+                    "globalThis.__lx_call_with_json_arg__ = (name, a, b, raw) => globalThis[name](a, b, JSON.parse(raw));",
+                    "lx-json-argument-bridge"
+                )
+                val bridge = g.getJSFunction("__lx_call_with_json_arg__")
+                    ?: throw JavaScriptEngineException("JSON 參數橋接器初始化失敗")
+                bridge.call(functionName, firstArg, secondArg, jsonObject)
+            }
+            if (result == null) {
+                JavaScriptResult.Error("函式 '$functionName' 不存在或不是函式")
+            } else {
+                val resultString = result.toString()
+                Log.d(TAG, "函式 '$functionName'（JSON 物件參數）返回: ${resultString.take(200)}")
+                JavaScriptResult.Success(result = result, resultString = resultString)
+            }
+        } catch (e: kotlin.coroutines.cancellation.CancellationException) { throw e } catch (e: Exception) {
+            Log.e(TAG, "以 JSON 物件呼叫函式 '$functionName' 失敗: ${e.message}", e)
+            JavaScriptResult.Error("呼叫函式 '$functionName' 失敗: ${e.message}", e)
+        }
+    }
+
+    /**
      * 派发事件（事件驱动模式核心）
      *
      * 流程：
