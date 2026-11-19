@@ -6,6 +6,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -17,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.foundation.focusGroup
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
@@ -220,7 +224,7 @@ fun FavoriteTabSelector(
 ) {
     val tabs = listOf("歌曲" to Icons.Default.MusicNote, "歌单" to Icons.Default.PlaylistPlay)
     Row(
-        modifier = modifier,
+        modifier = modifier.focusGroup(),
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         tabs.forEachIndexed { index, (title, _) ->
@@ -275,8 +279,8 @@ fun FavoriteSongsView(
     }
 
     LazyColumn(
-        modifier = modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        modifier = modifier.fillMaxWidth().focusGroup(),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         itemsIndexed(favorites, key = { _, it -> it.musicId }) { index, favorite ->
             val song = favorite.toSong()
@@ -316,7 +320,7 @@ fun FavoriteSongRow(
         shape = RoundedCornerShape(8.dp)
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(12.dp),
+            modifier = Modifier.fillMaxWidth().heightIn(min = 96.dp).focusGroup().padding(horizontal = 16.dp, vertical = 14.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             // 序号（仿播放页播放列表）：当前播放行红色、其余跟随主题（浅色深灰/深色白 70%，
@@ -333,7 +337,7 @@ fun FavoriteSongRow(
             // 封面（无真实封面时用平台品牌色块）
             Box(
                 modifier = Modifier
-                    .size(44.dp)
+                    .size(60.dp)
                     .clip(RoundedCornerShape(8.dp))
                     .background(platformBrandColor(song.platform).copy(alpha = 0.25f)),
                 contentAlignment = Alignment.Center
@@ -368,7 +372,7 @@ fun FavoriteSongRow(
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = song.name,
-                    fontSize = 15.sp,
+                    fontSize = 19.sp,
                     fontWeight = FontWeight.Medium,
                     color = if (isCurrentPlaying) LXPrimary else LXOnCardDark,
                     maxLines = 1,
@@ -384,7 +388,7 @@ fun FavoriteSongRow(
                     )
                 Text(
                     text = song.singer,
-                    fontSize = 13.sp,
+                    fontSize = 15.sp,
                     color = LXOnCardDarkSecondary,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -397,7 +401,7 @@ fun FavoriteSongRow(
             // ① 播放本首，停留在当前页（不进入播放页）
             Box(
                 modifier = Modifier
-                    .size(40.dp)
+                    .size(52.dp)
                     // 统一圆形聚焦（填充+焦点环一次性绘制，无空带、边框粗细统一）
                     .lxCircleButtonFocus()
                     .then(
@@ -426,7 +430,7 @@ fun FavoriteSongRow(
             // ② 播放本首并进入播放页（整列表已作为播放队列）
             Box(
                 modifier = Modifier
-                    .size(40.dp)
+                    .size(52.dp)
                     // 统一圆形聚焦（填充+焦点环一次性绘制，无空带、边框粗细统一）
                     .lxCircleButtonFocus()
                     .clickable { onPlayOpen() },
@@ -471,17 +475,20 @@ fun FavoritePlaylistsView(
         return
     }
 
-    LazyColumn(
-        modifier = modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+    // 電視大螢幕採雙欄歌單卡片，減少單列長距離移動並提高瀏覽效率
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(2),
+        modifier = modifier.fillMaxWidth().focusGroup(),
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
-        items(playlists, key = { it.playlistId }) { playlist ->
+        itemsIndexed(playlists, key = { _, playlist -> playlist.playlistId }) { index, playlist ->
             FavoritePlaylistRow(
                 playlist = playlist,
                 onClick = { onOpenPlaylist(playlist) },
                 onToggleFavorite = { onToggleFavorite(playlist.toPlaylist()) },
-                // 单列列表：任意行左键精确返回选中 tab
-                onExitToNav = onExitToNav,
+                // 左側第一欄最左側按鈕才回側欄；第二欄保留左右跨欄移動
+                onExitToNav = if (index % 2 == 0) onExitToNav else null,
                 modifier = Modifier.fillMaxWidth()
             )
         }
@@ -502,33 +509,20 @@ fun FavoritePlaylistRow(
     val brandColor = platformBrandColor(playlist.platform)
 
     Card(
-        modifier = modifier
-            .fillMaxWidth()
-            // 根节点拦截左键：无论焦点落在卡片内哪个按钮，左键都精确返回当前选中 tab
-            //（不拦截会走默认空间导航，焦点乱跳到其它 tab，如定位到「搜索」）
-            .then(
-                if (onExitToNav != null) {
-                    Modifier.onPreviewKeyEvent { keyEvent ->
-                        if (keyEvent.type == KeyEventType.KeyDown && keyEvent.key == Key.DirectionLeft) {
-                            onExitToNav()
-                            true
-                        } else false
-                    }
-                } else Modifier
-            ),
+        modifier = modifier.fillMaxWidth(),
         // 点6：深色卡片（仿播放页播放列表暗色面板）；卡片本身不再作为焦点目标，
         // 焦点落在卡片上的操作按钮（仿 PlaylistItem：选中按钮而非整行卡片）
         colors = CardDefaults.cardColors(containerColor = LXCardDark),
         shape = RoundedCornerShape(8.dp)
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(12.dp),
+            modifier = Modifier.fillMaxWidth().heightIn(min = 112.dp).focusGroup().padding(horizontal = 16.dp, vertical = 16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             // 封面
             Box(
                 modifier = Modifier
-                    .size(48.dp)
+                    .size(64.dp)
                     .clip(RoundedCornerShape(8.dp))
                     .background(brandColor.copy(alpha = 0.25f)),
                 contentAlignment = Alignment.Center
@@ -564,7 +558,7 @@ fun FavoritePlaylistRow(
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = playlist.name,
-                    fontSize = 16.sp,
+                    fontSize = 19.sp,
                     fontWeight = FontWeight.Medium,
                     color = LXOnCardDark,
                     maxLines = 1,
@@ -586,7 +580,7 @@ fun FavoritePlaylistRow(
                                 append(creator)
                             }
                         },
-                        fontSize = 14.sp,
+                        fontSize = 15.sp,
                         color = LXOnCardDarkSecondary,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
@@ -599,8 +593,18 @@ fun FavoritePlaylistRow(
             // ① 进入歌单（加载该歌单的歌曲列表）——沿用 ChevronRight 图标
             Box(
                 modifier = Modifier
-                    .size(40.dp)
-                    // 统一圆形聚焦（填充+焦点环一次性绘制，无空带、边框粗细统一）
+                    .size(52.dp)
+                    // 左側第一欄最左側操作按鈕可精確返回側欄
+                    .then(
+                        if (onExitToNav != null) {
+                            Modifier.onPreviewKeyEvent { event ->
+                                if (event.type == KeyEventType.KeyDown && event.key == Key.DirectionLeft) {
+                                    onExitToNav()
+                                    true
+                                } else false
+                            }
+                        } else Modifier
+                    )
                     .lxCircleButtonFocus()
                     .clickable { onClick() },
                 contentAlignment = Alignment.Center

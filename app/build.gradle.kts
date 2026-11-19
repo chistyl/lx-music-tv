@@ -8,12 +8,12 @@ plugins {
 
 android {
     namespace = "com.lxmusic.tv"
-    compileSdk = 37
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.lxmusic.tv"
         minSdk = 23
-        targetSdk = 37
+        targetSdk = 36
         versionCode = 268
         versionName = "2.9.202610241701"
 
@@ -23,12 +23,17 @@ android {
         }
     }
 
-//
+// ABI：保留 ARM64，並新增 x86 / x86_64 電視支援
     buildTypes {
         release {
+            // CI 可安裝交付：使用 Android debug keystore 簽署 Release APK。
+            // 正式固定簽章需改用受保護的持久化 keystore。
+            signingConfig = signingConfigs.getByName("debug")
             ndk {
                 abiFilters.clear()
                 abiFilters.add("arm64-v8a")
+                abiFilters.add("x86")
+                abiFilters.add("x86_64")
             }
 
             optimization {

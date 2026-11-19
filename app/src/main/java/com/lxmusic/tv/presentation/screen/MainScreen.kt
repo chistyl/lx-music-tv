@@ -110,7 +110,12 @@ fun MainScreen(
     onNavigateToPlayer: () -> Unit = {},
     currentSong: com.lxmusic.tv.data.model.Song? = null,
     isPlaying: Boolean = false,
+    playbackProgress: Float = 0f,
+    playbackDurationMs: Long = 0L,
     onPlayPause: () -> Unit = {},
+    onPrevious: () -> Unit = {},
+    onNext: () -> Unit = {},
+
     defaultPlatform: MusicPlatform = MusicPlatform.KW,
     onDefaultPlatformChange: (MusicPlatform) -> Unit = {},
     preferredQuality: AudioQuality = AudioQuality.FLAC,
@@ -237,21 +242,24 @@ fun MainScreen(
 
     // 全站主题由 MainActivity 根部的 LXMusicTheme 统一提供，此处不再嵌套 LXMusicTheme
     //（嵌套的默认 darkTheme=false 会把 currentLXTheme 强制写回浅色，导致深色模式返回后失效）
-    Row(
+    Column(
         modifier = Modifier
             .fillMaxSize()
-            // 2.5 浅色主题：主区浅灰白 #F5F5F7（仿 EchoMusic）
             .background(LXSurfaceMain)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
             // 2.8 记录用户「上键」时间（区分「用户方向键主动聚焦 logo」与「系统默认分配」）：
-            // 聚焦 logo 的唯一方向键路径是「上键」（从选中 tab 按上），进详情/切页用的是右/下/确定键；
-            // 故仅上键会触发用户主动聚焦 logo 的判定，系统分配落 logo 时距上次上键必然 > 300ms
+            // 记录用户主动按「上」键聚焦 Logo 的时间
             .onPreviewKeyEvent { keyEvent ->
                 if (keyEvent.type == KeyEventType.KeyDown && keyEvent.key == Key.DirectionUp) {
                     lastKeyPressTime = SystemClock.uptimeMillis()
                 }
                 false
             }
-    ) {
+        ) {
             // 左侧导航栏
             NavigationSidebar(
                 selectedTab = selectedTab,
@@ -269,10 +277,6 @@ fun MainScreen(
                 },
                 // 侧栏焦点状态上报（返回键逻辑用）
                 onNavBarFocusChanged = onNavBarFocusChanged,
-                currentSong = currentSong,
-                isPlaying = isPlaying,
-                onNavigateToPlayer = onNavigateToPlayer,
-                onPlayPause = onPlayPause,
                 modifier = Modifier
                     // 2.6 窄图标栏：宽度只够放 1 个图标（选中时底部才显示文字），参考 blbl/BBLL
                     .width(72.dp)
@@ -358,10 +362,26 @@ fun MainScreen(
                     .fillMaxHeight()
             )
         }
+
+        // 電視專用底部播放列：橫跨主畫面，不再擠在 72dp 側欄內
+        if (currentSong != null) {
+            NowPlayingBar(
+                song = currentSong,
+                isPlaying = isPlaying,
+                progress = playbackProgress,
+                durationMs = playbackDurationMs,
+                onClick = onNavigateToPlayer,
+                onPlayPause = onPlayPause,
+                onPrevious = onPrevious,
+                onNext = onNext,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
     }
+}
 
 /**
- * 左侧导航栏
+ * 左側導航欄
  */
 @Composable
 fun NavigationSidebar(
@@ -377,10 +397,6 @@ fun NavigationSidebar(
     onLogoFocusChanged: (Boolean) -> Unit = {},
     // 侧栏是否持有焦点（MainActivity 返回键逻辑用：焦点在内容区时第一次返回先回 tab）
     onNavBarFocusChanged: (Boolean) -> Unit = {},
-    currentSong: com.lxmusic.tv.data.model.Song? = null,
-    isPlaying: Boolean = false,
-    onNavigateToPlayer: () -> Unit = {},
-    onPlayPause: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val navItems = listOf(
@@ -536,16 +552,6 @@ fun NavigationSidebar(
 
         Spacer(modifier = Modifier.weight(1f))
 
-        // 正在播放控制条（常驻，窄栏版：封面进播放页 + 播放/暂停）
-        if (currentSong != null) {
-            NowPlayingBar(
-                song = currentSong,
-                isPlaying = isPlaying,
-                onClick = onNavigateToPlayer,
-                onPlayPause = onPlayPause,
-                modifier = Modifier.fillMaxWidth()
-            )
-        }
     }
 }
 }
@@ -586,23 +592,30 @@ fun DiscCoverButton(
 }
 
 /**
- * 正在播放控制条（导航栏底部常驻入口，2.6 窄栏版）
- * 窄栏只放 1 个图标宽：封面（点击进播放页）+ 播放/暂停按钮；
- * 上一曲/下一曲等完整控制在播放页控制栏里操作
+ * 電視底部播放列：橫向顯示封面、歌曲資訊及播放控制，作為全畫面常駐入口
  */
 @Composable
 fun NowPlayingBar(
     song: com.lxmusic.tv.data.model.Song,
     isPlaying: Boolean,
+    progress: Float,
+    durationMs: Long,
     onClick: () -> Unit,
     onPlayPause: () -> Unit,
+    onPrevious: () -> Unit,
+    onNext: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Column(
-        modifier = modifier,
-        horizontalAlignment = Alignment.CenterHorizontally
+    // TV 橫向底部播放列：歌曲資訊、播放進度及大尺寸方向鍵操作
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(104.dp)
+            .focusGroup()
+            .background(LXCardDark)
+            .padding(horizontal = 28.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        // 2.8 封面旋转动画：播放中缓慢匀速旋转（8s/圈，黑胶/光盘感），暂停停止并平滑归 0
         val coverRotation = remember { Animatable(0f) }
         LaunchedEffect(isPlaying) {
             if (isPlaying) {
@@ -613,16 +626,11 @@ fun NowPlayingBar(
                     )
                 }
             } else {
-                coverRotation.animateTo(0f, animationSpec = tween(durationMillis = 300))
+                coverRotation.animateTo(0f, animationSpec = tween(durationMillis = 250))
             }
         }
 
-        // 2.8 黑胶光盘封面：复用公共组件 DiscCoverButton（48dp/环6/封面36），
-        // 与悬浮球（FloatingNowPlayingButton）样式完全一致；聚焦环变主题色发光
-        DiscCoverButton(
-            onClick = onClick,
-            rotation = coverRotation.value
-        ) {
+        DiscCoverButton(onClick = onClick, rotation = coverRotation.value) {
             if (!song.picUrl.isNullOrBlank()) {
                 RemoteImage(
                     url = song.picUrl,
@@ -638,7 +646,7 @@ fun NowPlayingBar(
                                 imageVector = platformIcon(song.platform),
                                 contentDescription = null,
                                 tint = platformBrandColor(song.platform),
-                                modifier = Modifier.size(18.dp)
+                                modifier = Modifier.size(20.dp)
                             )
                         }
                     }
@@ -652,32 +660,115 @@ fun NowPlayingBar(
                         imageVector = platformIcon(song.platform),
                         contentDescription = null,
                         tint = platformBrandColor(song.platform),
-                        modifier = Modifier.size(18.dp)
+                        modifier = Modifier.size(20.dp)
                     )
                 }
             }
         }
 
-        Spacer(modifier = Modifier.height(6.dp))
+        Spacer(modifier = Modifier.width(18.dp))
 
-        // 播放/暂停按钮（遥控器必须可聚焦操作）
-        Box(
-            modifier = Modifier
-                .requiredSize(50.dp)
-                // 统一圆形聚焦（填充+焦点环一次性绘制，无空带、边框粗细统一）
-                .lxCircleButtonFocus()
-                .clickable { onPlayPause() },
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
-                contentDescription = if (isPlaying) "暂停" else "播放",
-                // 2.5 浅色主题：白底深色图标
-                tint = LXTextPrimary,
-                modifier = Modifier.size(22.dp)
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = song.name,
+                fontSize = 19.sp,
+                fontWeight = FontWeight.Bold,
+                color = LXOnCardDark,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
+            Spacer(modifier = Modifier.height(3.dp))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = platformShortName(song.platform),
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = platformBrandColor(song.platform)
+                )
+                Spacer(modifier = Modifier.width(10.dp))
+                Text(
+                    text = song.singer,
+                    fontSize = 15.sp,
+                    color = LXOnCardDarkSecondary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+            Spacer(modifier = Modifier.height(7.dp))
+            LinearProgressIndicator(
+                progress = progress.coerceIn(0f, 1f),
+                modifier = Modifier.fillMaxWidth().height(4.dp),
+                color = LXPrimary,
+                trackColor = LXOnCardDarkSecondary.copy(alpha = 0.25f)
+            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = formatPlayerTime((progress.coerceIn(0f, 1f) * durationMs).toLong()),
+                    fontSize = 11.sp,
+                    color = LXOnCardDarkSecondary
+                )
+                Text(
+                    text = formatPlayerTime(durationMs),
+                    fontSize = 11.sp,
+                    color = LXOnCardDarkSecondary
+                )
+            }
         }
+
+        Spacer(modifier = Modifier.width(28.dp))
+
+        PlayerDockButton(
+            icon = Icons.Default.SkipPrevious,
+            description = "上一首",
+            onClick = onPrevious
+        )
+        Spacer(modifier = Modifier.width(12.dp))
+        PlayerDockButton(
+            icon = if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
+            description = if (isPlaying) "暫停" else "播放",
+            onClick = onPlayPause,
+            emphasized = true
+        )
+        Spacer(modifier = Modifier.width(12.dp))
+        PlayerDockButton(
+            icon = Icons.Default.SkipNext,
+            description = "下一首",
+            onClick = onNext
+        )
     }
+}
+
+@Composable
+private fun PlayerDockButton(
+    icon: ImageVector,
+    description: String,
+    onClick: () -> Unit,
+    emphasized: Boolean = false
+) {
+    Box(
+        modifier = Modifier
+            .size(if (emphasized) 58.dp else 52.dp)
+            .lxCircleButtonFocus()
+            .clickable { onClick() },
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = description,
+            tint = LXOnCardDark,
+            modifier = Modifier.size(if (emphasized) 30.dp else 26.dp)
+        )
+    }
+}
+
+private fun formatPlayerTime(milliseconds: Long): String {
+    val totalSeconds = (milliseconds.coerceAtLeast(0L) / 1000L)
+    val minutes = totalSeconds / 60L
+    val seconds = totalSeconds % 60L
+    return "%d:%02d".format(minutes, seconds)
 }
 
 /**
