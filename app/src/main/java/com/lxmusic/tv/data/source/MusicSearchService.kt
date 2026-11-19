@@ -479,8 +479,11 @@ class MusicSearchService(
         // 先过滤本轮已失败源，得到实际要尝试的候选列表（保持导入顺序），便于取「下一个源」名称。
         // 2.8 双保险：getSourcesForPlatform 可能因源 id 变化/平台配置缺失把不支持平台的源误判为全平台，
         // 遍历时再显式校验一次「必須明確宣告支援目前平台」，避免未勾选平台的源被尝试
-        val candidates = sourceManager.getSourcesForPlatform(sourceCode)
-            .filter { it.id !in excludeSourceIds }
+        val candidates = prioritizeMusicSources(
+            sourceManager.getSourcesForPlatform(sourceCode)
+                .filter { it.id !in excludeSourceIds },
+            song.sourceId
+        )
             .filter { source ->
                 val platforms = try {
                     sourceManager.getSourcePlatforms(source.id)
@@ -849,8 +852,20 @@ private fun MusicItem.toSong(): Song {
         platform = MusicPlatform.entries.firstOrNull { it.key == platform }
             ?: MusicPlatform.LOCAL,
         quality = listOf(AudioQuality.QUALITY_128K, AudioQuality.QUALITY_320K, AudioQuality.FLAC),
-        platformKey = platform
+        platformKey = platform,
+        sourceId = sourceId.takeIf { it.isNotBlank() }
     )
+}
+
+/**
+ * 將歌曲原始來源排在候選清單前方；若該來源已停用或不支援平台，原順序備援不變。
+ */
+internal fun prioritizeMusicSources(
+    candidates: List<MusicSource>,
+    preferredSourceId: String?
+): List<MusicSource> {
+    if (preferredSourceId.isNullOrBlank()) return candidates
+    return candidates.sortedBy { if (it.id == preferredSourceId) 0 else 1 }
 }
 
 /**
