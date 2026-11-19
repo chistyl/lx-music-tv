@@ -286,5 +286,7 @@ data class MusicItem(
     val url: String?,
     val picUrl: String?,
     val lyricUrl: String?,
-    val createdAt: Long = System.currentTimeMillis()
+    val createdAt: Long = System.currentTimeMillis(),
+    /** 搜尋結果的完整原始 JSON，避免自訂音源欄位在正規化時遺失。 */
+    val rawData: String? = null
 )
