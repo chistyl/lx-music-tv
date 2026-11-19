@@ -573,6 +573,8 @@ fun LXMusicApp() {
 
         // 自訂音源正式瀏覽頁：只呈現已由使用者明確映射的資料，不推測播放欄位。
         composable("source_browse") {
+            val sources by viewModel.sources.collectAsState()
+            val declaredActions = remember(sources) { viewModel.getDeclaredSourceActions() }
             val items by viewModel.sourceBrowseItems.collectAsState()
             val loading by viewModel.sourceBrowseLoading.collectAsState()
             val error by viewModel.sourceBrowseError.collectAsState()
@@ -581,6 +583,21 @@ fun LXMusicApp() {
                 loading = loading,
                 error = error,
                 onBack = { navController.popBackStack() },
+                declaredActions = declaredActions,
+                onLoadBrowseAction = { option, infoJson, fields, append ->
+                    try {
+                        viewModel.loadSourceBrowseItems(
+                            platformKey = option.platformKey,
+                            action = option.action,
+                            info = org.json.JSONObject(infoJson.ifBlank { "{}" }),
+                            fields = fields,
+                            sourceId = option.sourceId,
+                            append = append
+                        )
+                    } catch (e: Exception) {
+                        Toast.makeText(context, "請求 JSON 格式錯誤：${e.message}", Toast.LENGTH_LONG).show()
+                    }
+                },
                 onPlaySong = { song ->
                     viewModel.playSong(song)
                     navController.navigate("player")
