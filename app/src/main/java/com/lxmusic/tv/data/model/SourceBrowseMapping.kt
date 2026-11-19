@@ -68,7 +68,8 @@ data class SourceBrowseItem(
             picUrl = songPicUrl ?: coverUrl,
             duration = songDurationMs ?: durationMs,
             platform = mappedPlatform,
-            platformKey = platformKey
+            platformKey = platformKey,
+            sourceId = sourceId.takeIf { it.isNotBlank() }
         )
     }
 }
