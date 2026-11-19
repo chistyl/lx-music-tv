@@ -542,7 +542,7 @@ fun LXMusicApp() {
                             sourceId = option.sourceId
                         )
                     } catch (e: Exception) {
-                        Toast.makeText(this, "請求 JSON 格式錯誤：${e.message}", Toast.LENGTH_LONG).show()
+                        Toast.makeText(context, "請求 JSON 格式錯誤：${e.message}", Toast.LENGTH_LONG).show()
                     }
                 },
                 onClearSourceBrowseItems = { viewModel.clearSourceBrowseItems() },
