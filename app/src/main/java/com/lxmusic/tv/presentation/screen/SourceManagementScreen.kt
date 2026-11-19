@@ -488,7 +488,7 @@ private fun DeclaredSourceActionsCard(
                         )
                     )
                     Text(
-                        text = "作為下一層瀏覽 Action 時，可在 JSON 字串值使用 {{item.id}}、{{item.title}}、{{item.subtitle}}，並以 {{page}} 表示頁碼；載入時會依所選項目自動代入。",
+                        text = "作為下一層瀏覽 Action 時，可在 JSON 值位置使用 {{item.id}}、{{item.title}}、{{item.subtitle}}、{{page}}（例如：{\"id\": {{item.id}}, \"page\": {{page}}}）；載入時會自動代入所選項目與頁碼。",
                         fontSize = 12.sp,
                         color = LXOnCardDarkSecondary
                     )
