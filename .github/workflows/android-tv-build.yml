@@ -11,6 +11,7 @@ on:
     branches:
       - feature/apple-music-tv-r1-android9
       - feature/lx-tv-no-update-no-platform-r3
+      - feature/lx-mobile-original-ui-r1
   workflow_dispatch:
 
 permissions:
