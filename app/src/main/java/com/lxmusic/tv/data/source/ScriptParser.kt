@@ -272,7 +272,7 @@ class ScriptParser {
         // 註冊 request handler 並回報 inited。變數可被混淆/重新命名，故不要求
         // 必須出現固定的 send( 或 EVENT_NAMES.inited 字面組合。
         val referencesHostApi = Regex(
-            """(?:globalThis|window|global)\\s*(?:\\.\\s*lx|\\[\\s*['\"]lx['\"]\\s*])"""
+            """(?:globalThis|window|global)\s*(?:\.\s*lx|\[\s*['"]lx['"]\s*])"""
         ).containsMatchIn(scriptContent) ||
             scriptContent.contains("__lx_setup__") || scriptContent.contains("lx_setup")
         if (!referencesHostApi) return false
