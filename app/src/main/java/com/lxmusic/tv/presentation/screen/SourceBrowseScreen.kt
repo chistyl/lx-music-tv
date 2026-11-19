@@ -48,7 +48,9 @@ fun SourceBrowseScreen(
     onBack: () -> Unit,
     onPlaySong: (Song) -> Unit = {},
     declaredActions: List<SourceActionOption> = emptyList(),
-    onLoadBrowseAction: (SourceActionOption, String, SourceBrowseFieldMap, Boolean) -> Unit = { _, _, _, _ -> },
+    canGoBack: Boolean = false,
+    onBackLevel: () -> Unit = {},
+    onLoadBrowseAction: (SourceActionOption, String, SourceBrowseFieldMap, Boolean, Boolean) -> Unit = { _, _, _, _, _ -> },
     onFocusFloatingBall: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
@@ -80,6 +82,18 @@ fun SourceBrowseScreen(
             Column(Modifier.weight(1f)) {
                 Text("自訂音源瀏覽", fontSize = 28.sp, fontWeight = FontWeight.Bold, color = LXTextPrimary)
                 Text("依照已保存的欄位映射呈現資料", fontSize = 14.sp, color = LXTextSecondary)
+            }
+            if (canGoBack) {
+                OutlinedButton(
+                    onClick = {
+                        onBackLevel()
+                        selectedItem = null
+                        requestContextItem = null
+                        activeBrowseAction = null
+                        activePage = 1
+                    },
+                    modifier = Modifier.height(44.dp).lxSelectorFocus(shape = RoundedCornerShape(8.dp), glow = false, animated = false)
+                ) { Text("上一層") }
             }
             Text("${items.size} 筆", fontSize = 16.sp, color = LXTextSecondary)
         }
@@ -161,7 +175,7 @@ fun SourceBrowseScreen(
                                                 activeBrowseAction = option
                                                 requestContextItem = item
                                                 activePage = 1
-                                                onLoadBrowseAction(option, request, fields, false)
+                                                onLoadBrowseAction(option, request, fields, false, true)
                                             },
                                             modifier = Modifier.fillMaxWidth().height(46.dp)
                                                 .lxSelectorFocus(shape = RoundedCornerShape(8.dp), glow = false, animated = false),
@@ -180,7 +194,7 @@ fun SourceBrowseScreen(
                                                 val fields = config?.let { parseSavedFields(it) }
                                                 if (config != null && fields != null) {
                                                     val nextPage = activePage + 1
-                                                    onLoadBrowseAction(option, buildItemRequest(config.optString("requestJson", "{}"), requestContextItem ?: item, nextPage), fields, true)
+                                                    onLoadBrowseAction(option, buildItemRequest(config.optString("requestJson", "{}"), requestContextItem ?: item, nextPage), fields, true, false)
                                                     activePage = nextPage
                                                 }
                                             },
