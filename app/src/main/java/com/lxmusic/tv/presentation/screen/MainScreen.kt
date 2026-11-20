@@ -2025,6 +2025,20 @@ fun SettingsScreen(
     var lastClickedIndex by rememberSaveable { mutableIntStateOf(-1) }
     // 各设置项的焦点请求器（共 10 项：默认音乐平台/播放源管理/启动默认页面/播放设置/歌词设置/界面设置/缓存管理/异常日志/设备信息/关于）
     val itemRequesters = remember { List(10) { FocusRequester() } }
+    // 對話框關閉後，將焦點還給原本開啟對話框的設定項。
+    var pendingSettingsFocusRestore by remember { mutableIntStateOf(-1) }
+    LaunchedEffect(pendingSettingsFocusRestore) {
+        val index = pendingSettingsFocusRestore
+        if (index in 0..9) {
+            delay(120)
+            try {
+                itemRequesters[index].requestFocus()
+            } catch (_: IllegalStateException) {
+                // 設定列表尚未掛載時，交由系統焦點處理。
+            }
+            pendingSettingsFocusRestore = -1
+        }
+    }
 
     // 重复点击「设置」tab：滚动回顶部（仅 tick 真正变化时，避免组件重建误触发）
     var lastRefreshTick by remember { mutableIntStateOf(refreshTick) }
@@ -2185,8 +2199,12 @@ fun SettingsScreen(
             onSelect = { platform ->
                 onDefaultPlatformChange(platform)
                 showPlatformDialog = false
+                pendingSettingsFocusRestore = 0
             },
-            onDismiss = { showPlatformDialog = false }
+            onDismiss = {
+                showPlatformDialog = false
+                pendingSettingsFocusRestore = 0
+            }
         )
     }
 
@@ -2197,8 +2215,12 @@ fun SettingsScreen(
             onSelect = { quality ->
                 onPreferredQualityChange(quality)
                 showQualityDialog = false
+                pendingSettingsFocusRestore = 3
             },
-            onDismiss = { showQualityDialog = false }
+            onDismiss = {
+                showQualityDialog = false
+                pendingSettingsFocusRestore = 3
+            }
         )
     }
 
@@ -2209,8 +2231,12 @@ fun SettingsScreen(
             onSelect = { tabIndex ->
                 onDefaultStartupTabChange(tabIndex)
                 showStartupTabDialog = false
+                pendingSettingsFocusRestore = 2
             },
-            onDismiss = { showStartupTabDialog = false }
+            onDismiss = {
+                showStartupTabDialog = false
+                pendingSettingsFocusRestore = 2
+            }
         )
     }
 
@@ -2219,25 +2245,37 @@ fun SettingsScreen(
         LyricsSettingsDialog(
             translationEnabled = lyricTranslationEnabled,
             onTranslationEnabledChange = onLyricTranslationEnabledChange,
-            onDismiss = { showLyricsDialog = false }
+            onDismiss = {
+                showLyricsDialog = false
+                pendingSettingsFocusRestore = 4
+            }
         )
     }
 
     // 2.9 设备信息对话框：显示设备型号、屏幕物理分辨率、DPI 与自适应视口
     if (showDeviceInfoDialog) {
-        DeviceInfoDialog(onDismiss = { showDeviceInfoDialog = false })
+        DeviceInfoDialog(onDismiss = {
+            showDeviceInfoDialog = false
+            pendingSettingsFocusRestore = 8
+        })
     }
 
     // 关于对话框：显示当前安装的版本号（versionName + versionCode），用于核对构建是否生效
     if (showAboutDialog) {
-        AboutDialog(onDismiss = { showAboutDialog = false })
+        AboutDialog(onDismiss = {
+            showAboutDialog = false
+            pendingSettingsFocusRestore = 9
+        })
     }
 
     // 2.8 异常日志需要 Web 端访问：HTTP 未开启时询问是否启用（与搜索页扫码推送交互一致），
     // 确认后启动服务器，serverUrl 更新 → LaunchedEffect 自动弹出异常日志弹窗
     if (showEnableServerDialog) {
         AlertDialog(
-            onDismissRequest = { showEnableServerDialog = false },
+            onDismissRequest = {
+                showEnableServerDialog = false
+                pendingSettingsFocusRestore = 7
+            },
             containerColor = LXSurfaceDialog,
             title = {
                 Text(
@@ -2265,7 +2303,10 @@ fun SettingsScreen(
             },
             dismissButton = {
                 TextButton(
-                    onClick = { showEnableServerDialog = false },
+                    onClick = {
+                        showEnableServerDialog = false
+                        pendingSettingsFocusRestore = 7
+                    },
                     modifier = Modifier.focusRequester(enableServerCancelRequester)
                 ) {
                     Text("取消", color = LXTextSecondary)
@@ -2278,7 +2319,10 @@ fun SettingsScreen(
     if (showLogExportDialog) {
         LogExportDialog(
             serverUrl = serverUrl,
-            onDismiss = { showLogExportDialog = false }
+            onDismiss = {
+                showLogExportDialog = false
+                pendingSettingsFocusRestore = 7
+            }
         )
     }
 }
