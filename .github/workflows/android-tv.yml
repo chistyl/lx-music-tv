@@ -61,7 +61,6 @@ jobs:
           python3 scripts/prepare-android-tv.py
           python3 scripts/patch-tv-controls.py
           grep -n "LEANBACK_LAUNCHER\\|android.software.leanback\\|screenOrientation" upstream/lx-music-mobile-auto-source/android/app/src/main/AndroidManifest.xml
-          grep -n "focusable\\|tvFocused\\|handleFocus" upstream/lx-music-mobile-auto-source/src/components/common/Button.tsx
 
       - name: Generate Android JS bundle
         working-directory: upstream/lx-music-mobile-auto-source
