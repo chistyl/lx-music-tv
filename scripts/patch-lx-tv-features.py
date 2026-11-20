@@ -271,3 +271,171 @@ s = s.replace(
 )
 (ROOT / p).write_text(s)
 print("Applied: scope lyric hiding to the left home player only")
+
+
+# Match the requested custom-source settings layout:
+# remove multi-source auto toggle, add per-source trash, and show two direct import buttons.
+p = "src/screens/Home/Views/Setting/settings/Basic/UserApiEditModal/ImportBtn.tsx"
+s = (ROOT / p).read_text()
+s = s.replace(
+    "interface BtnProps {\n  btnStyle?: _DorpDownMenuProps<any[]>['btnStyle']\n}",
+    "interface BtnProps {\n  btnStyle?: _DorpDownMenuProps<any[]>['btnStyle']\n  mode?: 'local' | 'online'\n}",
+    1,
+)
+s = s.replace(
+    "export default ({ btnStyle }: BtnProps) => {",
+    "export default ({ btnStyle, mode }: BtnProps) => {",
+    1,
+)
+s = s.replace(
+    "import { useTheme } from '@/store/theme/hook'\n",
+    "import { useTheme } from '@/store/theme/hook'\nimport Button from '@/components/common/Button'\n",
+    1,
+)
+old_return = """  return (
+    <DorpDownMenu
+      btnStyle={btnStyle}
+      menus={importTypes}
+      center
+      onPress={handleAction}
+    >
+      <Text size={14} color={theme['c-button-font']}>{t('user_api_btn_import')}</Text>
+      <ScriptImportExport ref={scriptImportExportRef} />
+      <ScriptImportOnline ref={scriptImportOnlineRef} />
+    </DorpDownMenu>
+  )
+"""
+new_return = """  if (mode) {
+    return (
+      <Button
+        style={btnStyle}
+        onPress={() => {
+          if (state.list.length > 20) {
+            void tipDialog({ message: t('user_api_max_tip'), btnText: t('ok') })
+            return
+          }
+          if (mode === 'local') scriptImportExportRef.current?.import()
+          else scriptImportOnlineRef.current?.show()
+        }}
+      >
+        <Text size={14} color={theme['c-button-font']}>
+          {mode === 'local' ? '從本機匯入' : '從線上匯入'}
+        </Text>
+        <ScriptImportExport ref={scriptImportExportRef} />
+        <ScriptImportOnline ref={scriptImportOnlineRef} />
+      </Button>
+    )
+  }
+
+  return (
+    <DorpDownMenu btnStyle={btnStyle} menus={importTypes} center onPress={handleAction}>
+      <Text size={14} color={theme['c-button-font']}>{t('user_api_btn_import')}</Text>
+      <ScriptImportExport ref={scriptImportExportRef} />
+      <ScriptImportOnline ref={scriptImportOnlineRef} />
+    </DorpDownMenu>
+  )
+"""
+if old_return not in s: raise SystemExit("ImportBtn return block not found")
+s = s.replace(old_return, new_return, 1)
+(ROOT / p).write_text(s)
+
+p = "src/screens/Home/Views/Setting/settings/Basic/Source.tsx"
+s = (ROOT / p).read_text()
+s = s.replace("import { memo, useCallback, useMemo, useRef } from 'react'", "import { memo, useCallback, useMemo } from 'react'", 1)
+s = s.replace("import Button from '../../components/Button'\n", "", 1)
+s = s.replace("import UserApiEditModal, { type UserApiEditModalType } from './UserApiEditModal'\n", "", 1)
+s = s.replace("import Text from '@/components/common/Text'\n", """import Text from '@/components/common/Text'
+import ImportBtn from './UserApiEditModal/ImportBtn'
+import { Icon } from '@/components/common/Icon'
+import { TouchableOpacity } from 'react-native'
+import { confirmDialog } from '@/utils/tools'
+import { removeUserApi } from '@/core/userApi'
+import { state as userApiState } from '@/store/userApi'
+import settingState from '@/store/setting/state'
+""", 1)
+# The multi-source auto selector is intentionally removed from the rendered list.
+s = s.replace("""        {!userApiList.length ? <Text>请在设置中导入自定义源</Text> : (
+          <Item name="多源自动切换" id="user_api_auto" change={id => { setApiSourceId(apiSourceSetting === id ? userApiList[0].id : id) }} />
+        )}
+""", "", 1)
+# Add a delete affordance beside each user-defined source, preserving its selection checkbox.
+old_map = """          userApiList.map(({ id, name, desc, statusLabel }) => <Item name={name} desc={desc} statusLabel={statusLabel} id={id} key={id} change={setApiSourceId} />)
+"""
+new_map = """          userApiList.map(({ id, name, desc, statusLabel }) => (
+            <View key={id} style={styles.userSourceRow}>
+              <View style={styles.userSourceItem}>
+                <Item name={name} desc={desc} statusLabel={statusLabel} id={id} change={setApiSourceId} />
+              </View>
+              <TouchableOpacity
+                accessibilityLabel="刪除自訂來源"
+                style={styles.deleteSource}
+                onPress={async() => {
+                  const confirmed = await confirmDialog({
+                    message: global.i18n.t('user_api_remove_tip', { name }),
+                    cancelButtonText: global.i18n.t('cancel_button_text_2'),
+                    confirmButtonText: global.i18n.t('confirm_button_text'),
+                    bgClose: false,
+                  })
+                  if (!confirmed) return
+                  void removeUserApi([id]).finally(() => {
+                    if (settingState.setting['common.apiSource'] === id || !userApiState.list.length) {
+                      const fallback = apiSourceList.find(api => !api.disabled)?.id ?? userApiState.list[0]?.id ?? ''
+                      setApiSource(fallback)
+                    }
+                  })
+                }}
+              >
+                <Icon name="trash-2" color="#888888" size={20} />
+              </TouchableOpacity>
+            </View>
+          ))
+"""
+if old_map not in s: raise SystemExit("Custom source list render not found")
+s = s.replace(old_map, new_map, 1)
+old_button = """      <View style={styles.btn}>
+        <Button onPress={handleShow}>{t('setting_basic_source_user_api_btn')}</Button>
+      </View>
+"""
+new_button = """      <View style={styles.importButtons}>
+        <ImportBtn mode="local" btnStyle={styles.importButton} />
+        <ImportBtn mode="online" btnStyle={styles.importButton} />
+      </View>
+"""
+if old_button not in s: raise SystemExit("Source management button block not found")
+s = s.replace(old_button, new_button, 1)
+s = s.replace("      <UserApiEditModal ref={modalRef} />\n", "", 1)
+# Remove the obsolete modal refs and handler.
+s = s.replace("""  const modalRef = useRef<UserApiEditModalType>(null)
+  const handleShow = () => {
+    modalRef.current?.show()
+  }
+
+""", "", 1)
+# Styles: side-by-side import buttons and a compact delete icon aligned with each source.
+s = s.replace("""  btn: {
+    marginTop: 10,
+    flexDirection: 'row',
+  },
+""", """  importButtons: {
+    marginTop: 10,
+    flexDirection: 'row',
+    gap: 12,
+  },
+  importButton: {
+    flex: 1,
+    minWidth: 0,
+  },
+  userSourceRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  userSourceItem: {
+    flex: 1,
+  },
+  deleteSource: {
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+  },
+""", 1)
+(ROOT / p).write_text(s)
+print("Applied: requested custom-source layout with direct local/online import and delete icon")
