@@ -25,11 +25,9 @@ import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
-
-import com.lxmusic.tv.presentation.theme.LXPrimary
+import kotlin.math.max
 
 private val LXFocusGreen = Color(0xFF36C98A)
-import kotlin.math.max
 
 /**
  * 将 Shape.createOutline 得到的 Outline 转为可描边的 Path。
@@ -333,7 +331,7 @@ fun Modifier.lxSelectorFocus(
             drawContent()
             if (focusedWidth > 0.dp) {
                 val stroke = focusedWidth.toPx()
-                val outline = shape.createOutline(size, layoutDirection, this).withSoftCorners(16.dp.toPx())
+                val outline = shape.createOutline(size, layoutDirection, this).withSoftCorners(minOf(16.dp.toPx(), size.minDimension / 2f))
                 val insetOutline = outline.insetBy(stroke / 2f)
                 drawPath(
                     path = outlineToPath(insetOutline),
