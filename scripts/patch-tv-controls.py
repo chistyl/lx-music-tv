@@ -94,6 +94,29 @@ def patch_player_bar() -> None:
     )
     path.write_text(source, encoding="utf-8")
 
+    pic = ROOT / "src/components/player/PlayerBar/components/Pic.tsx"
+    source = pic.read_text(encoding="utf-8")
+    source = replace_once(
+        source,
+        "export default ({ isHome }: { isHome: boolean }) => {",
+        "export default ({ isHome, size = 46 }: { isHome: boolean, size?: number }) => {",
+        "player cover size prop",
+    )
+    source = replace_once(
+        source,
+        "  const musicInfo = usePlayerMusicInfo()",
+        "  const musicInfo = usePlayerMusicInfo()" + chr(10) + "  const imageSize = scaleSizeH(size)",
+        "player cover image size",
+    )
+    source = replace_once(
+        source,
+        "style={styles.image}",
+        "style={{ width: imageSize, height: imageSize, borderRadius: imageSize / 2 }}",
+        "player cover circular image",
+    )
+    pic.write_text(source, encoding="utf-8")
+
+
 def patch_button() -> None:
     target = ROOT / "src/components/common/Button.tsx"
     source = target.read_text(encoding="utf-8")
