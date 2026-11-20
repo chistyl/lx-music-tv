@@ -56,7 +56,7 @@ const styles = createStyle({""", "insert playback mode control")
     source = replace_once(source, "      <PlayNextBtn />\n    </>", "      <PlayNextBtn />\n      <PlayModeBtn />\n    </>", "render playback mode control")
     source = replace_once(source, "const BTN_SIZE = 24", "const BTN_SIZE = 19", "reduce player control icon size")
     source = replace_once(source, "    width: 46,\n    height: 46,", "    width: 40,\n    height: 40,", "reduce player control touch container")
-    source = replace_once(source, "const styles = createStyle({\n  cotrolBtn: {", "const styles = createStyle({\n  focusedControl: { borderWidth: 3, borderColor: '#35A979', borderRadius: 30, backgroundColor: 'rgba(53,169,121,0.16)', shadowColor: '#35A979', shadowOpacity: 0, shadowRadius: 0, shadowOffset: { width: 0, height: 0 }, elevation: 0 },\n  cotrolBtn: {", "player focus style")
+    source = replace_once(source, "const styles = createStyle({\n  cotrolBtn: {", "const styles = createStyle({\n  focusedControl: { borderWidth: 1, borderColor: '#35A979', borderRadius: 30, backgroundColor: 'rgba(53,169,121,0.04)', shadowColor: '#35A979', shadowOpacity: 0, shadowRadius: 0, shadowOffset: { width: 0, height: 0 }, elevation: 0 },\n  cotrolBtn: {", "player focus style")
     path.write_text(source, encoding="utf-8")
 
 def patch_player_bar() -> None:
@@ -288,7 +288,7 @@ def patch_tv_focus_surfaces() -> None:
     source = replace_once(
         source,
         "const styles = createStyle({\n  container:",
-        "const styles = createStyle({\n  tvFocused: { borderWidth: 2, borderColor: '#35A979', borderRadius: 8, backgroundColor: 'rgba(53,169,121,0.06)', elevation: 0 },\n  container:",
+        "const styles = createStyle({\n  tvFocused: { borderWidth: 1, borderColor: '#35A979', borderRadius: 8, backgroundColor: 'rgba(53,169,121,0.06)', elevation: 0 },\n  container:",
         "settings navigation focus shape",
     )
     path.write_text(source, encoding="utf-8")
@@ -311,7 +311,7 @@ def patch_tv_focus_surfaces() -> None:
     source = replace_once(
         source,
         "const styles = createStyle({\n  container:",
-        "const styles = createStyle({\n  tvFocused: { borderWidth: 2, borderColor: '#35A979', borderRadius: 9, backgroundColor: 'rgba(53,169,121,0.12)', elevation: 5 },\n  container:",
+        "const styles = createStyle({\n  tvFocused: { borderWidth: 1, borderColor: '#35A979', borderRadius: 9, backgroundColor: 'rgba(53,169,121,0.04)', elevation: 5 },\n  container:",
         "search type focus shape",
     )
     path.write_text(source, encoding="utf-8")
@@ -388,7 +388,7 @@ def patch_tv_focus_surfaces() -> None:
     source = replace_once(
         source,
         "const styles = createStyle({\n  container:",
-        "const styles = createStyle({\n  focusedContainer: { borderWidth: 2, borderColor: '#35A979', borderRadius: 7, backgroundColor: 'rgba(53,169,121,0.12)', elevation: 5 },\n  container:",
+        "const styles = createStyle({\n  focusedContainer: { borderWidth: 1, borderColor: '#35A979', borderRadius: 7, backgroundColor: 'rgba(53,169,121,0.04)', elevation: 5 },\n  container:",
         "checkbox focus frame shape",
     )
     path.write_text(source, encoding="utf-8")
@@ -424,7 +424,7 @@ def patch_input_focus() -> None:
         onBlur={(event) => { setTvFocused(false); onBlur?.(event) }}
         style={StyleSheet.compose(
           StyleSheet.compose({ ...styles.input, color: theme['c-font'], fontSize: setSpText(size) }, style),
-          tvFocused ? { borderWidth: 2, borderColor: '#35A979', backgroundColor: 'rgba(53,169,121,0.12)', elevation: 4 } : undefined,
+          tvFocused ? { borderWidth: 1, borderColor: '#35A979', backgroundColor: 'rgba(53,169,121,0.04)', elevation: 4 } : undefined,
         )}""",
         "input remote focus treatment",
     )
@@ -457,7 +457,7 @@ def patch_slider_focus() -> None:
         source = replace_once(
             source,
             "const styles = createStyle({\n  slider:",
-            "const styles = createStyle({\n  tvFocused: { borderWidth: 2, borderColor: '#35A979', borderRadius: 10, backgroundColor: 'rgba(53,169,121,0.12)', elevation: 5 },\n  slider:",
+            "const styles = createStyle({\n  tvFocused: { borderWidth: 1, borderColor: '#35A979', borderRadius: 10, backgroundColor: 'rgba(53,169,121,0.04)', elevation: 5 },\n  slider:",
             f"slider focus frame: {relative_path}",
         )
         path.write_text(source, encoding="utf-8")
@@ -482,7 +482,7 @@ def patch_navigation(relative_path: str) -> None:
         focusable
         onFocus={() => setTvFocused(true)}
         onBlur={() => setTvFocused(false)}
-        style={[styles.menuItem, tvFocused ? { borderWidth: 2, borderColor: theme['c-primary-font-active'], borderRadius: 10, backgroundColor: 'rgba(53,169,121,0.12)', shadowColor: '#35A979', shadowOpacity: 0, shadowRadius: 9, shadowOffset: { width: 0, height: 2 }, elevation: 5 } : undefined]}
+        style={[styles.menuItem, tvFocused ? { borderWidth: 1, borderColor: theme['c-primary-font-active'], borderRadius: 10, backgroundColor: 'rgba(53,169,121,0.04)', shadowColor: '#35A979', shadowOpacity: 0, shadowRadius: 9, shadowOffset: { width: 0, height: 2 }, elevation: 5 } : undefined]}
         onPress={() => { onPress(id) }}
       >"""
     if old_open in source:
@@ -507,7 +507,7 @@ def patch_my_lists() -> None:
     source = replace_once(source, "  const theme = useTheme()\n  const moreButtonRef", "  const theme = useTheme()\n  const [nameFocused, setNameFocused] = useState(false)\n  const [moreFocused, setMoreFocused] = useState(false)\n  const moreButtonRef", "playlist focus state")
     source = replace_once(source, '<TouchableOpacity style={styles.listName} onPress={handlePress}>', '<TouchableOpacity focusable onFocus={() => setNameFocused(true)} onBlur={() => setNameFocused(false)} style={[styles.listName, nameFocused ? styles.tvFocused : undefined]} onPress={handlePress}>', "playlist name focus")
     source = replace_once(source, '<TouchableOpacity onPress={handleShowMenu} ref={moreButtonRef} style={styles.listMoreBtn}>', '<TouchableOpacity focusable onFocus={() => setMoreFocused(true)} onBlur={() => setMoreFocused(false)} onPress={handleShowMenu} ref={moreButtonRef} style={[styles.listMoreBtn, moreFocused ? styles.tvFocused : undefined]}>', "playlist menu focus")
-    source = replace_once(source, "const styles = createStyle({\n  container:", "const styles = createStyle({\n  tvFocused: { borderWidth: 2, borderColor: '#35A979', borderRadius: 6 },\n  container:", "playlist focus style")
+    source = replace_once(source, "const styles = createStyle({\n  container:", "const styles = createStyle({\n  tvFocused: { borderWidth: 1, borderColor: '#35A979', borderRadius: 6 },\n  container:", "playlist focus style")
     source = replace_once(source, "    width: 36,", "    width: 52,", "playlist menu target")
     path.write_text(source, encoding="utf-8")
 
@@ -517,7 +517,7 @@ def patch_my_lists() -> None:
     source = replace_once(source, "  const theme = useTheme()\n\n  const isSelected", "  const theme = useTheme()\n  const [itemFocused, setItemFocused] = useState(false)\n  const [moreFocused, setMoreFocused] = useState(false)\n\n  const isSelected", "song row focus state")
     source = replace_once(source, '<TouchableOpacity style={styles.listItemLeft} onPress=', '<TouchableOpacity focusable onFocus={() => setItemFocused(true)} onBlur={() => setItemFocused(false)} style={[styles.listItemLeft, itemFocused ? styles.tvFocused : undefined]} onPress=', "song row focus")
     source = replace_once(source, '<TouchableOpacity onPress={handleShowMenu} ref={moreButtonRef} style={styles.moreButton}>', '<TouchableOpacity focusable onFocus={() => setMoreFocused(true)} onBlur={() => setMoreFocused(false)} onPress={handleShowMenu} ref={moreButtonRef} style={[styles.moreButton, moreFocused ? styles.tvFocused : undefined]}>', "song menu focus")
-    source = replace_once(source, "const styles = createStyle({\n  listItem:", "const styles = createStyle({\n  tvFocused: { borderWidth: 2, borderColor: '#35A979', borderRadius: 6 },\n  listItem:", "song row focus style")
+    source = replace_once(source, "const styles = createStyle({\n  listItem:", "const styles = createStyle({\n  tvFocused: { borderWidth: 1, borderColor: '#35A979', borderRadius: 6 },\n  listItem:", "song row focus style")
     source = replace_once(source, "    height: '80%',\n    paddingLeft: 16,\n    paddingRight: 16,", "    height: '100%',\n    minWidth: 52,\n    paddingLeft: 12,\n    paddingRight: 12,", "song menu target")
     path.write_text(source, encoding="utf-8")
 
@@ -718,9 +718,9 @@ const styles = createStyle({
     backgroundColor: 'transparent',
   },
   focusedItem: {
-    borderWidth: 2,
+    borderWidth: 1,
     borderColor: 'transparent',
-    backgroundColor: 'rgba(53,169,121,0.12)',
+    backgroundColor: 'rgba(53,169,121,0.04)',
     shadowColor: '#35A979',
     shadowOpacity: 0.28,
     shadowRadius: 6,
@@ -754,7 +754,7 @@ def patch_full_settings_focus() -> None:
     source = replace_once(
         source,
         "const styles = createStyle({\n  container:",
-        "const styles = createStyle({\n  tvFocused: { borderWidth: 2, borderColor: '#35A979', borderRadius: 9, backgroundColor: 'rgba(53,169,121,0.12)', elevation: 4 },\n  container:",
+        "const styles = createStyle({\n  tvFocused: { borderWidth: 1, borderColor: '#35A979', borderRadius: 9, backgroundColor: 'rgba(53,169,121,0.04)', elevation: 4 },\n  container:",
         "vertical settings navigation focus appearance",
     )
     path.write_text(source, encoding="utf-8")
@@ -777,7 +777,7 @@ def patch_full_settings_focus() -> None:
     source = replace_once(
         source,
         "const styles = createStyle({\n  currentList:",
-        "const styles = createStyle({\n  tvFocused: { borderWidth: 2, borderColor: '#35A979', borderRadius: 8, backgroundColor: 'rgba(53,169,121,0.12)', elevation: 4 },\n  currentList:",
+        "const styles = createStyle({\n  tvFocused: { borderWidth: 1, borderColor: '#35A979', borderRadius: 8, backgroundColor: 'rgba(53,169,121,0.04)', elevation: 4 },\n  currentList:",
         "vertical settings header focus appearance",
     )
     path.write_text(source, encoding="utf-8")
@@ -807,7 +807,7 @@ def patch_full_settings_focus() -> None:
     source = replace_once(
         source,
         "const styles = createStyle({\n  content:",
-        "const styles = createStyle({\n  tvFocused: { borderWidth: 2, borderColor: '#35A979', borderRadius: 8, backgroundColor: 'rgba(53,169,121,0.12)', elevation: 4 },\n  content:",
+        "const styles = createStyle({\n  tvFocused: { borderWidth: 1, borderColor: '#35A979', borderRadius: 8, backgroundColor: 'rgba(53,169,121,0.04)', elevation: 4 },\n  content:",
         "checkbox label focus appearance",
     )
     path.write_text(source, encoding="utf-8")
@@ -826,7 +826,7 @@ def patch_full_settings_focus() -> None:
     source = replace_once(
         source,
         "  closeBtn: {",
-        "  closeBtnFocused: { borderWidth: 2, borderColor: '#35A979', borderRadius: 7, backgroundColor: 'rgba(53,169,121,0.14)', elevation: 5 },\n  closeBtn: {",
+        "  closeBtnFocused: { borderWidth: 1, borderColor: '#35A979', borderRadius: 7, backgroundColor: 'rgba(53,169,121,0.04)', elevation: 5 },\n  closeBtn: {",
         "dialog close focus appearance",
     )
     path.write_text(source, encoding="utf-8")
@@ -844,7 +844,7 @@ def patch_full_settings_focus() -> None:
     source = replace_once(
         source,
         "  closeBtn: {",
-        "  closeBtnFocused: { borderWidth: 2, borderColor: '#35A979', borderRadius: 8, backgroundColor: 'rgba(53,169,121,0.14)', elevation: 5 },\n  closeBtn: {",
+        "  closeBtnFocused: { borderWidth: 1, borderColor: '#35A979', borderRadius: 8, backgroundColor: 'rgba(53,169,121,0.04)', elevation: 5 },\n  closeBtn: {",
         "popup close focus appearance",
     )
     path.write_text(source, encoding="utf-8")
@@ -921,7 +921,7 @@ def patch_progress_seek() -> None:
         source = replace_once(
             source,
             "const styles = createStyle({",
-            "const styles = createStyle({\n  tvSeekSlider: { position: 'absolute', left: 0, top: -15, width: '100%', height: 34, zIndex: 3 },\n  tvSeekFocused: { borderWidth: 2, borderColor: '#35A979', borderRadius: 12, backgroundColor: 'rgba(53,169,121,0.10)', elevation: 4 },",
+            "const styles = createStyle({\n  tvSeekSlider: { position: 'absolute', left: 0, top: -15, width: '100%', height: 34, zIndex: 3 },\n  tvSeekFocused: { borderWidth: 1, borderColor: '#35A979', borderRadius: 12, backgroundColor: 'rgba(53,169,121,0.10)', elevation: 4 },",
             f"progress seek focus styling: {relative_path}",
         )
         path.write_text(source, encoding="utf-8")
@@ -944,10 +944,10 @@ const focusSurface = (style: any, color: string) => {
   const base = StyleSheet.flatten(style) || {}
   const radius = base.borderRadius ?? 8
   return {
-    borderWidth: 2,
+    borderWidth: 1,
     borderColor: color,
     borderRadius: radius,
-    backgroundColor: 'rgba(53,169,121,0.12)',
+    backgroundColor: 'rgba(53,169,121,0.04)',
     shadowColor: color,
     shadowOpacity: 0.28,
     shadowRadius: 0,
@@ -1042,7 +1042,7 @@ def patch_menu_focus_visual() -> None:
     source = replace_once(
         source,
         "style={{ ...styles.menuItem, width: menuItemStyle.width, height: menuItemStyle.height, borderRadius: 6 }}\n                      underlayColor={theme['c-primary-background-active']}",
-        "style={[styles.menuItem, { width: menuItemStyle.width, height: menuItemStyle.height, borderRadius: 6 }, focusedAction === menu.action ? { borderWidth: 2, borderColor: '#35A979', backgroundColor: 'rgba(53,169,121,0.14)', elevation: 5 } : undefined]}\n                      onFocus={() => setFocusedAction(menu.action)}\n                      onBlur={() => setFocusedAction(null)}\n                      underlayColor={theme['c-primary-background-active']}",
+        "style={[styles.menuItem, { width: menuItemStyle.width, height: menuItemStyle.height, borderRadius: 6 }, focusedAction === menu.action ? { borderWidth: 1, borderColor: '#35A979', backgroundColor: 'rgba(53,169,121,0.04)', elevation: 5 } : undefined]}\n                      onFocus={() => setFocusedAction(menu.action)}\n                      onBlur={() => setFocusedAction(null)}\n                      underlayColor={theme['c-primary-background-active']}",
         "menu row focus appearance",
     )
     path.write_text(source, encoding="utf-8")
