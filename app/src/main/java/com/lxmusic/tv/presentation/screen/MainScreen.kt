@@ -3298,11 +3298,13 @@ fun SettingsItem(
     }
 }
 
-// 数据模型
+// 資料模型
 data class NavItem(
     val title: String,
     val icon: ImageVector,
     val description: String
+)
+
 /**
  * TV 頂部導覽列：品牌入口與主要分頁水平排列
  */
@@ -3459,7 +3461,7 @@ fun NowPlayingPanel(
             }
             Spacer(modifier = Modifier.height(18.dp))
             Text(song.name, color = if (dark) Color.White else Color(0xFF1C2923), fontSize = 17.sp, fontWeight = FontWeight.Bold, maxLines = 2, overflow = TextOverflow.Ellipsis, textAlign = TextAlign.Center)
-            Text(song.artist, color = if (dark) Color(0xFFB0BDB6) else Color(0xFF68766E), fontSize = 13.sp, maxLines = 1, overflow = TextOverflow.Ellipsis, textAlign = TextAlign.Center, modifier = Modifier.padding(top = 7.dp))
+            Text(song.singer, color = if (dark) Color(0xFFB0BDB6) else Color(0xFF68766E), fontSize = 13.sp, maxLines = 1, overflow = TextOverflow.Ellipsis, textAlign = TextAlign.Center, modifier = Modifier.padding(top = 7.dp))
             Spacer(modifier = Modifier.height(20.dp))
             Box(
                 modifier = Modifier
@@ -3494,5 +3496,3 @@ fun NowPlayingPanel(
         }
     }
 }
-
-)
