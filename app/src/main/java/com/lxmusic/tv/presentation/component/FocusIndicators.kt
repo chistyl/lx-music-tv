@@ -357,4 +357,5 @@ fun Modifier.lxSelectorFocus(
                 )
             }
         }
+        .clip(shape)
 }
