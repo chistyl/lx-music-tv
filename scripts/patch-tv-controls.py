@@ -47,14 +47,14 @@ def patch_player_controls() -> None:
       activeOpacity={0.5}
       onPress={toggleNextPlayMode}
     >
-      <Icon name={modeIcons[togglePlayMethod] || 'list-loop'} color={theme['c-button-font']} size={BTN_SIZE} />
+      <Icon name={modeIcons[togglePlayMethod] || 'list-loop'} color={theme['c-button-font']} size={BTN_SIZE + 6} />
     </TouchableOpacity>
   )
 }
 
 const styles = createStyle({""", "insert playback mode control")
     source = replace_once(source, "      <PlayNextBtn />\n    </>", "      <PlayNextBtn />\n      <PlayModeBtn />\n    </>", "render playback mode control")
-    source = replace_once(source, "    width: 46,\n    height: 46,", "    width: 60,\n    height: 60,", "player control target")
+    source = replace_once(source, "    width: 46,\n    height: 46,", "    width: 46,\n    height: 46,", "player control target")
     source = replace_once(source, "const styles = createStyle({\n  cotrolBtn: {", "const styles = createStyle({\n  focusedControl: { borderWidth: 2, borderColor: '#FFFFFF', borderRadius: 30 },\n  cotrolBtn: {", "player focus style")
     path.write_text(source, encoding="utf-8")
 
@@ -375,7 +375,7 @@ const MenuItem = ({ id, icon, onPress }: {
       onPress={() => onPress(id)}
       style={[styles.menuItem, active ? styles.activeItem : undefined, focused ? styles.focusedItem : undefined]}
     >
-      <Icon name={icon} size={20} color={active || focused ? '#16866A' : theme['c-font-label']} />
+      <Icon name={icon} size={20} color={active || focused ? theme['c-primary-font-active'] : theme['c-font-label']} />
       <Text size={14} color={active || focused ? '#16866A' : theme['c-font-label']}>{t(id)}</Text>
     </TouchableOpacity>
   )
@@ -397,8 +397,8 @@ export default memo(() => {
       backgroundColor: theme['c-content-background'],
     }]}>
       <View style={styles.logo}>
-        <Icon name="logo" color="#16866A" size={25} />
-        <Text size={18} color="#16866A" style={styles.logoText}>Music</Text>
+        <Icon name="logo" color={theme['c-primary-font-active']} size={25} />
+        <Text size={18} color={theme['c-primary-font-active']} style={styles.logoText}>Music</Text>
       </View>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.menuList}>
         {NAV_MENUS.map(menu => <MenuItem key={menu.id} id={menu.id} icon={menu.icon} onPress={handlePress} />)}
@@ -451,7 +451,7 @@ const styles = createStyle({
   },
   focusedItem: {
     borderWidth: 2,
-    borderColor: '#16866A',
+    borderColor: 'transparent',
   },
 })
 """, encoding="utf-8")
