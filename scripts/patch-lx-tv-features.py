@@ -450,3 +450,17 @@ if needle not in s:
 s = s.replace(needle, needle + "  if (isHome) return null\n", 1)
 p.write_text(s)
 print("Applied: suppress all home-player status/lyric fallback text")
+
+
+# Center the song-title field only in the left home player.
+p = "src/components/player/PlayerBar/components/Title.tsx"
+s = (ROOT / p).read_text()
+old_title = """      <Text color={theme['c-font-label']} numberOfLines={1}>{title}</Text>"""
+new_title = """      <Text color={theme['c-font-label']} numberOfLines={1} style={{ width: '100%', textAlign: isHome ? 'center' : 'left' }}>{title}</Text>"""
+if old_title not in s:
+    if new_title not in s:
+        raise SystemExit("Expected PlayerBar title text not found; refusing to skip home title alignment")
+else:
+    s = s.replace(old_title, new_title, 1)
+    (ROOT / p).write_text(s)
+    print("Applied: center song title only in the left home player")
