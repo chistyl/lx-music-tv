@@ -436,7 +436,9 @@ private fun DeleteCacheConfirmDialog(
         },
         confirmButton = {
             TextButton(
-                modifier = Modifier.focusRequester(deleteFocusRequester),
+                modifier = Modifier
+                    .focusRequester(deleteFocusRequester)
+                    .lxSelectorFocus(shape = RoundedCornerShape(8.dp)),
                 onClick = onConfirm
             ) {
                 Text(
@@ -448,7 +450,10 @@ private fun DeleteCacheConfirmDialog(
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) {
+            TextButton(
+                onClick = onDismiss,
+                modifier = Modifier.lxSelectorFocus(shape = RoundedCornerShape(8.dp))
+            ) {
                 Text(
                     text = "取消",
                     color = LXTextPrimary,
