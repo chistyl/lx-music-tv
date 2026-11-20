@@ -904,18 +904,18 @@ private fun ControlCircleButton(
         contentAlignment = Alignment.Center
     ) {
         if (isFocused) {
-            // 聚焦态：半透明黑色实心圆 + 最外层 15 像素黑色半透明圆环 FocusBorder（Canvas 按像素绘制，默认抗锯齿）
+            // 聚焦态：主题色半透明填充 + 主题色柔光焦点环（Canvas 按像素绘制，默认抗锯齿）
             Canvas(modifier = Modifier.matchParentSize()) {
                 // 注意：this.size 是 Canvas 的 DrawScope.size（几何 Size），
                 // 不能写成 size（会被函数的 size: Dp 参数遮蔽，导致 minDimension 解析失败）
                 val r = this.size.minDimension / 2f
                 val ring = 15f
                 val half = ring / 2f
-                // 半透明黑色实心圆：半径扩到整圆 r，使中间填充与外环(FocusBorder)边缘贴合，
+                // 主题色半透明实心圆：半径扩到整圆 r，使中间填充与外环(FocusBorder)边缘贴合，
                 // 消除中间色与边框之间的空带（点：圆形按钮边框与中间色的小间隔）
                 drawCircle(color = LXFocusFill, radius = r)
                 // 外环：居中于 r - half，strokes 宽度 15px → 跨度 [r-15, r]，完整落在 Box 内。
-                // 颜色统一为黑色半透明 FocusBorder（仿播放页播放列表暗色面板，与全站焦点边框一致）
+                // 颜色统一跟随目前选定的主题色 FocusBorder
                 drawCircle(
                     color = FocusBorder.copy(alpha = 0.12f),
                     radius = r - half,
