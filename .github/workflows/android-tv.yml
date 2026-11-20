@@ -9,6 +9,7 @@ on:
       - fix/lx-tv-player-spacing-theme-run130
       - fix/lx-tv-polish-run133
       - fix/lx-tv-default-language-source-name-run135
+      - fix/lx-tv-remove-sync-settings-run136
   workflow_dispatch:
 
 permissions:
@@ -66,6 +67,7 @@ jobs:
           python3 scripts/patch-tv-controls.py
           python3 scripts/patch-lx-tv-polish.py
           python3 scripts/patch-lx-tv-defaults.py
+          python3 scripts/patch-lx-tv-remove-sync-settings.py
           grep -n "LEANBACK_LAUNCHER\\|android.software.leanback\\|screenOrientation" upstream/lx-music-mobile-auto-source/android/app/src/main/AndroidManifest.xml
 
       - name: Generate Android JS bundle
