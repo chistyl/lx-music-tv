@@ -30,13 +30,7 @@ export const toTraditionalText = (value: ReactNode): ReactNode => Children.map(v
 """, encoding="utf-8")
 print("Applied: shared Simplified-to-Traditional conversion helpers")
 
-# 1. Reduce only the top navigation container height; keep logo, text and icon sizes unchanged.
-edit(
-    "src/screens/Home/Horizontal/Aside.tsx",
-    "    height: 76,",
-    "    height: 66,",
-    "reduce top navigation height from 76 to 66 without scaling its contents",
-)
+# Top navigation sizing is defined by patch-tv-controls.py; do not re-patch Aside.tsx here.
 
 # 2. Convert TextInput placeholders supplied through the shared input component.
 edit(
