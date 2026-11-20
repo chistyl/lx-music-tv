@@ -388,7 +388,7 @@ private fun LeftPlayerPanel(
 ) {
     Column(
         modifier = modifier
-            .background(LXSurfaceSidebar)
+            .background(Color(0xFF141414))
             .padding(horizontal = 20.dp, vertical = 18.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
@@ -502,13 +502,13 @@ fun NavigationSidebar(
             .focusGroup()
             // 上报侧栏是否持有焦点（子节点聚焦时祖先 onFocusChanged 也会报告 hasFocus=true）
             .onFocusChanged { focusState -> onNavBarFocusChanged(focusState.hasFocus) }
-            .background(LXSurfaceSidebar)
+            .background(Color(0xFF141414))
     ) {
-        // 侧栏氛围渐变叠加层（与主区 LXAccentGradientBrush 略不同：基底更白、渐变更轻柔）
+        // 導覽列固定純色底，避免漸層覆蓋指定背景（与主区 LXAccentGradientBrush 略不同：基底更白、渐变更轻柔）
         Box(
             modifier = Modifier
                 .matchParentSize()
-                .background(LXSidebarGradientBrush)
+                .background(Color(0xFF141414))
         )
         Row(
             modifier = Modifier
@@ -780,11 +780,15 @@ fun NavigationItem(
     onEnterContent: () -> Unit = {}
 ) {
     // 选中态：品牌红图标+文字（2.6 窄栏：默认只显示图标，选中时图标底部才显示文字）；未选中深色
-    val contentColor = if (isSelected) LXPrimary else LXTextPrimary
+    val contentColor = if (isSelected) LXOnCardDark else LXTextPrimary
 
     // 聚焦态：背景轻微变深（仿 EchoMusic 左侧菜单：焦点选中才加背景色 + 边框色）
     var isFocused by remember { mutableStateOf(false) }
-    val bgColor = if (isFocused) LXFocusFill else Color.Transparent
+    val bgColor = when {
+        isSelected -> LXPrimary
+        isFocused -> LXFocusFill
+        else -> Color.Transparent
+    }
 
     Row(
         modifier = modifier
