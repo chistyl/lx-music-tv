@@ -819,7 +819,7 @@ def patch_full_settings_focus() -> None:
     source = replace_once(source, "  const modalRef = useRef<ModalType>(null)", "  const modalRef = useRef<ModalType>(null)\n  const [closeFocused, setCloseFocused] = useState(false)", "dialog close focus state")
     source = replace_once(
         source,
-        "return closeBtn\n      ? <TouchableHighlight focusable style={{ ...styles.closeBtn, width: scaleSizeH(HEADER_HEIGHT), borderRadius: 5, borderWidth: 1, borderColor: 'transparent' }}",
+        "return closeBtn\n      ? <TouchableHighlight style={{ ...styles.closeBtn, width: scaleSizeH(HEADER_HEIGHT) }}",
         "return closeBtn\n      ? <TouchableHighlight focusable onFocus={() => setCloseFocused(true)} onBlur={() => setCloseFocused(false)} style={[styles.closeBtn, { width: scaleSizeH(HEADER_HEIGHT) }, closeFocused ? styles.closeBtnFocused : undefined]}",
         "dialog close focus target",
     )
