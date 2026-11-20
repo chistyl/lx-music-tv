@@ -1022,8 +1022,8 @@ def patch_all_touchables_focusable() -> None:
     import re
     for path in (ROOT / "src").rglob("*.tsx"):
         source = path.read_text(encoding="utf-8")
-        updated = re.sub(r"<TouchableOpacity(?![^>]*\bfocusable)(?=[\s>])", "<TouchableOpacity focusable", source)
-        updated = re.sub(r"<TouchableHighlight(?![^>]*\bfocusable)(?=[\s>])", "<TouchableHighlight focusable", updated)
+        updated = re.sub(r"(?<![A-Za-z0-9_$])<TouchableOpacity(?![^>]*\bfocusable)(?=[\s>])", "<TouchableOpacity focusable", source)
+        updated = re.sub(r"(?<![A-Za-z0-9_$])<TouchableHighlight(?![^>]*\bfocusable)(?=[\s>])", "<TouchableHighlight focusable", updated)
         if updated != source:
             path.write_text(updated, encoding="utf-8")
 
