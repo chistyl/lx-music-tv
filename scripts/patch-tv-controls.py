@@ -14,7 +14,7 @@ def replace_once(source: str, old: str, new: str, label: str) -> str:
 def patch_player_controls() -> None:
     path = ROOT / "src/components/player/PlayerBar/components/ControlBtn.tsx"
     source = path.read_text(encoding="utf-8")
-    source = source.replace("import { TouchableOpacity } from 'react-native'", "import { TouchableOpacity } from 'react-native'\nimport { useState } from 'react'\nimport { useSettingValue } from '@/store/setting/hook'\nimport { updateSetting } from '@/core/common'\nimport { MUSIC_TOGGLE_MODE_LIST } from '@/config/constant'", 1)
+    source = source.replace("import { TouchableOpacity } from 'react-native'", "import { TouchableOpacity, View } from 'react-native'\nimport { useState } from 'react'\nimport { useSettingValue } from '@/store/setting/hook'\nimport { updateSetting } from '@/core/common'\nimport { MUSIC_TOGGLE_MODE_LIST } from '@/config/constant'", 1)
     for name in ("PlayPrevBtn", "PlayNextBtn", "TogglePlayBtn"):
         start = source.index(f"const {name} = () => {{")
         end = source.find("\n}\n", start) + 3
@@ -47,7 +47,7 @@ def patch_player_controls() -> None:
       activeOpacity={0.5}
       onPress={toggleNextPlayMode}
     >
-      <Icon name={modeIcons[togglePlayMethod] || 'list-loop'} color={theme['c-button-font']} size={BTN_SIZE} />
+      <View style={[styles.modeIconRing, { borderColor: theme['c-primary-font-active'] }]}>\n        <Icon name={modeIcons[togglePlayMethod] || 'list-loop'} color={theme['c-primary-font-active']} size={28} />\n      </View>
     </TouchableOpacity>
   )
 }
@@ -55,7 +55,7 @@ def patch_player_controls() -> None:
 const styles = createStyle({""", "insert playback mode control")
     source = replace_once(source, "      <PlayNextBtn />\n    </>", "      <PlayNextBtn />\n      <PlayModeBtn />\n    </>", "render playback mode control")
     source = replace_once(source, "    width: 46,\n    height: 46,", "    width: 60,\n    height: 60,", "player control target")
-    source = replace_once(source, "const styles = createStyle({\n  cotrolBtn: {", "const styles = createStyle({\n  focusedControl: { borderWidth: 2, borderColor: '#FFFFFF', borderRadius: 30 },\n  cotrolBtn: {", "player focus style")
+    source = replace_once(source, "const styles = createStyle({\n  cotrolBtn: {", "const styles = createStyle({\n  focusedControl: { borderWidth: 2, borderColor: '#FFFFFF', borderRadius: 30 },\n  modeIconRing: { width: 44, height: 44, borderWidth: 2, borderRadius: 22, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(128, 128, 128, 0.12)' },\n  cotrolBtn: {", "player focus style")
     path.write_text(source, encoding="utf-8")
 
 def patch_player_bar() -> None:
@@ -113,9 +113,12 @@ def patch_player_bar() -> None:
     width: '100%',
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'space-evenly',
+    alignSelf: 'stretch',
+    minWidth: 0,
     flexGrow: 0,
     flexShrink: 0,
+    flexWrap: 'nowrap',
     paddingLeft: 0,
     paddingRight: 0,
     marginTop: 20,
