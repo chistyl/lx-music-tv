@@ -333,8 +333,21 @@ fun Modifier.lxSelectorFocus(
                 val stroke = focusedWidth.toPx()
                 val outline = shape.createOutline(size, layoutDirection, this).withSoftCorners(minOf(16.dp.toPx(), size.minDimension / 2f))
                 val insetOutline = outline.insetBy(stroke / 2f)
+                val selectorPath = outlineToPath(insetOutline)
+                if (isFocused && glow) {
+                    drawPath(
+                        path = selectorPath,
+                        color = borderColor.copy(alpha = 0.10f),
+                        style = Stroke(width = 9.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round)
+                    )
+                    drawPath(
+                        path = selectorPath,
+                        color = borderColor.copy(alpha = 0.18f),
+                        style = Stroke(width = 5.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round)
+                    )
+                }
                 drawPath(
-                    path = outlineToPath(insetOutline),
+                    path = selectorPath,
                     color = borderColor,
                     style = Stroke(
                         width = stroke,
