@@ -892,7 +892,99 @@ def patch_full_settings_focus() -> None:
 
 
 
-def patch_all_touchables_focusable() -> None:
+
+
+def patch_global_touchable_focus() -> None:
+    # Wrap raw React Native touchables so every screen shares one shape-aware focus system.
+    wrapper = ROOT / "src/components/common/TVTouchableOpacity.tsx"
+    wrapper.write_text("""import { forwardRef, useState } from 'react'
+import {
+  TouchableOpacity as NativeTouchableOpacity,
+  TouchableHighlight as NativeTouchableHighlight,
+  type TouchableOpacityProps,
+  type TouchableHighlightProps,
+  StyleSheet,
+} from 'react-native'
+import { useTheme } from '@/store/theme/hook'
+
+const focusSurface = (style: any, color: string) => {
+  const base = StyleSheet.flatten(style) || {}
+  const radius = base.borderRadius ?? (base.width != null && base.width === base.height ? 999 : 8)
+  return {
+    borderWidth: 2,
+    borderColor: color,
+    borderRadius: radius,
+    backgroundColor: 'rgba(53,169,121,0.12)',
+    shadowColor: color,
+    shadowOpacity: 0.28,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 5,
+  }
+}
+
+const TVTouchableOpacity = forwardRef<any, TouchableOpacityProps>(({ style, onFocus, onBlur, focusable = true, ...props }, ref) => {
+  const [focused, setFocused] = useState(false)
+  const theme = useTheme()
+  const color = theme['c-primary-font-active'] || '#35A979'
+  return (
+    <NativeTouchableOpacity
+      {...props}
+      ref={ref}
+      focusable={focusable}
+      onFocus={event => { setFocused(true); onFocus?.(event) }}
+      onBlur={event => { setFocused(false); onBlur?.(event) }}
+      style={[style, focused ? focusSurface(style, color) : undefined]}
+    />
+  )
+})
+
+export const TVTouchableHighlight = forwardRef<any, TouchableHighlightProps>(({ style, onFocus, onBlur, focusable = true, ...props }, ref) => {
+  const [focused, setFocused] = useState(false)
+  const theme = useTheme()
+  const color = theme['c-primary-font-active'] || '#35A979'
+  return (
+    <NativeTouchableHighlight
+      {...props}
+      ref={ref}
+      focusable={focusable}
+      onFocus={event => { setFocused(true); onFocus?.(event) }}
+      onBlur={event => { setFocused(false); onBlur?.(event) }}
+      style={[style, focused ? focusSurface(style, color) : undefined]}
+    />
+  )
+})
+
+export default TVTouchableOpacity
+""", encoding="utf-8")
+
+    import re
+    for path in (ROOT / "src").rglob("*.tsx"):
+        if path == wrapper:
+            continue
+        source = path.read_text(encoding="utf-8")
+        changed = False
+        def rewrite_import(match):
+            nonlocal changed
+            names = match.group(1)
+            additions = []
+            if re.search(r"\\bTouchableOpacity\\b", names):
+                names = re.sub(r"\\bTouchableOpacity\\b(?!\\s+as)", "TouchableOpacity as NativeTouchableOpacity", names)
+                additions.append("import TouchableOpacity from '@/components/common/TVTouchableOpacity'")
+            if re.search(r"\\bTouchableHighlight\\b", names):
+                names = re.sub(r"\\bTouchableHighlight\\b(?!\\s+as)", "TouchableHighlight as NativeTouchableHighlight", names)
+                additions.append("import { TVTouchableHighlight as TouchableHighlight } from '@/components/common/TVTouchableOpacity'")
+            if additions:
+                changed = True
+                return "import {" + names + "} from 'react-native'\\n" + "\\n".join(additions)
+            return match.group(0)
+        updated = re.sub(r"import\\s*\\{([^}]+)\\}\\s*from\\s*'react-native'", rewrite_import, source, flags=re.S)
+        if changed:
+            path.write_text(updated, encoding="utf-8")
+
+
+def patch_all_touchables_focusable()
+patch_global_touchable_focus() -> None:
     # Last pass: every remaining touch target in the TV app becomes D-pad reachable.
     import re
     for path in (ROOT / "src").rglob("*.tsx"):
