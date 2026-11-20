@@ -178,7 +178,7 @@ data class LXThemeColors(
             secondary = cfg.secondary,
             primaryContainer = cfg.primaryContainerDark,
             onPrimaryContainer = cfg.onPrimaryContainerDark,
-            surfaceSidebar = Color(0xFF1A1A22),
+            surfaceSidebar = Color(0xFF141414),
             surfaceMain = Color(0xFF14141A),
             surfaceCard = Color(0xFF20202A),
             surfaceDialog = Color(0xFF20202A),
