@@ -235,6 +235,9 @@ fun SourceManagementScreen(
                 onConfirm = {
                     onDeleteSource(source.id)
                     showDeleteDialog = null
+                    // 刪除後原操作項已不存在，將焦點安全地移回頁面返回按鈕。
+                    pendingSourceFocusRestore = backFocusRequester
+                    deleteDialogReturnRequester = null
                 },
                 onDismiss = {
                     showDeleteDialog = null
