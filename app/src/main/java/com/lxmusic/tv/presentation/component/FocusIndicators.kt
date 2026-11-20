@@ -188,10 +188,8 @@ fun Modifier.lxFocusBorder(
     }
 
     return this
-        // onFocusChanged 必须先于被观察的 focusable（调用方的 clickable 提供焦点节点）
+        // 先觀察焦點；光暈在外層繪製，避免被元件自身的圓角裁切
         .onFocusChanged { isFocused = it.isFocused }
-        // ★ 修复1：裁剪内容到圆角，杜绝背景直角从边框四角外穿出
-        .clip(shape)
         .drawWithContent {
             drawContent()
             if (borderWidth > 0.dp) {
@@ -219,6 +217,8 @@ fun Modifier.lxFocusBorder(
                 )
             }
         }
+        // 只裁切內部內容；外層焦點光暈保留完整輪廓
+        .clip(shape)
 }
 
 /**
@@ -276,6 +276,7 @@ fun Modifier.lxCircleButtonFocus(
                 )
             }
         }
+        .clip(shape)
 }
 
 /**
@@ -325,8 +326,7 @@ fun Modifier.lxSelectorFocus(
 
     return this
         .onFocusChanged { isFocused = it.isFocused }
-        // ★ 同样：裁剪 + 向内收缩
-        .clip(shape)
+        // 光暈繪製層放在 clip 外側，避免外框被裁掉
         .drawWithContent {
             drawContent()
             if (focusedWidth > 0.dp) {
