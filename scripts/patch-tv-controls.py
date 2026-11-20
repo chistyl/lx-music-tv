@@ -860,29 +860,6 @@ def patch_full_settings_focus() -> None:
     )
     path.write_text(source, encoding="utf-8")
 
-    # Native sliders need explicit TV focusability and a focused container treatment.
-    path = ROOT / "src/screens/Home/Views/Setting/components/Slider.tsx"
-    source = path.read_text(encoding="utf-8")
-    source = source.replace("import { memo } from 'react'", "import { memo, useState } from 'react'", 1)
-    source = replace_once(source, "  const theme = useTheme()", "  const theme = useTheme()\n  const [tvFocused, setTvFocused] = useState(false)", "settings slider focus state")
-    source = replace_once(
-        source,
-        "      value={value}\n      style={styles.slider}",
-        "      value={value}\n      focusable\n      onFocus={() => setTvFocused(true)}\n      onBlur={() => setTvFocused(false)}\n      style={[styles.slider, tvFocused ? styles.tvFocused : undefined]}",
-        "settings slider focus target",
-    )
-    source = replace_once(
-        source,
-        "const styles = createStyle({\n  slider:",
-        "const styles = createStyle({\n  tvFocused: { borderWidth: 2, borderColor: '#35A979', borderRadius: 10, backgroundColor: 'rgba(53,169,121,0.10)', elevation: 4 },\n  slider:",
-        "settings slider focus appearance",
-    )
-    path.write_text(source, encoding="utf-8")
-
-
-
-
-
 def patch_global_touchable_focus() -> None:
     # Wrap raw React Native touchables so every screen shares one shape-aware focus system.
     wrapper = ROOT / "src/components/common/TVTouchableOpacity.tsx"
