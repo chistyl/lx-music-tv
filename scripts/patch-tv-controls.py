@@ -224,6 +224,97 @@ def patch_my_lists() -> None:
 
 
 
+
+def patch_songlist_three_pane() -> None:
+    # Keep the native LX Music tag and song data components, but pin the tag
+    # categories beside the song list instead of hiding them in a swipe drawer.
+    root = ROOT / "src/screens/Home/Views/SongList"
+    index = root / "index.tsx"
+    index.write_text("""import { View } from 'react-native'
+import Content from './Content'
+import TagList from './TagList'
+import { createStyle } from '@/utils/tools'
+
+export default () => (
+  <View style={styles.container}>
+    <View style={styles.categories}>
+      <TagList />
+    </View>
+    <View style={styles.songs}>
+      <Content />
+    </View>
+  </View>
+)
+
+const styles = createStyle({
+  container: {
+    flex: 1,
+    flexDirection: 'row',
+    overflow: 'hidden',
+  },
+  categories: {
+    width: '26%',
+    minWidth: 190,
+    maxWidth: 330,
+    flexGrow: 0,
+    flexShrink: 0,
+    borderRightWidth: 1,
+    borderRightColor: '#E6ECE9',
+    overflow: 'hidden',
+  },
+  songs: {
+    flex: 1,
+    minWidth: 0,
+    overflow: 'hidden',
+  },
+})
+""", encoding="utf-8")
+
+    tag_index = root / "TagList/index.tsx"
+    source = tag_index.read_text(encoding="utf-8")
+    source = source.replace("const [visible, setVisible] = useState(false)", "const [visible, setVisible] = useState(true)", 1)
+    source = source.replace("    global.app_event.hideSonglistTagList()\n    requestAnimationFrame(() => {", "    requestAnimationFrame(() => {", 1)
+    if "global.app_event.hideSonglistTagList()" in source:
+        source = source.replace("    global.app_event.hideSonglistTagList()\n", "", 1)
+    tag_index.write_text(source, encoding="utf-8")
+
+    tag_list = root / "TagList/List.tsx"
+    source = tag_list.read_text(encoding="utf-8")
+    source = source.replace(
+        "<ScrollView style={{ flexShrink: 1, flexGrow: 0 }} keyboardShouldPersistTaps={'always'}>",
+        "<ScrollView style={{ flex: 1, width: '100%' }} keyboardShouldPersistTaps={'always'}>",
+        1,
+    )
+    tag_list.write_text(source, encoding="utf-8")
+
+    tag_group = root / "TagList/TagGroup.tsx"
+    source = tag_group.read_text(encoding="utf-8")
+    source = source.replace(
+        "  tagTypeList: {\n    flexDirection: 'row',\n    flexWrap: 'wrap',\n  },",
+        "  tagTypeList: {\n    flexDirection: 'column',\n    width: '100%',\n  },",
+        1,
+    )
+    source = source.replace(
+        "    marginRight: 10,\n    marginBottom: 10,",
+        "    width: '92%',\n    minHeight: 40,\n    justifyContent: 'center',\n    marginBottom: 8,",
+        1,
+    )
+    source = source.replace(
+        "    paddingTop: 8,\n    paddingBottom: 8,",
+        "    paddingTop: 10,\n    paddingBottom: 10,",
+        1,
+    )
+    tag_group.write_text(source, encoding="utf-8")
+
+    content = root / "Content.tsx"
+    source = content.read_text(encoding="utf-8")
+    source = source.replace(
+        "      listRef.current?.loadList(info.source, info.sortId, info.tagId)",
+        "      listRef.current?.loadList(info.source, info.sortId, info.tagId)\n      global.app_event.showSonglistTagList(info.source, info.tagId)",
+        1,
+    )
+    content.write_text(source, encoding="utf-8")
+
 def patch_home_layout() -> None:
     # Keep the original navigation and player components and move only their placement.
     home = ROOT / "src/screens/Home/Horizontal/index.tsx"
@@ -273,7 +364,7 @@ export default () => {
     overflow: 'hidden',
   },
   player: {
-    width: '30%',
+    width: '26%',
     flexGrow: 0,
     flexShrink: 0,
     overflow: 'hidden',
@@ -305,14 +396,13 @@ export default () => (
     source = replace_once(source, old_layout, new_layout, "home horizontal layout")
     home.write_text(source, encoding="utf-8")
 
-    # Open the home screen on the leaderboard so the center category list and
-    # right-side song list are visible beside the left player on first launch.
+    # Open the home screen on Song Lists by default.
     common_state = ROOT / "src/store/common/state.ts"
     state_source = common_state.read_text(encoding="utf-8")
     state_source = replace_once(
         state_source,
-        "  navActiveId: 'nav_search',\\n  lastNavActiveId: 'nav_search',",
-        "  navActiveId: 'nav_songlist',\\n  lastNavActiveId: 'nav_songlist',",
+        "  navActiveId: 'nav_search',\n  lastNavActiveId: 'nav_search',",
+        "  navActiveId: 'nav_songlist',\n  lastNavActiveId: 'nav_songlist',",
         "TV home default leaderboard",
     )
     common_state.write_text(state_source, encoding="utf-8")
@@ -434,6 +524,7 @@ const styles = createStyle({
 """, encoding="utf-8")
 
 patch_home_layout()
+patch_songlist_three_pane()
 patch_button()
 patch_player_controls()
 patch_player_bar()
