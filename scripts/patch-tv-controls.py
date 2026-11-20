@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Apply Android TV remote focus and touch-target adaptations to LX Music RN UI."""
+"""Apply Android TV layout, refined player spacing, theme colors, and remote focus adaptations."""
 from pathlib import Path
 
 ROOT = Path("upstream/lx-music-mobile-auto-source")
