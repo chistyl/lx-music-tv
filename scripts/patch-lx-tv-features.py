@@ -199,14 +199,14 @@ print("Applied: remove quick-add custom source panel")
 # These replacements are intentionally idempotent because upstream variants may already omit an entry.
 p = "src/screens/Home/Views/Setting/Main.tsx"
 s = (ROOT / p).read_text()
-s = s.replace("import Other from './settings/Other'\\n", "")
-s = s.replace("  'other',\\n", "")
-s = s.replace("      case 'other': return <Other />\\n", "")
+s = s.replace("import Other from './settings/Other'\n", "")
+s = s.replace("  'other',\n", "")
+s = s.replace("      case 'other': return <Other />\n", "")
 (ROOT / p).write_text(s)
 
 p = "src/screens/Home/Views/Setting/Vertical/Main.tsx"
 s = (ROOT / p).read_text()
-s = s.replace("import Other from '../settings/Other'\\n", "")
-s = s.replace("    case 'other': return <Other />\\n", "")
+s = s.replace("import Other from '../settings/Other'\n", "")
+s = s.replace("    case 'other': return <Other />\n", "")
 (ROOT / p).write_text(s)
 print("Applied: remove Other settings category")
