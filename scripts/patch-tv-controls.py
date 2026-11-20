@@ -312,7 +312,7 @@ export default () => (
     state_source = replace_once(
         state_source,
         "  navActiveId: 'nav_search',\\n  lastNavActiveId: 'nav_search',",
-        "  navActiveId: 'nav_top',\\n  lastNavActiveId: 'nav_top',",
+        "  navActiveId: 'nav_songlist',\\n  lastNavActiveId: 'nav_songlist',",
         "TV home default leaderboard",
     )
     common_state.write_text(state_source, encoding="utf-8")
