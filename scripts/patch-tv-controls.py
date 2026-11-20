@@ -425,7 +425,7 @@ const MenuItem = ({ id, icon, onPress }: {
       style={[styles.menuItem, active ? styles.activeItem : undefined, focused ? [styles.focusedItem, { borderColor: theme['c-primary-font-active'] }] : undefined]}
     >
       <Icon name={icon} size={20} color={active || focused ? theme['c-primary-font-active'] : theme['c-font-label']} />
-      <Text size={14} color={active || focused ? theme['c-primary-font-active'] : theme['c-font-label']}>{t(id)}</Text>
+      <Text size={14} color={active || focused ? theme['c-primary-font-active'] : theme['c-font-label']}>{id === 'nav_home' ? '首頁' : t(id)}</Text>
     </TouchableOpacity>
   )
 }
