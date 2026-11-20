@@ -113,6 +113,73 @@ def patch_shared_button_focus() -> None:
     path.write_text(source, encoding="utf-8")
 
 
+
+def patch_legacy_focus_styles() -> None:
+    # Replace hard-edged white focus borders introduced by the TV adaptation.
+    control = ROOT / "src/components/player/PlayerBar/components/ControlBtn.tsx"
+    source = control.read_text(encoding="utf-8")
+    source = replace_once(source,
+        "focusedControl: { borderWidth: 2, borderColor: '#FFFFFF', borderRadius: 30 },",
+        """focusedControl: {
+    borderWidth: 1.5,
+    borderColor: '#78AEFF',
+    borderRadius: 30,
+    shadowColor: '#78AEFF',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.38,
+    shadowRadius: 6,
+    elevation: 3,
+  },""",
+        "circular player control soft focus")
+    control.write_text(source, encoding="utf-8")
+
+    for relative_path, label in (
+        ("src/screens/Home/Views/Mylist/ListItem.tsx", "playlist"),
+        ("src/screens/Home/Views/Mylist/MusicList/ListItem.tsx", "song row"),
+    ):
+        target = ROOT / relative_path
+        if not target.exists():
+            continue
+        source = target.read_text(encoding="utf-8")
+        old = "tvFocused: { borderWidth: 2, borderColor: '#FFFFFF', borderRadius: 6 },"
+        new = """tvFocused: {
+    borderWidth: 1.5,
+    borderColor: '#78AEFF',
+    borderRadius: 6,
+    shadowColor: '#78AEFF',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.34,
+    shadowRadius: 5,
+    elevation: 2,
+  },"""
+        if old in source:
+            source = source.replace(old, new, 1)
+        elif new not in source:
+            raise SystemExit(f"Could not locate {label} focus style")
+        target.write_text(source, encoding="utf-8")
+
+    aside = ROOT / "src/screens/Home/Horizontal/Aside.tsx"
+    source = aside.read_text(encoding="utf-8")
+    source = replace_once(source,
+        """  focusedItem: {
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },""",
+        """  focusedItem: {
+    borderWidth: 1.5,
+    borderColor: 'transparent',
+    shadowColor: '#78AEFF',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.34,
+    shadowRadius: 5,
+    elevation: 2,
+  },""",
+        "navigation capsule soft focus")
+    aside.write_text(source, encoding="utf-8")
+
+
+
 patch_theme()
 patch_shared_button_focus()
-print("Applied black/navy theme tokens and shape-preserving soft focus to shared buttons.")
+patch_legacy_focus_styles()
+print("Applied black/navy theme tokens and shape-preserving soft focus across TV controls and lists.")
