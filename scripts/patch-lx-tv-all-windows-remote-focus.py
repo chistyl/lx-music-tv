@@ -93,7 +93,7 @@ def main() -> None:
     wrapper_path = ROOT / "src/components/common/TVFocusable.tsx"
     wrapper_path.write_text(WRAPPER, encoding="utf-8")
     totals = {"TouchableOpacity": 0, "TouchableHighlight": 0, "Pressable": 0}
-    import_re = re.compile(r"""import\s*\{([^}]+)\}\s*from\s*[\'"]react-native[\'"]""", re.S)
+    import_re = re.compile(r"""import\s*\{([^}]+)\}\s*from\s*['"]react-native['"]""", re.S)
     tag_patterns = {
         "TouchableOpacity": (re.compile(r"(?<![A-Za-z0-9_$])<TouchableOpacity(?=[\s/>])"), "<TVTouchableOpacity"),
         "TouchableHighlight": (re.compile(r"(?<![A-Za-z0-9_$])<TouchableHighlight(?=[\s/>])"), "<TVTouchableHighlight"),
