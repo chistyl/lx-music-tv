@@ -18,6 +18,9 @@ on:
       - fix/lx-tv-nav-compact-selected-icons-run151
       - fix/lx-tv-nav-tile-compact-run153
       - feature/lx-tv-reference-layout-run154
+  pull_request:
+    branches:
+      - fix/lx-tv-nav-tile-compact-run153
   workflow_dispatch:
 
 permissions:
