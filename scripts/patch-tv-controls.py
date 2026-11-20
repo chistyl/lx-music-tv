@@ -199,13 +199,15 @@ def patch_button() -> None:
         "import { useMemo, useRef, useImperativeHandle, forwardRef, useState } from 'react'",
         1,
     )
-    source = source.replace(
+    source = replace_once(
+        source,
         "({ ripple: propsRipple = {}, disabled, children, style, ...props }, ref) => {",
         "({ ripple: propsRipple = {}, disabled, children, style, onFocus, onBlur, ...props }, ref) => {",
-        1,
+        "shared button focus callbacks",
     )
     if "const [tvFocused, setTvFocused] = useState(false)" not in source:
-        source = source.replace(
+        source = replace_once(
+            source,
             "  const theme = useTheme()",
             """  const theme = useTheme()
   const [tvFocused, setTvFocused] = useState(false)
@@ -217,26 +219,121 @@ def patch_button() -> None:
     setTvFocused(false)
     onBlur?.(event)
   }""",
-            1,
+            "shared button focus state",
         )
-    source = source.replace(
-        """      disabled={disabled}
+    source = replace_once(
+        source,
+        """      android_ripple={ripple}
+      disabled={disabled}
       style={StyleSheet.compose({ opacity: disabled ? 0.3 : 1 }, style)}
-      {...props}""",
-        """      disabled={disabled}
+      {...props}
+      ref={btnRef}""",
+        """      android_ripple={ripple}
+      disabled={disabled}
       focusable
       onFocus={handleFocus}
       onBlur={handleBlur}
       style={StyleSheet.compose(
         StyleSheet.compose({ opacity: disabled ? 0.3 : 1 }, style),
-        tvFocused ? { borderWidth: 2, borderColor: theme['c-primary-font-active'], borderRadius: 6 } : undefined,
+        tvFocused ? {
+          borderWidth: 2,
+          borderColor: '#FFFFFF',
+          backgroundColor: 'rgba(255,255,255,0.12)',
+          shadowColor: '#FFFFFF',
+          shadowOpacity: 0.65,
+          shadowRadius: 7,
+          shadowOffset: { width: 0, height: 0 },
+          elevation: 6,
+        } : undefined,
       )}
-      {...props}""",
+      {...props}
+      ref={btnRef}""",
+        "shared button shape-preserving focus ring",
+    )
+    target.write_text(source, encoding="utf-8")
+
+
+def patch_tv_focus_surfaces() -> None:
+    # Settings category rail: preserve the active marker and add a rounded focus surface.
+    path = ROOT / "src/screens/Home/Views/Setting/Horizontal/NavList.tsx"
+    source = path.read_text(encoding="utf-8")
+    source = source.replace("import { memo, useRef, useState } from 'react'", "import { memo, useRef, useState } from 'react'", 1)
+    source = replace_once(
+        source,
+        "  const theme = useTheme()\n  const t = useI18n()",
+        "  const theme = useTheme()\n  const t = useI18n()\n  const [tvFocused, setTvFocused] = useState(false)",
+        "settings navigation focus state",
+    )
+    source = replace_once(
+        source,
+        '<TouchableOpacity style={styles.listName} onPress={handlePress}>',
+        '<TouchableOpacity focusable onFocus={() => setTvFocused(true)} onBlur={() => setTvFocused(false)} style={[styles.listName, tvFocused ? styles.tvFocused : undefined]} onPress={handlePress}>',
+        "settings navigation focus target",
+    )
+    source = replace_once(
+        source,
+        "const styles = createStyle({\n  container:",
+        "const styles = createStyle({\n  tvFocused: { borderWidth: 2, borderColor: '#FFFFFF', borderRadius: 8, backgroundColor: 'rgba(255,255,255,0.10)', elevation: 5 },\n  container:",
+        "settings navigation focus shape",
+    )
+    path.write_text(source, encoding="utf-8")
+
+    # Search type tabs: focus the whole tab, while keeping the selected underline.
+    path = ROOT / "src/screens/Home/Views/Search/SearchTypeSelector.tsx"
+    source = path.read_text(encoding="utf-8")
+    source = replace_once(
+        source,
+        "  const [type, setType] = useState<SearchType>('music')",
+        "  const [type, setType] = useState<SearchType>('music')\n  const [focusedType, setFocusedType] = useState<SearchType | null>(null)",
+        "search type focus state",
+    )
+    source = replace_once(
+        source,
+        '<TouchableOpacity style={styles.button} onPress={() => { handleTypeChange(t.id) }} key={t.id}>',
+        '<TouchableOpacity focusable onFocus={() => setFocusedType(t.id)} onBlur={() => setFocusedType(null)} style={[styles.button, focusedType === t.id ? styles.tvFocused : undefined]} onPress={() => { handleTypeChange(t.id) }} key={t.id}>',
+        "search type focus target",
+    )
+    source = replace_once(
+        source,
+        "const styles = createStyle({\n  container:",
+        "const styles = createStyle({\n  tvFocused: { borderWidth: 2, borderColor: '#FFFFFF', borderRadius: 9, backgroundColor: 'rgba(255,255,255,0.10)', elevation: 5 },\n  container:",
+        "search type focus shape",
+    )
+    path.write_text(source, encoding="utf-8")
+
+    # Context menu items are independent TV focus targets; preserve the menu's item geometry.
+    path = ROOT / "src/components/common/Menu.tsx"
+    source = path.read_text(encoding="utf-8")
+    source = source.replace(
+        "import { View, Animated, TouchableHighlight } from 'react-native'",
+        "import { View, Animated, TouchableHighlight } from 'react-native'",
         1,
     )
-    if "focusable" not in source or "tvFocused" not in source:
-        raise SystemExit("Failed to patch shared Button.tsx focus handling")
-    target.write_text(source, encoding="utf-8")
+    source = replace_once(
+        source,
+        "  const theme = useTheme()\n  const windowSize = useWindowSize()",
+        "  const theme = useTheme()\n  const windowSize = useWindowSize()",
+        "context menu theme anchor",
+    )
+    source = replace_once(
+        source,
+        """                    <TouchableHighlight
+                      key={menu.action}
+                      style={{ ...styles.menuItem, width: menuItemStyle.width, height: menuItemStyle.height }}
+                      underlayColor={theme['c-primary-background-active']}
+                      onPress={() => { menuPress(menu) }}
+                    >""",
+        """                    <TouchableHighlight
+                      key={menu.action}
+                      focusable
+                      hasTVPreferredFocus={index === 0}
+                      style={{ ...styles.menuItem, width: menuItemStyle.width, height: menuItemStyle.height, borderRadius: 6 }}
+                      underlayColor={theme['c-primary-background-active']}
+                      onPress={() => { menuPress(menu) }}
+                    >""",
+        "context menu remote focus target",
+    )
+    path.write_text(source, encoding="utf-8")
 
 def patch_navigation(relative_path: str) -> None:
     target = ROOT / relative_path
@@ -506,6 +603,8 @@ const styles = createStyle({
 })
 """, encoding="utf-8")
 
+patch_button()
+patch_tv_focus_surfaces()
 patch_home_layout()
 patch_player_controls()
 patch_player_bar()
