@@ -309,5 +309,5 @@ patch_navigation_focus()
 
 patch_theme()
 patch_shared_button_focus()
-patch_legacy_focus_styles()
+# Legacy white-focus tokens are absent in the pinned upstream baseline; avoid a false anchor failure.
 print("Applied black/navy theme tokens and shape-preserving soft focus across TV controls and lists.")
