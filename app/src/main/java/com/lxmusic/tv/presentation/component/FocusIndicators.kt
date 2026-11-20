@@ -194,7 +194,7 @@ fun Modifier.lxFocusBorder(
             drawContent()
             if (borderWidth > 0.dp) {
                 val stroke = borderWidth.toPx()
-                val outline = shape.createOutline(size, layoutDirection, this).withSoftCorners(minOf(16.dp.toPx(), size.minDimension / 2f))
+                val outline = shape.createOutline(size, layoutDirection, this)
                 // ★ 修复2：传【正数】向内收缩 stroke/2，描边外边缘恰好贴合 shape 外边缘
                 val insetOutline = outline.insetBy(stroke / 2f)
                 val focusPath = outlineToPath(insetOutline)
@@ -330,7 +330,7 @@ fun Modifier.lxSelectorFocus(
             drawContent()
             if (focusedWidth > 0.dp) {
                 val stroke = focusedWidth.toPx()
-                val outline = shape.createOutline(size, layoutDirection, this).withSoftCorners(minOf(16.dp.toPx(), size.minDimension / 2f))
+                val outline = shape.createOutline(size, layoutDirection, this)
                 val insetOutline = outline.insetBy(stroke / 2f)
                 val selectorPath = outlineToPath(insetOutline)
                 if (isFocused && glow) {
