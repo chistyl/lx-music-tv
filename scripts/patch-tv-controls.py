@@ -860,6 +860,73 @@ def patch_full_settings_focus() -> None:
     )
     path.write_text(source, encoding="utf-8")
 
+
+
+def patch_progress_seek() -> None:
+    # Replace gesture-only seek overlays with a native focusable slider.
+    # Android TV remotes can then move the playhead with left/right D-pad keys,
+    # while touch dragging remains supported by the native slider.
+    for relative_path, next_marker in (
+        ("src/components/player/Progress.tsx", "\n\nexport const ProgressPlain"),
+        ("src/components/player/ProgressBar.tsx", "\n\nconst Progress ="),
+    ):
+        path = ROOT / relative_path
+        source = path.read_text(encoding="utf-8")
+        source = source.replace("import { View, PanResponder } from 'react-native'", "import { View } from 'react-native'", 1)
+        source = source.replace("import { useDrag } from '@/utils/hooks'\n", "", 1)
+        if "import Slider, { type SliderProps } from '@react-native-community/slider'" not in source:
+            source = source.replace("import { View } from 'react-native'", "import { View } from 'react-native'\nimport Slider from '@react-native-community/slider'", 1)
+        start = source.index("const PreassBar = memo(")
+        end = source.index(next_marker, start)
+        component = """const PreassBar = memo(({ progress, onDragState, setDragProgress, onSetProgress }: {
+  progress: number
+  onDragState: (drag: boolean) => void
+  setDragProgress: (progress: number) => void
+  onSetProgress: (progress: number) => void
+}) => {
+  const theme = useTheme()
+  const [tvFocused, setTvFocused] = useState(false)
+
+  return (
+    <Slider
+      accessibilityLabel="播放進度"
+      focusable
+      value={progress}
+      minimumValue={0}
+      maximumValue={1}
+      step={0.005}
+      minimumTrackTintColor="transparent"
+      maximumTrackTintColor="transparent"
+      thumbTintColor={tvFocused ? theme['c-primary-font-active'] : 'transparent'}
+      onFocus={() => setTvFocused(true)}
+      onBlur={() => setTvFocused(false)}
+      onSlidingStart={() => onDragState(true)}
+      onValueChange={setDragProgress}
+      onSlidingComplete={value => {
+        setDragProgress(value)
+        onSetProgress(value)
+        onDragState(false)
+      }}
+      style={[styles.tvSeekSlider, tvFocused ? styles.tvSeekFocused : undefined]}
+    />
+  )
+})"""
+        source = source[:start] + component + source[end:]
+        source = replace_once(
+            source,
+            "<PreassBar onDragState={setDraging} setDragProgress={setDragProgress} onSetProgress={onSetProgress} />",
+            "<PreassBar progress={progress} onDragState={setDraging} setDragProgress={setDragProgress} onSetProgress={onSetProgress} />",
+            f"focusable progress seek slider: {relative_path}",
+        )
+        source = replace_once(
+            source,
+            "const styles = createStyle({",
+            "const styles = createStyle({\n  tvSeekSlider: { position: 'absolute', left: 0, top: -15, width: '100%', height: 34, zIndex: 3 },\n  tvSeekFocused: { borderWidth: 2, borderColor: '#35A979', borderRadius: 12, backgroundColor: 'rgba(53,169,121,0.10)', elevation: 4 },",
+            f"progress seek focus styling: {relative_path}",
+        )
+        path.write_text(source, encoding="utf-8")
+
+
 def patch_global_touchable_focus() -> None:
     # Wrap raw React Native touchables so every screen shares one shape-aware focus system.
     wrapper = ROOT / "src/components/common/TVTouchableOpacity.tsx"
@@ -988,6 +1055,7 @@ patch_slider_focus()
 patch_home_layout()
 patch_player_controls()
 patch_player_bar()
+patch_progress_seek()
 patch_all_touchables_focusable()
 patch_global_touchable_focus()
 print("Applied TV layout relocation and remote focus adaptations.")
