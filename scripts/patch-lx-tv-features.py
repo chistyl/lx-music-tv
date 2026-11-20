@@ -433,3 +433,20 @@ s = s.replace("""  btn: {
 """, 1)
 (ROOT / p).write_text(s)
 print("Applied: requested custom-source layout with direct local/online import and delete icon")
+
+
+# Explicitly suppress the home-player status text (including fallback messages such as
+# "純音樂，請欣賞") at the Status component itself as a second guard.
+p = ROOT / "src/components/player/PlayerBar/components/Status.tsx"
+s = p.read_text()
+s = s.replace(
+    "export default ({ autoUpdate }: { autoUpdate: boolean }) => {",
+    "export default ({ autoUpdate, isHome }: { autoUpdate: boolean, isHome: boolean }) => {",
+    1,
+)
+needle = "  const isPlay = useIsPlay()\n"
+if needle not in s:
+    raise SystemExit("Expected Status component hook block not found; refusing to build")
+s = s.replace(needle, needle + "  if (isHome) return null\n", 1)
+p.write_text(s)
+print("Applied: suppress all home-player status/lyric fallback text")
