@@ -5,6 +5,7 @@ on:
     branches:
       - feature/lx-mobile-auto-source-tv-r1
       - feature/lx-tv-layout-run100
+      - fix/lx-tv-theme-player-controls-run117
   workflow_dispatch:
 
 permissions:
