@@ -195,53 +195,22 @@ def patch_button() -> None:
     target = ROOT / "src/components/common/Button.tsx"
     source = target.read_text(encoding="utf-8")
     source = source.replace(
-        "import { useMemo, useRef, useImperativeHandle, forwardRef } from 'react'",
-        "import { useMemo, useRef, useImperativeHandle, forwardRef, useState } from 'react'",
-        1,
-    )
-    source = source.replace(
-        "({ ripple: propsRipple = {}, disabled, children, style, ...props }, ref) => {",
-        "({ ripple: propsRipple = {}, disabled, children, style, onFocus, onBlur, ...props }, ref) => {",
-        1,
-    )
-    if "const [tvFocused, setTvFocused] = useState(false)" not in source:
-        source = source.replace(
-            "  const theme = useTheme()",
-            """  const theme = useTheme()
-  const [tvFocused, setTvFocused] = useState(false)
-  const handleFocus = (event: any) => {
-    setTvFocused(true)
-    onFocus?.(event)
-  }
-  const handleBlur = (event: any) => {
-    setTvFocused(false)
-    onBlur?.(event)
-  }""",
-            1,
-        )
-    source = source.replace(
         """      disabled={disabled}
       style={StyleSheet.compose({ opacity: disabled ? 0.3 : 1 }, style)}
       {...props}""",
         """      disabled={disabled}
       focusable
-      onFocus={handleFocus}
-      onBlur={handleBlur}
-      style={StyleSheet.compose(
-        StyleSheet.compose({ opacity: disabled ? 0.3 : 1 }, style),
-        tvFocused ? { borderWidth: 2, borderColor: '#FFFFFF', backgroundColor: 'rgba(255,255,255,0.14)', elevation: 8 } : undefined,
-      )}
+      style={StyleSheet.compose({ opacity: disabled ? 0.3 : 1 }, style)}
       {...props}""",
         1,
     )
-    if "focusable" not in source or "tvFocused" not in source:
-        raise SystemExit("Failed to patch shared Button.tsx focus handling")
     target.write_text(source, encoding="utf-8")
+
 
 def patch_navigation(relative_path: str) -> None:
     target = ROOT / relative_path
     source = target.read_text(encoding="utf-8")
-    source = source.replace("import { memo } from 'react'", "import { memo, useState } from 'react'", 1)
+    source = source.replace("import { memo } from 'react'", "import { memo } from 'react'", 1)
     old = """  const activeId = useNavActiveId()
   const theme = useTheme()
 
@@ -415,9 +384,9 @@ const MenuItem = ({ id, icon, onPress }: {
       onFocus={() => setFocused(true)}
       onBlur={() => setFocused(false)}
       onPress={() => onPress(id)}
-      style={[styles.menuItem, active ? styles.activeItem : undefined, focused ? [styles.focusedItem, { borderColor: theme['c-primary-font-active'] }] : undefined]}
+      style={[styles.menuItem, active ? styles.activeItem : undefined]}
     >
-      <Icon name={icon} size={20} color={active || focused ? theme['c-primary-font-active'] : theme['c-font-label']} />
+      <Icon name={icon} size={20} color={active ? theme['c-primary-font-active'] : theme['c-font-label']} />
       <Text size={14} color={active || focused ? theme['c-primary-font-active'] : theme['c-font-label']}>{t(id)}</Text>
     </TouchableOpacity>
   )
