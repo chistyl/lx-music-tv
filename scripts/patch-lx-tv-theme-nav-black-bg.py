@@ -16,7 +16,7 @@ aside = ROOT / "src/screens/Home/Horizontal/Aside.tsx"
 source = aside.read_text(encoding="utf-8")
 source = replace_once(
     source,
-    "style={[styles.menuItem, active ? styles.activeItem : undefined, focused ? [styles.focusedItem, { borderColor: theme['c-primary-font-active'] }] : undefined]}",
+    "style={[styles.menuItem, active ? styles.activeItem : undefined, focused ? [styles.focusedItem, { borderColor: '#FFFFFF', backgroundColor: 'rgba(255,255,255,0.16)', elevation: 10 }] : undefined]}",
     "style={[styles.menuItem, focused && !active ? [styles.focusedItem, { borderColor: theme['c-primary-font-active'] }] : undefined, active ? { backgroundColor: theme['c-primary'] } : undefined]}",
     "selected navigation theme-color tile and focus priority",
 )
