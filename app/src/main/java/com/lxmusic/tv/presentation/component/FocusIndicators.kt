@@ -24,10 +24,9 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.lxmusic.tv.presentation.theme.LXPrimary
+import kotlinx.coroutines.delay
 
 private val LXFocusGreen = Color(0xFF36C98A)
-import kotlinx.coroutines.delay
 import kotlin.math.max
 
 /**
@@ -197,7 +196,7 @@ fun Modifier.lxFocusBorder(
             drawContent()
             if (borderWidth > 0.dp) {
                 val stroke = borderWidth.toPx()
-                val outline = shape.createOutline(size, layoutDirection, this).withSoftCorners(16.dp.toPx())
+                val outline = shape.createOutline(size, layoutDirection, this).withSoftCorners(minOf(16.dp.toPx(), size.minDimension / 2f))
                 // ★ 修复2：传【正数】向内收缩 stroke/2，描边外边缘恰好贴合 shape 外边缘
                 val insetOutline = outline.insetBy(stroke / 2f)
                 val focusPath = outlineToPath(insetOutline)
