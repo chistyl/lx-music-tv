@@ -26,6 +26,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 
+import com.lxmusic.tv.presentation.theme.LXPrimary
+
 private val LXFocusGreen = Color(0xFF36C98A)
 import kotlin.math.max
 
@@ -283,7 +285,7 @@ fun Modifier.lxCircleButtonFocus(
  */
 @Composable
 fun Modifier.lxBackButtonFocus(
-    focusedColor: Color = LXPrimary,
+    focusedColor: Color = LXFocusGreen,
     glow: Boolean = false,
     animated: Boolean = false
 ): Modifier {
@@ -304,7 +306,7 @@ fun Modifier.lxBackButtonFocus(
  */
 @Composable
 fun Modifier.lxSelectorFocus(
-    focusedColor: Color = LXPrimary,
+    focusedColor: Color = LXFocusGreen,
     focusedWidth: Dp = 2.dp,
     focusedScale: Float = 1.0f,
     glow: Boolean = true,
