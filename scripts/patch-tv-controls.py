@@ -210,7 +210,7 @@ def patch_button() -> None:
     ...propsRipple,
   }), [theme, propsRipple])
   const baseStyle = StyleSheet.flatten(style)
-  const focusRadius = baseStyle?.borderRadius ?? (baseStyle?.width != null && baseStyle.width === baseStyle.height ? 999 : 8)""",
+  const focusRadius = baseStyle?.borderRadius ?? 8""",
         "derive focus radius from original control shape",
     )
     source = replace_once(
@@ -911,7 +911,7 @@ import { useTheme } from '@/store/theme/hook'
 
 const focusSurface = (style: any, color: string) => {
   const base = StyleSheet.flatten(style) || {}
-  const radius = base.borderRadius ?? (base.width != null && base.width === base.height ? 999 : 8)
+  const radius = base.borderRadius ?? 8
   return {
     borderWidth: 2,
     borderColor: color,
