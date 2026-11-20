@@ -56,7 +56,7 @@ const styles = createStyle({""", "insert playback mode control")
     source = replace_once(source, "      <PlayNextBtn />\n    </>", "      <PlayNextBtn />\n      <PlayModeBtn />\n    </>", "render playback mode control")
     source = replace_once(source, "const BTN_SIZE = 24", "const BTN_SIZE = 19", "reduce player control icon size")
     source = replace_once(source, "    width: 46,\n    height: 46,", "    width: 40,\n    height: 40,", "reduce player control touch container")
-    source = replace_once(source, "const styles = createStyle({\n  cotrolBtn: {", "const styles = createStyle({\n  focusedControl: { borderWidth: 3, borderColor: '#35A979', borderRadius: 30, backgroundColor: 'rgba(53,169,121,0.16)', shadowColor: '#35A979', shadowOpacity: 0.32, shadowRadius: 10, shadowOffset: { width: 0, height: 0 }, elevation: 6 },\n  cotrolBtn: {", "player focus style")
+    source = replace_once(source, "const styles = createStyle({\n  cotrolBtn: {", "const styles = createStyle({\n  focusedControl: { borderWidth: 3, borderColor: '#35A979', borderRadius: 30, backgroundColor: 'rgba(53,169,121,0.16)', shadowColor: '#35A979', shadowOpacity: 0, shadowRadius: 0, shadowOffset: { width: 0, height: 0 }, elevation: 0 },\n  cotrolBtn: {", "player focus style")
     path.write_text(source, encoding="utf-8")
 
 def patch_player_bar() -> None:
@@ -250,13 +250,13 @@ def patch_button() -> None:
       style={StyleSheet.compose(
         StyleSheet.compose({ opacity: disabled ? 0.3 : 1 }, style),
         tvFocused ? {
-          borderWidth: 2,
+          borderWidth: 1,
           borderColor: '#35A979',
           borderRadius: focusRadius,
-          backgroundColor: 'rgba(53,169,121,0.14)',
+          backgroundColor: 'rgba(53,169,121,0.06)',
           shadowColor: '#35A979',
           shadowOpacity: 0.32,
-          shadowRadius: 9,
+          shadowRadius: 0,
           shadowOffset: { width: 0, height: 0 },
           elevation: 6,
         } : undefined,
@@ -288,7 +288,7 @@ def patch_tv_focus_surfaces() -> None:
     source = replace_once(
         source,
         "const styles = createStyle({\n  container:",
-        "const styles = createStyle({\n  tvFocused: { borderWidth: 2, borderColor: '#35A979', borderRadius: 8, backgroundColor: 'rgba(53,169,121,0.12)', elevation: 5 },\n  container:",
+        "const styles = createStyle({\n  tvFocused: { borderWidth: 2, borderColor: '#35A979', borderRadius: 8, backgroundColor: 'rgba(53,169,121,0.06)', elevation: 0 },\n  container:",
         "settings navigation focus shape",
     )
     path.write_text(source, encoding="utf-8")
@@ -482,7 +482,7 @@ def patch_navigation(relative_path: str) -> None:
         focusable
         onFocus={() => setTvFocused(true)}
         onBlur={() => setTvFocused(false)}
-        style={[styles.menuItem, tvFocused ? { borderWidth: 2, borderColor: theme['c-primary-font-active'], borderRadius: 10, backgroundColor: 'rgba(53,169,121,0.12)', shadowColor: '#35A979', shadowOpacity: 0.28, shadowRadius: 9, shadowOffset: { width: 0, height: 2 }, elevation: 5 } : undefined]}
+        style={[styles.menuItem, tvFocused ? { borderWidth: 2, borderColor: theme['c-primary-font-active'], borderRadius: 10, backgroundColor: 'rgba(53,169,121,0.12)', shadowColor: '#35A979', shadowOpacity: 0, shadowRadius: 9, shadowOffset: { width: 0, height: 2 }, elevation: 5 } : undefined]}
         onPress={() => { onPress(id) }}
       >"""
     if old_open in source:
@@ -950,7 +950,7 @@ const focusSurface = (style: any, color: string) => {
     backgroundColor: 'rgba(53,169,121,0.12)',
     shadowColor: color,
     shadowOpacity: 0.28,
-    shadowRadius: 8,
+    shadowRadius: 0,
     shadowOffset: { width: 0, height: 2 },
     elevation: 5,
   }
@@ -1056,5 +1056,6 @@ patch_home_layout()
 patch_player_controls()
 patch_player_bar()
 patch_progress_seek()
-patch_global_touchable_focus()
+# Global touchable wrapping is intentionally disabled: it made decorative and
+# container touchables steal D-pad focus across every settings dialog.
 print("Applied TV layout relocation and remote focus adaptations.")
