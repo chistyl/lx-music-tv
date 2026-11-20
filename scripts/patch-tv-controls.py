@@ -982,6 +982,7 @@ export default TVTouchableOpacity
             return match.group(0)
         updated = re.sub(r"import\s*\{([^}]+)\}\s*from\s*'react-native'", rewrite_import, source, flags=re.S)
         if changed:
+            updated = updated.replace("useRef<TouchableOpacity>", "useRef<NativeTouchableOpacity>")
             path.write_text(updated, encoding="utf-8")
 
 
