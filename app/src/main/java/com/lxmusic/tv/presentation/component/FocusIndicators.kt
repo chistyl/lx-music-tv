@@ -229,6 +229,7 @@ fun Modifier.lxBackButtonFocus(
         focusedColor = focusedColor,
         unfocusedColor = Color.Transparent,
         unfocusedWidth = 0.dp,
+        focusedWidth = 2.dp,
         focusedScale = 1.0f,
         glow = glow,
         animated = animated,
