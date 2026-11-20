@@ -373,7 +373,7 @@ const MenuItem = ({ id, icon, onPress }: {
       onFocus={() => setFocused(true)}
       onBlur={() => setFocused(false)}
       onPress={() => onPress(id)}
-      style={[styles.menuItem, active ? styles.activeItem : undefined, focused ? styles.focusedItem : undefined]}
+      style={[styles.menuItem, active ? styles.activeItem : undefined, focused ? [styles.focusedItem, { borderColor: theme['c-primary-font-active'] }] : undefined]}
     >
       <Icon name={icon} size={20} color={active || focused ? theme['c-primary-font-active'] : theme['c-font-label']} />
       <Text size={14} color={active || focused ? '#16866A' : theme['c-font-label']}>{t(id)}</Text>
