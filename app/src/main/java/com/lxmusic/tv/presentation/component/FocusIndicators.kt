@@ -24,11 +24,10 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.delay
-import kotlin.math.max
-
 import com.lxmusic.tv.presentation.theme.FocusBorder
 import com.lxmusic.tv.presentation.theme.LXFocusFill
+import kotlinx.coroutines.delay
+import kotlin.math.max
 
 /**
  * 将 Shape.createOutline 得到的 Outline 转为可描边的 Path。
