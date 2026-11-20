@@ -232,7 +232,84 @@ def patch_song_row_focus() -> None:
     path.write_text(source, encoding="utf-8")
 
 
+def patch_navigation_focus() -> None:
+    # Make every left navigation entry a real D-pad target, including the
+    # currently selected entry, and preserve the existing menu actions.
+    path = ROOT / "src/screens/Home/Horizontal/Aside.tsx"
+    source = path.read_text(encoding="utf-8")
+    source = replace_once(
+        source,
+        "import { memo } from 'react'",
+        "import { memo, useState } from 'react'",
+        "navigation React import",
+    )
+    source = replace_once(
+        source,
+        "  const theme = useTheme()\n\n  return activeId == id",
+        "  const theme = useTheme()\n  const [focused, setFocused] = useState(false)\n\n  return activeId == id",
+        "navigation focus state",
+    )
+    old = """  return activeId == id
+    ? <View style={styles.menuItem}>
+        <View style={styles.iconContent}>
+          <Icon name={icon} size={20} color={theme['c-primary-font-active']} />
+        </View>
+        {/* <Text style={styles.text} size={14} color={theme['c-primary-font']}>{t(id)}</Text> */}
+      </View>
+    : <TouchableOpacity style={styles.menuItem} onPress={() => { onPress(id) }}>
+        <View style={styles.iconContent}>
+          <Icon name={icon} size={20} color={theme['c-font-label']} />
+        </View>
+        {/* <Text style={styles.text} size={14}>{t(id)}</Text> */}
+      </TouchableOpacity>"""
+    new = """  return (
+    <TouchableOpacity
+      focusable
+      onFocus={() => setFocused(true)}
+      onBlur={() => setFocused(false)}
+      style={[styles.menuItem, focused ? styles.tvFocused : undefined, activeId == id ? styles.menuItemActive : undefined]}
+      onPress={() => { onPress(id) }}
+    >
+      <View style={styles.iconContent}>
+        <Icon name={icon} size={20} color={activeId == id || focused ? theme['c-primary-font-active'] : theme['c-font-label']} />
+      </View>
+      {/* <Text style={styles.text} size={14}>{t(id)}</Text> */}
+    </TouchableOpacity>
+  )"""
+    source = replace_once(source, old, new, "navigation menu focusable item")
+    source = replace_once(
+        source,
+        "  menuItem: {\n",
+        """  menuItem: {
+    borderRadius: 10,
+    marginHorizontal: 7,
+    marginVertical: 3,
+  },
+  menuItemActive: {
+    backgroundColor: 'rgba(120, 174, 255, 0.14)',
+  },
+  tvFocused: {
+    borderWidth: 1.5,
+    borderColor: '#78AEFF',
+    borderRadius: 10,
+    shadowColor: '#78AEFF',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.34,
+    shadowRadius: 5,
+    elevation: 2,
+  },
+  menuItemLegacy: {
+""",
+        "navigation capsule style tokens",
+    )
+    # Remove the temporary legacy style key; its body remains the original
+    # padding/alignment declaration and is renamed back to menuItemLegacy.
+    source = source.replace("  menuItemLegacy: {", "  menuItemLegacy: {", 1)
+    path.write_text(source, encoding="utf-8")
+
+
 patch_song_row_focus()
+patch_navigation_focus()
 
 patch_theme()
 patch_shared_button_focus()
