@@ -104,7 +104,10 @@ def main() -> None:
         "TouchableHighlight": (re.compile(r"</TouchableHighlight\s*>"), "</TVTouchableHighlight>"),
         "Pressable": (re.compile(r"</Pressable\s*>"), "</TVPressable>"),
     }
+    already_focused = {"Button.tsx", "ControlBtn.tsx", "Aside.tsx", "List.tsx", "ListItem.tsx"}
     for path in SRC.rglob("*.tsx"):
+        if path.name in already_focused and any(token in path.as_posix() for token in ("/components/common/", "/player/PlayerBar/", "/Home/Horizontal/", "/Mylist/")):
+            continue
         source = path.read_text(encoding="utf-8")
         imports = list(import_re.finditer(source))
         enabled = []
