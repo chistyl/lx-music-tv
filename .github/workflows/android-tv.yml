@@ -12,6 +12,7 @@ on:
       - fix/lx-tv-remove-sync-settings-run136
       - fix/lx-tv-remove-error-log-settings-run137
       - fix/lx-tv-traditional-conversion-language-only-run138
+      - fix/lx-tv-top-nav-theme-selected-block-run139
   workflow_dispatch:
 
 permissions:
