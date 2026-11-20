@@ -743,12 +743,14 @@ def patch_full_settings_focus() -> None:
         "  const t = useI18n()\n  const [tvFocused, setTvFocused] = useState(false)\n\n  const active = activeId == id",
         "vertical settings navigation focus state",
     )
-    source = replace_once(
-        source,
-        '<TouchableOpacity style={styles.listName} onPress={handlePress}>',
-        '<TouchableOpacity focusable onFocus={() => setTvFocused(true)} onBlur={() => setTvFocused(false)} style={[styles.listName, tvFocused ? styles.tvFocused : undefined]} onPress={handlePress}>',
-        "vertical settings navigation focus target",
-    )
+    old_target = '<TouchableOpacity style={styles.listName} onPress={handlePress}>'
+    new_target = '<TouchableOpacity focusable onFocus={() => setTvFocused(true)} onBlur={() => setTvFocused(false)} style={[styles.listName, tvFocused ? styles.tvFocused : undefined]} onPress={handlePress}>'
+    if old_target in source:
+        source = source.replace(old_target, new_target, 1)
+    elif "tvFocused ? styles.tvFocused" not in source:
+        source = source.replace("<TouchableOpacity", new_target, 1)
+    else:
+        raise SystemExit("Could not locate vertical settings navigation focus target")
     source = replace_once(
         source,
         "const styles = createStyle({\n  container:",
