@@ -147,6 +147,47 @@ def patch_player_bar() -> None:
         "style={{ width: imageSize, height: imageSize, borderRadius: imageSize / 2 }}",
         "player cover circular image",
     )
+    source = source.replace(
+        "import { StyleSheet, TouchableOpacity } from 'react-native'",
+        "import { StyleSheet, TouchableOpacity, Animated, Easing } from 'react-native'",
+        1,
+    )
+    source = source.replace(
+        "import { usePlayerMusicInfo } from '@/store/player/hook'",
+        "import { usePlayerMusicInfo, useIsPlay } from '@/store/player/hook'",
+        1,
+    )
+    source = source.replace("import { useCallback } from 'react'", "import { useCallback, useEffect, useRef } from 'react'", 1)
+    source = replace_once(
+        source,
+        "  const musicInfo = usePlayerMusicInfo()",
+        """  const musicInfo = usePlayerMusicInfo()
+  const isPlay = useIsPlay()
+  const rotateValue = useRef(new Animated.Value(0)).current
+
+  useEffect(() => {
+    if (isHome && isPlay) {
+      const animation = Animated.loop(Animated.timing(rotateValue, {
+        toValue: 1,
+        duration: 9000,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      }))
+      animation.start()
+      return () => animation.stop()
+    }
+    rotateValue.stopAnimation()
+    rotateValue.setValue(0)
+  }, [isHome, isPlay, rotateValue])
+  const rotate = rotateValue.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '360deg'] })""",
+        "rotate album art while playing",
+    )
+    source = replace_once(
+        source,
+        "<Image url={musicInfo.pic} nativeID={NAV_SHEAR_NATIVE_IDS.playDetail_pic} style={{ width: imageSize, height: imageSize, borderRadius: imageSize / 2 }} onError={handleError} />",
+        "<Animated.View style={{ width: imageSize, height: imageSize, borderRadius: imageSize / 2, overflow: 'hidden', transform: [{ rotate: isHome ? rotate : '0deg' }] }}><Image url={musicInfo.pic} nativeID={NAV_SHEAR_NATIVE_IDS.playDetail_pic} style={{ width: imageSize, height: imageSize, borderRadius: imageSize / 2 }} onError={handleError} /></Animated.View>",
+        "rotating circular player artwork",
+    )
     pic.write_text(source, encoding="utf-8")
 
 
