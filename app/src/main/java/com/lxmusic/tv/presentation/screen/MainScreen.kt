@@ -3019,7 +3019,7 @@ fun CacheActionButton(
             .onFocusChanged { isFocused = it.isFocused }
             .clip(RoundedCornerShape(12.dp))
             .background(bgColor)
-            .border(if (isFocused) 3.dp else 0.dp, borderColor, RoundedCornerShape(12.dp))
+            .border(if (isFocused) 2.dp else 0.dp, borderColor, RoundedCornerShape(12.dp))
             // 清除中禁用：不可点击 + 半透明置灰
             .alpha(if (enabled) 1f else 0.4f)
             .clickable(enabled = enabled) { onClick() },
