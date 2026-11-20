@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - feature/lx-mobile-auto-source-tv-r1
+      - feature/lx-tv-layout-run100
   workflow_dispatch:
 
 permissions:
