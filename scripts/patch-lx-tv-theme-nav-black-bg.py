@@ -16,7 +16,7 @@ aside = ROOT / "src/screens/Home/Horizontal/Aside.tsx"
 source = aside.read_text(encoding="utf-8")
 source = replace_once(
     source,
-    "style={[styles.menuItem, active ? styles.activeItem : undefined]}",
+    "style={[styles.menuItem, active ? styles.activeItem : undefined, focused ? styles.focusedItem : undefined]}",
     "style={[styles.menuItem, active ? styles.activeItem : undefined]}",
     "keep navigation focus visuals unchanged",
 )
