@@ -223,13 +223,7 @@ def patch_navigation(relative_path: str) -> None:
     if old in source:
         source = source.replace(old, new, 1)
     old_open = """    : <TouchableOpacity style={styles.menuItem} onPress={() => { onPress(id) }}>"""
-    new_open = """    : <TouchableOpacity
-        focusable
-        onFocus={() => setTvFocused(true)}
-        onBlur={() => setTvFocused(false)}
-        style={[styles.menuItem, tvFocused ? { borderWidth: 2, borderColor: theme['c-primary-font-active'], borderRadius: 6 } : undefined]}
-        onPress={() => { onPress(id) }}
-      >"""
+    new_open = """    : <TouchableOpacity focusable style={styles.menuItem} onPress={() => { onPress(id) }}>"""
     if old_open in source:
         source = source.replace(old_open, new_open, 1)
     if "focusable" not in source:
@@ -352,7 +346,7 @@ export default () => (
     home.write_text(source, encoding="utf-8")
 
     aside = ROOT / "src/screens/Home/Horizontal/Aside.tsx"
-    aside.write_text("""import { memo } from 'react'
+    aside.write_text("""import { memo, useState } from 'react'
 import { ScrollView, TouchableOpacity, View } from 'react-native'
 import { useNavActiveId, useStatusbarHeight } from '@/store/common/hook'
 import { useTheme } from '@/store/theme/hook'
@@ -384,7 +378,7 @@ const MenuItem = ({ id, icon, onPress }: {
       onFocus={() => setFocused(true)}
       onBlur={() => setFocused(false)}
       onPress={() => onPress(id)}
-      style={[styles.menuItem, active ? styles.activeItem : undefined]}
+      style={[styles.menuItem, active ? styles.activeItem : undefined, focused ? styles.focusedItem : undefined]}
     >
       <Icon name={icon} size={20} color={active ? theme['c-primary-font-active'] : theme['c-font-label']} />
       <Text size={14} color={active ? theme['c-primary-font-active'] : theme['c-font-label']}>{t(id)}</Text>
@@ -463,8 +457,8 @@ const styles = createStyle({
     backgroundColor: 'transparent',
   },
   focusedItem: {
-    borderWidth: 2,
-    borderColor: 'transparent',
+    borderWidth: 1,
+    borderColor: '#8A8A8A',
   },
 })
 """, encoding="utf-8")
@@ -474,4 +468,4 @@ patch_player_controls()
 patch_player_bar()
 patch_button()
 patch_my_lists()
-print("Applied TV layout and remote focusability without focus decorations.")
+print("Applied TV layout and remote focusability with a thin, shape-matched focus frame.")
