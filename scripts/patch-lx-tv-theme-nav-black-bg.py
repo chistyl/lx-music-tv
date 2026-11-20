@@ -33,8 +33,8 @@ source = replace_once(
 )
 source = replace_once(
     source,
-    "    height: 44,\n    minWidth: 0,",
-    "    height: 44,\n    minWidth: 0,\n    flexShrink: 0,",
+    "    minWidth: 0,",
+    "    minWidth: 0,\n    flexShrink: 0,",
     "prevent navigation item width compression",
 )
 aside.write_text(source, encoding="utf-8")
