@@ -152,4 +152,92 @@ source = source.replace(
 )
 aside.write_text(source, encoding="utf-8")
 
-print("Run154 layout patch applied: top horizontal navigation, left content canvas, right player panel. Existing screen routing and player actions remain connected.")
+player_root = Path("upstream/lx-music-mobile-auto-source/src/components/player/PlayerBar")
+player = player_root / "index.tsx"
+player_source = player.read_text(encoding="utf-8")
+player_old = """  container: {
+    width: '100%',
+    // height: 100,
+    // paddingTop: progressContentPadding,
+    // marginTop: -progressContentPadding,
+    // backgroundColor: 'rgba(0, 0, 0, .1)',
+    // borderTopWidth: BorderWidths.normal2,
+    paddingVertical: 5,
+    paddingLeft: 5,
+    // backgroundColor: AppColors.primary,
+    // backgroundColor: 'red',
+    borderTopLeftRadius: 6,
+    borderTopRightRadius: 6,
+    flexDirection: 'row',
+    alignItems: 'center',
+    elevation: 10,
+  },
+"""
+player_new = """  container: {
+    width: '100%',
+    height: '100%',
+    paddingVertical: 24,
+    paddingHorizontal: 20,
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 10,
+  },
+"""
+if player_old not in player_source:
+    raise SystemExit("Run154 stopped: PlayerBar container styles differ from pinned upstream")
+player_source = player_source.replace(player_old, player_new, 1)
+player_source = player_source.replace(
+    """  center: {
+    flexDirection: 'column',
+    flexGrow: 1,
+    flexShrink: 1,
+    paddingLeft: 5,
+    height: '100%',
+""",
+    """  center: {
+    width: '100%',
+    flexDirection: 'column',
+    flexGrow: 0,
+    flexShrink: 1,
+    paddingLeft: 0,
+    alignItems: 'center',
+""",
+    1,
+)
+player_source = player_source.replace(
+    """  right: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexGrow: 0,
+    flexShrink: 0,
+    paddingLeft: 5,
+    paddingRight: 5,
+  },
+""",
+    """  right: {
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexGrow: 0,
+    flexShrink: 0,
+    paddingTop: 18,
+    paddingLeft: 0,
+    paddingRight: 0,
+  },
+""",
+    1,
+)
+player.write_text(player_source, encoding="utf-8")
+
+pic = player_root / "components" / "Pic.tsx"
+pic_source = pic.read_text(encoding="utf-8")
+if "const PIC_HEIGHT = scaleSizeH(46)" not in pic_source:
+    raise SystemExit("Run154 stopped: player cover size differs from pinned upstream")
+pic_source = pic_source.replace("const PIC_HEIGHT = scaleSizeH(46)", "const PIC_HEIGHT = scaleSizeH(210)", 1)
+pic_source = pic_source.replace("borderRadius: 2,", "borderRadius: 12,", 1)
+pic.write_text(pic_source, encoding="utf-8")
+
+print("Run154: reference layout, labeled D-pad navigation, and vertical player panel patches applied.")
+"Run154 layout patch applied: top horizontal navigation, left content canvas, right player panel. Existing screen routing and player actions remain connected.")
