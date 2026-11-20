@@ -113,7 +113,7 @@ suspend fun requestInitialFocus(
 @Composable
 fun Modifier.lxFocusBorder(
     focusedColor: Color = LXPrimary,
-    unfocusedColor: Color.Transparent,
+    unfocusedColor: Color = Color.Transparent,
     focusedWidth: Dp = 2.dp,
     unfocusedWidth: Dp = 0.dp,
     focusedScale: Float = 1.0f,
