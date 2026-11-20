@@ -14,13 +14,13 @@ def replace_once(source: str, old: str, new: str, label: str) -> str:
 def patch_player_controls() -> None:
     path = ROOT / "src/components/player/PlayerBar/components/ControlBtn.tsx"
     source = path.read_text(encoding="utf-8")
-    source = source.replace("import { TouchableOpacity } from 'react-native'", "import { TouchableOpacity } from 'react-native'\nimport { useState } from 'react'\nimport { useSettingValue } from '@/store/setting/hook'\nimport { updateSetting } from '@/core/common'\nimport { MUSIC_TOGGLE_MODE_LIST } from '@/config/constant'", 1)
+    source = source.replace("import { TouchableOpacity } from 'react-native'", "import { TouchableOpacity } from 'react-native'\nimport { useSettingValue } from '@/store/setting/hook'\nimport { updateSetting } from '@/core/common'\nimport { MUSIC_TOGGLE_MODE_LIST } from '@/config/constant'", 1)
     for name in ("PlayPrevBtn", "PlayNextBtn", "TogglePlayBtn"):
         start = source.index(f"const {name} = () => {{")
         end = source.find("\n}\n", start) + 3
         block = source[start:end]
         block = block.replace("  const theme = useTheme()", "  const theme = useTheme()\n  const [tvFocused, setTvFocused] = useState(false)", 1)
-        block = block.replace("style={styles.cotrolBtn}", "focusable\n      onFocus={() => setTvFocused(true)}\n      onBlur={() => setTvFocused(false)}\n      style={[styles.cotrolBtn, tvFocused ? styles.focusedControl : undefined]}", 1)
+        block = block.replace("style={styles.cotrolBtn}", "focusable\n      focusable\n      style={styles.cotrolBtn}", 1)
         source = source[:start] + block + source[end:]
     source = replace_once(source, "const styles = createStyle({", """const PlayModeBtn = () => {
   const theme = useTheme()
@@ -43,7 +43,7 @@ def patch_player_controls() -> None:
       focusable
       onFocus={() => setTvFocused(true)}
       onBlur={() => setTvFocused(false)}
-      style={[styles.cotrolBtn, tvFocused ? styles.focusedControl : undefined]}
+      focusable\n      style={styles.cotrolBtn}
       activeOpacity={0.5}
       onPress={toggleNextPlayMode}
     >
@@ -56,7 +56,7 @@ const styles = createStyle({""", "insert playback mode control")
     source = replace_once(source, "      <PlayNextBtn />\n    </>", "      <PlayNextBtn />\n      <PlayModeBtn />\n    </>", "render playback mode control")
     source = replace_once(source, "const BTN_SIZE = 24", "const BTN_SIZE = 19", "reduce player control icon size")
     source = replace_once(source, "    width: 46,\n    height: 46,", "    width: 40,\n    height: 40,", "reduce player control touch container")
-    source = replace_once(source, "const styles = createStyle({\n  cotrolBtn: {", "const styles = createStyle({\n  focusedControl: { borderWidth: 3, borderColor: '#FFFFFF', borderRadius: 24, backgroundColor: 'rgba(255,255,255,0.18)', elevation: 10 },\n  cotrolBtn: {", "player focus style")
+    source = replace_once(source, "const styles = createStyle({\n  cotrolBtn: {", "const styles = createStyle({\n  cotrolBtn: {", "player focus style")
     path.write_text(source, encoding="utf-8")
 
 def patch_player_bar() -> None:
@@ -278,22 +278,22 @@ def patch_android_abis() -> None:
 def patch_my_lists() -> None:
     path = ROOT / "src/screens/Home/Views/Mylist/MyList/List.tsx"
     source = path.read_text(encoding="utf-8")
-    source = source.replace("import { memo, useEffect, useRef } from 'react'", "import { memo, useEffect, useRef, useState } from 'react'", 1)
+    source = source.replace("import { memo, useEffect, useRef } from 'react'", "import { memo, useEffect, useRef } from 'react'", 1)
     source = replace_once(source, "const ITEM_HEIGHT = scaleSizeH(40)", "const ITEM_HEIGHT = scaleSizeH(60)", "playlist row height")
-    source = replace_once(source, "  const theme = useTheme()\n  const moreButtonRef", "  const theme = useTheme()\n  const [nameFocused, setNameFocused] = useState(false)\n  const [moreFocused, setMoreFocused] = useState(false)\n  const moreButtonRef", "playlist focus state")
-    source = replace_once(source, '<TouchableOpacity style={styles.listName} onPress={handlePress}>', '<TouchableOpacity focusable onFocus={() => setNameFocused(true)} onBlur={() => setNameFocused(false)} style={[styles.listName, nameFocused ? styles.tvFocused : undefined]} onPress={handlePress}>', "playlist name focus")
-    source = replace_once(source, '<TouchableOpacity onPress={handleShowMenu} ref={moreButtonRef} style={styles.listMoreBtn}>', '<TouchableOpacity focusable onFocus={() => setMoreFocused(true)} onBlur={() => setMoreFocused(false)} onPress={handleShowMenu} ref={moreButtonRef} style={[styles.listMoreBtn, moreFocused ? styles.tvFocused : undefined]}>', "playlist menu focus")
-    source = replace_once(source, "const styles = createStyle({\n  container:", "const styles = createStyle({\n  tvFocused: { borderWidth: 2, borderColor: '#FFFFFF', backgroundColor: 'rgba(255,255,255,0.16)', elevation: 8 },\n  container:", "playlist focus style")
+    source = replace_once(source, "  const theme = useTheme()\n  const moreButtonRef", "  const theme = useTheme()\n  const moreButtonRef", "playlist focus state")
+    source = replace_once(source, '<TouchableOpacity style={styles.listName} onPress={handlePress}>', '<TouchableOpacity focusable style={styles.listName} onPress={handlePress}>', "playlist name focus")
+    source = replace_once(source, '<TouchableOpacity onPress={handleShowMenu} ref={moreButtonRef} style={styles.listMoreBtn}>', '<TouchableOpacity focusable onPress={handleShowMenu} ref={moreButtonRef} style={styles.listMoreBtn}>', "playlist menu focus")
+    source = replace_once(source, "const styles = createStyle({\n  container:", "const styles = createStyle({\n  container:", "playlist focus style")
     source = replace_once(source, "    width: 36,", "    width: 52,", "playlist menu target")
     path.write_text(source, encoding="utf-8")
 
     path = ROOT / "src/screens/Home/Views/Mylist/MusicList/ListItem.tsx"
     source = path.read_text(encoding="utf-8")
-    source = source.replace("import { memo, useRef } from 'react'", "import { memo, useRef, useState } from 'react'", 1)
-    source = replace_once(source, "  const theme = useTheme()\n\n  const isSelected", "  const theme = useTheme()\n  const [itemFocused, setItemFocused] = useState(false)\n  const [moreFocused, setMoreFocused] = useState(false)\n\n  const isSelected", "song row focus state")
-    source = replace_once(source, '<TouchableOpacity style={styles.listItemLeft} onPress=', '<TouchableOpacity focusable onFocus={() => setItemFocused(true)} onBlur={() => setItemFocused(false)} style={[styles.listItemLeft, itemFocused ? styles.tvFocused : undefined]} onPress=', "song row focus")
-    source = replace_once(source, '<TouchableOpacity onPress={handleShowMenu} ref={moreButtonRef} style={styles.moreButton}>', '<TouchableOpacity focusable onFocus={() => setMoreFocused(true)} onBlur={() => setMoreFocused(false)} onPress={handleShowMenu} ref={moreButtonRef} style={[styles.moreButton, moreFocused ? styles.tvFocused : undefined]}>', "song menu focus")
-    source = replace_once(source, "const styles = createStyle({\n  listItem:", "const styles = createStyle({\n  tvFocused: { borderWidth: 2, borderColor: '#FFFFFF', borderRadius: 6 },\n  listItem:", "song row focus style")
+    source = source.replace("import { memo, useRef } from 'react'", "import { memo, useRef } from 'react'", 1)
+    source = replace_once(source, "  const theme = useTheme()\n\n  const isSelected", "  const theme = useTheme()\n\n  const isSelected", "song row focus state")
+    source = replace_once(source, '<TouchableOpacity style={styles.listItemLeft} onPress=', '<TouchableOpacity focusable style={styles.listItemLeft} onPress=', "song row focus")
+    source = replace_once(source, '<TouchableOpacity onPress={handleShowMenu} ref={moreButtonRef} style={styles.moreButton}>', '<TouchableOpacity focusable onPress={handleShowMenu} ref={moreButtonRef} style={styles.moreButton}>', "song menu focus")
+    source = replace_once(source, "const styles = createStyle({\n  listItem:", "const styles = createStyle({\n  listItem:", "song row focus style")
     source = replace_once(source, "    height: '80%',\n    paddingLeft: 16,\n    paddingRight: 16,", "    height: '100%',\n    minWidth: 52,\n    paddingLeft: 12,\n    paddingRight: 12,", "song menu target")
     path.write_text(source, encoding="utf-8")
 
