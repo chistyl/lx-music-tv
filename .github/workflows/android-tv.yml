@@ -17,6 +17,7 @@ on:
       - fix/lx-tv-nav-proportions-run146
       - fix/lx-tv-nav-compact-selected-icons-run151
       - fix/lx-tv-nav-tile-compact-run153
+      - fix/lx-tv-soft-shape-focus-run155
   workflow_dispatch:
 
 permissions:
@@ -78,6 +79,7 @@ jobs:
           python3 scripts/patch-lx-tv-remove-sync-settings.py
           python3 scripts/patch-lx-tv-remove-error-log-settings.py
           python3 scripts/patch-lx-tv-theme-nav-black-bg.py
+          python3 scripts/patch-lx-tv-black-blue-design.py
           grep -n "LEANBACK_LAUNCHER\\|android.software.leanback\\|screenOrientation" upstream/lx-music-mobile-auto-source/android/app/src/main/AndroidManifest.xml
 
       - name: Generate Android JS bundle
