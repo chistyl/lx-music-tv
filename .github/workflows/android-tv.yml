@@ -1,4 +1,5 @@
 name: Android TV build
+# Rebuild after aligning the navigation width anchor with the current TV item styles.
 # Rebuild after aligning the navigation theme patch with the refined item dimensions.
 
 on:
