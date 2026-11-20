@@ -19,6 +19,7 @@ on:
       - fix/lx-tv-nav-tile-compact-run153
       - fix/lx-tv-remove-source-quick-add-run154
       - feature/lx-tv-theme-focus-clean-run239
+      - feature/lx-tv-full-tv-ui-run248
   workflow_dispatch:
 
 permissions:
