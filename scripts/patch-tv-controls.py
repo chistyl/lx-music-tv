@@ -498,7 +498,44 @@ const styles = createStyle({
 })
 """, encoding="utf-8")
 
+
+def patch_requested_colors_only() -> None:
+    # 1) Solid #141414 background for the existing top navigation bar.
+    aside = ROOT / "src/screens/Home/Horizontal/Aside.tsx"
+    source = aside.read_text(encoding="utf-8")
+    source = replace_once(
+        source,
+        "backgroundColor: theme['c-content-background'],",
+        "backgroundColor: '#141414',",
+        "top navigation solid background",
+    )
+    # 2) Solid #141414 background for the existing left-side home player only.
+    player = ROOT / "src/components/player/PlayerBar/index.tsx"
+    player_source = player.read_text(encoding="utf-8")
+    player_source = replace_once(
+        player_source,
+        "backgroundColor: theme['c-content-background']",
+        "backgroundColor: isHome ? '#141414' : theme['c-content-background']",
+        "home player solid background",
+    )
+    player.write_text(player_source, encoding="utf-8")
+    # 3) Selected navigation item always keeps the theme primary fill, regardless of focus.
+    source = replace_once(
+        source,
+        "activeItem: {\n    backgroundColor: 'transparent',",
+        "activeItem: {\n    backgroundColor: '#00000000',",
+        "selected navigation item background baseline",
+    )
+    source = source.replace(
+        "style={[styles.menuItem, active ? styles.activeItem : undefined, focused ? [styles.focusedItem, { borderColor: theme['c-primary-font-active'] }] : undefined]}",
+        "style={[styles.menuItem, active ? [styles.activeItem, { backgroundColor: theme['c-primary'] }] : undefined, focused && !active ? [styles.focusedItem, { borderColor: theme['c-primary-font-active'] }] : undefined]}",
+        1,
+    )
+    aside.write_text(source, encoding="utf-8")
+
 patch_home_layout()
 patch_player_controls()
 patch_player_bar()
+patch_requested_colors_only()
 print("Applied TV layout relocation and remote focus adaptations.")
+
