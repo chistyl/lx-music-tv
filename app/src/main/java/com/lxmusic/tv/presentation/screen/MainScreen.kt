@@ -397,7 +397,7 @@ private fun LeftPlayerPanel(
         if (song != null) {
             Box(
                 modifier = Modifier
-                    .fillMaxWidth(0.82f)
+                    .fillMaxWidth(0.90f)
                     .aspectRatio(1f)
                     .clip(CircleShape)
                     .background(LXSurfaceVariant)
@@ -416,15 +416,15 @@ private fun LeftPlayerPanel(
                         imageVector = platformIcon(song.platform),
                         contentDescription = null,
                         tint = platformBrandColor(song.platform),
-                        modifier = Modifier.size(64.dp)
+                        modifier = Modifier.size(72.dp)
                     )
                 }
             }
-            Spacer(Modifier.height(20.dp))
+            Spacer(Modifier.height(22.dp))
             Text(
                 text = song.name,
                 color = LXTextPrimary,
-                fontSize = 21.sp,
+                fontSize = 24.sp,
                 fontWeight = FontWeight.Medium,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -433,15 +433,15 @@ private fun LeftPlayerPanel(
             Text(
                 text = song.singer,
                 color = LXTextSecondary,
-                fontSize = 15.sp,
+                fontSize = 17.sp,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.fillMaxWidth().padding(top = 5.dp)
+                modifier = Modifier.fillMaxWidth().padding(top = 7.dp)
             )
-            Spacer(Modifier.height(22.dp))
+            Spacer(Modifier.height(24.dp))
             Box(
                 modifier = Modifier
-                    .size(64.dp)
+                    .size(76.dp)
                     .lxCircleButtonFocus()
                     .clickable { onPlayPause() },
                 contentAlignment = Alignment.Center
@@ -450,7 +450,7 @@ private fun LeftPlayerPanel(
                     imageVector = if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
                     contentDescription = if (isPlaying) "暂停" else "播放",
                     tint = LXPrimary,
-                    modifier = Modifier.size(38.dp)
+                    modifier = Modifier.size(44.dp)
                 )
             }
         } else {
