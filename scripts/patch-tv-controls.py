@@ -496,6 +496,12 @@ const styles = createStyle({
   focusedItem: {
     borderWidth: 2,
     borderColor: 'transparent',
+    backgroundColor: 'rgba(255,255,255,0.10)',
+    shadowColor: '#FFFFFF',
+    shadowOpacity: 0.55,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 0 },
+    elevation: 5,
   },
 })
 """, encoding="utf-8")
