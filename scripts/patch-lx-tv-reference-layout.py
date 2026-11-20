@@ -82,6 +82,54 @@ export default () => (
 index.write_text(new_index, encoding="utf-8")
 
 source = aside.read_text(encoding="utf-8")
+source = source.replace(
+    "import { Icon } from '@/components/common/Icon'\n",
+    "import { Icon } from '@/components/common/Icon'\nimport Text from '@/components/common/Text'\n",
+    1,
+)
+old_menu = """  return activeId == id
+    ? <View style={styles.menuItem}>
+        <View style={styles.iconContent}>
+          <Icon name={icon} size={20} color={theme['c-primary-font-active']} />
+        </View>
+        {/* <Text style={styles.text} size={14} color={theme['c-primary-font']}>{t(id)}</Text> */}
+      </View>
+    : <TouchableOpacity focusable style={styles.menuItem} onPress={() => { onPress(id) }}>
+        <View style={styles.iconContent}>
+          <Icon name={icon} size={20} color={theme['c-font-label']} />
+        </View>
+        {/* <Text style={styles.text} size={14}>{t(id)}</Text> */}
+      </TouchableOpacity>
+"""
+new_menu = """  return (
+    <TouchableOpacity
+      focusable
+      style={{
+        ...styles.menuItem,
+        backgroundColor: activeId == id ? theme['c-primary-background'] : 'transparent',
+        borderRadius: 12,
+      }}
+      onPress={() => { onPress(id) }}
+      activeOpacity={0.82}
+    >
+      <View style={styles.iconContent}>
+        <Icon
+          name={icon}
+          size={20}
+          color={activeId == id ? theme['c-primary-font-active'] : theme['c-font-label']}
+        />
+      </View>
+      <Text
+        style={styles.text}
+        size={14}
+        color={activeId == id ? theme['c-primary-font-active'] : theme['c-font-label']}
+      >{global.i18n.t(id)}</Text>
+    </TouchableOpacity>
+  )
+"""
+if old_menu not in source:
+    raise SystemExit("Run154 stopped: MenuItem source differs from pinned upstream")
+source = source.replace(old_menu, new_menu, 1)
 replacements = [
     ("borderRightWidth: BorderWidths.normal,", "borderBottomWidth: BorderWidths.normal,"),
     ("paddingBottom: 10,\n    width: NAV_WIDTH,", "paddingHorizontal: 18,\n    paddingBottom: 0,\n    width: '100%',\n    flexDirection: 'row',\n    alignItems: 'center',"),
