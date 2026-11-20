@@ -509,6 +509,8 @@ fun NavigationSidebar(
         Row(
             modifier = Modifier
                 .fillMaxSize()
+                // 導覽列內層再次明確指定底色，避免子層或父層主題表面色覆蓋
+                .background(Color(0xFF141414))
                 .padding(horizontal = 18.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(14.dp)
