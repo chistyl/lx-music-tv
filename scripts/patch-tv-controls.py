@@ -558,13 +558,18 @@ def patch_common_focus_visibility() -> None:
         1,
     )
     source = source.replace(
+        "({ onChangeText, onClearText, clearBtn, style, size = 14, ...props }, ref) => {",
+        "({ onChangeText, onClearText, clearBtn, style, size = 14, onFocus, onBlur, ...props }, ref) => {",
+        1,
+    )
+    source = source.replace(
         "  const theme = useTheme()",
         "  const theme = useTheme()\n  const [tvFocused, setTvFocused] = useState(false)",
         1,
     )
     source = source.replace(
         "        onChangeText={changeText}",
-        "        onChangeText={changeText}\n        onFocus={(event) => { setTvFocused(true); props.onFocus?.(event) }}\n        onBlur={(event) => { setTvFocused(false); props.onBlur?.(event) }}",
+        "        onChangeText={changeText}\n        onFocus={(event) => { setTvFocused(true); onFocus?.(event) }}\n        onBlur={(event) => { setTvFocused(false); onBlur?.(event) }}",
         1,
     )
     source = source.replace(
