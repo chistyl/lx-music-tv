@@ -397,7 +397,7 @@ export default memo(() => {
       backgroundColor: theme['c-content-background'],
     }]}>
       <View style={styles.logo}>
-        <Icon name="logo" color="#16866A" size={22} />
+        <Icon name="logo" color="#16866A" size={25} />
         <Text size={18} color="#16866A" style={styles.logoText}>Music</Text>
       </View>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.menuList}>
