@@ -19,8 +19,8 @@ def patch_player_controls() -> None:
         start = source.index(f"const {name} = () => {{")
         end = source.find("\n}\n", start) + 3
         block = source[start:end]
-        block = block.replace("  const theme = useTheme()", "  const theme = useTheme()\n  const [tvFocused, setTvFocused] = useState(false)", 1)
-        block = block.replace("style={styles.cotrolBtn}", "focusable\n      focusable\n      style={styles.cotrolBtn}", 1)
+        block = block.replace("style={styles.cotrolBtn}", "focusable style={styles.cotrolBtn}", 1)
+        block = block.replace("style={styles.cotrolBtn}", "focusable\n      style={styles.cotrolBtn}", 1)
         source = source[:start] + block + source[end:]
     source = replace_once(source, "const styles = createStyle({", """const PlayModeBtn = () => {
   const theme = useTheme()
