@@ -397,7 +397,7 @@ export default memo(() => {
       backgroundColor: theme['c-content-background'],
     }]}>
       <View style={styles.logo}>
-        <Icon name="logo" color="#16866A" size={25} />
+        <Icon name="logo" color="#16866A" size={22} />
         <Text size={18} color="#16866A" style={styles.logoText}>Music</Text>
       </View>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.menuList}>
@@ -410,7 +410,7 @@ export default memo(() => {
 const styles = createStyle({
   container: {
     width: '100%',
-    height: 76,
+    height: 61,
     flexDirection: 'row',
     alignItems: 'center',
     borderBottomWidth: 1,
@@ -437,7 +437,7 @@ const styles = createStyle({
     gap: 8,
   },
   menuItem: {
-    height: 48,
+    height: 38,
     minWidth: 104,
     paddingHorizontal: 14,
     borderRadius: 9,
