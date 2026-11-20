@@ -13,6 +13,7 @@ on:
       - fix/lx-tv-remove-error-log-settings-run137
       - fix/lx-tv-traditional-conversion-language-only-run138
       - fix/lx-tv-theme-nav-black-bg-run139
+      - fix/lx-tv-nav-proportions-run146
   workflow_dispatch:
 
 permissions:
