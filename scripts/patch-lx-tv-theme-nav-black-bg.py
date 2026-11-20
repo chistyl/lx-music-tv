@@ -37,12 +37,12 @@ source = replace_once(
     "    minWidth: 0,\n    flexShrink: 0,",
     "prevent navigation item width compression",
 )
-# Requested refinement only: slightly reduce the selected tile height and nav icon size.
+# Requested refinement only: reduce the selected tile height and horizontal padding; keep nav icon size unchanged.
 source = replace_once(
     source,
     "    height: 44,\n    paddingHorizontal: 8,",
-    "    height: 38,\n    paddingHorizontal: 8,",
-    "reduce top navigation selected tile height",
+    "    height: 34,\n    paddingHorizontal: 6,",
+    "reduce top navigation selected tile height and width",
 )
 source = replace_once(
     source,
