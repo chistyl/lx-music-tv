@@ -245,6 +245,31 @@ import Comment from '../screens/Comment'"""
     source = replace_once(source, old, new, "avoid screens barrel initialization cycle")
     path.write_text(source, encoding="utf-8")
 
+    # navigation/index -> registerScreens -> Home -> core/common -> navigation
+    # is a second barrel cycle. Load screen registrations only after navigation
+    # has finished initializing, and avoid importing core/common from this barrel.
+    path = ROOT / "src/navigation/index.ts"
+    source = path.read_text(encoding="utf-8")
+    source = replace_once(
+        source,
+        "import registerScreens from './registerScreens'\\nimport { removeComponentId } from '@/core/common'",
+        "import commonActions from '@/store/common/action'",
+        "break navigation barrel initialization cycle",
+    )
+    source = replace_once(
+        source,
+        "const init = (callback: () => void | Promise<void>) => {\\n  // Register all screens on launch\\n  registerScreens()",
+        "const init = (callback: () => void | Promise<void>) => {\\n  // Defer screen imports until the navigation barrel has finished initializing.\\n  const registerScreens = require('./registerScreens').default\\n  registerScreens()",
+        "defer screen registration until navigation initialization",
+    )
+    source = replace_once(
+        source,
+        "      removeComponentId(componentId)",
+        "      commonActions.removeComponentId(componentId)",
+        "remove component id without core/common barrel",
+    )
+    path.write_text(source, encoding="utf-8")
+
 
 def patch_android_abis() -> None:
     path = ROOT / "android/app/build.gradle"
