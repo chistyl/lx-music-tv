@@ -742,9 +742,199 @@ const styles = createStyle({
 })
 """, encoding="utf-8")
 
+
+
+def patch_full_settings_focus() -> None:
+    # Every React Native touch target must be reachable with a D-pad.
+    # Components that already expose focusable are left unchanged.
+    import re
+    for path in (ROOT / "src").rglob("*.tsx"):
+        source = path.read_text(encoding="utf-8")
+        updated = re.sub(r"<TouchableOpacity(?![^>]*\bfocusable)(?=[\s>])", "<TouchableOpacity focusable", source)
+        updated = re.sub(r"<TouchableHighlight(?![^>]*\bfocusable)(?=[\s>])", "<TouchableHighlight focusable", updated)
+        if updated != source:
+            path.write_text(updated, encoding="utf-8")
+
+    # Settings category list (vertical layout).
+    path = ROOT / "src/screens/Home/Views/Setting/Vertical/NavList.tsx"
+    source = path.read_text(encoding="utf-8")
+    source = source.replace("import { memo, useCallback, useState } from 'react'", "import { memo, useCallback, useState } from 'react'", 1)
+    source = replace_once(
+        source,
+        "  const t = useI18n()\n\n  const active = activeId == id",
+        "  const t = useI18n()\n  const [tvFocused, setTvFocused] = useState(false)\n\n  const active = activeId == id",
+        "vertical settings navigation focus state",
+    )
+    source = replace_once(
+        source,
+        '<TouchableOpacity style={styles.listName} onPress={handlePress}>',
+        '<TouchableOpacity focusable onFocus={() => setTvFocused(true)} onBlur={() => setTvFocused(false)} style={[styles.listName, tvFocused ? styles.tvFocused : undefined]} onPress={handlePress}>',
+        "vertical settings navigation focus target",
+    )
+    source = replace_once(
+        source,
+        "const styles = createStyle({\n  container:",
+        "const styles = createStyle({\n  tvFocused: { borderWidth: 2, borderColor: '#35A979', borderRadius: 9, backgroundColor: 'rgba(53,169,121,0.12)', elevation: 4 },\n  container:",
+        "vertical settings navigation focus appearance",
+    )
+    path.write_text(source, encoding="utf-8")
+
+    # Compact setting category selector in vertical mode.
+    path = ROOT / "src/screens/Home/Views/Setting/Vertical/Header.tsx"
+    source = path.read_text(encoding="utf-8")
+    source = replace_once(
+        source,
+        "  const t = useI18n()\n",
+        "  const t = useI18n()\n  const [tvFocused, setTvFocused] = useState(false)\n",
+        "vertical settings header focus state",
+    )
+    source = replace_once(
+        source,
+        '<TouchableOpacity onPress={onShowNavBar} style={{ ...styles.currentList, borderBottomColor: theme[\'c-border-background\'] }}>',
+        '<TouchableOpacity focusable onFocus={() => setTvFocused(true)} onBlur={() => setTvFocused(false)} onPress={onShowNavBar} style={[styles.currentList, { borderBottomColor: theme[\'c-border-background\'] }, tvFocused ? styles.tvFocused : undefined]}>',
+        "vertical settings header focus target",
+    )
+    source = replace_once(
+        source,
+        "const styles = createStyle({\n  currentList:",
+        "const styles = createStyle({\n  tvFocused: { borderWidth: 2, borderColor: '#35A979', borderRadius: 8, backgroundColor: 'rgba(53,169,121,0.12)', elevation: 4 },\n  currentList:",
+        "vertical settings header focus appearance",
+    )
+    path.write_text(source, encoding="utf-8")
+
+    # Checkbox label/help controls are separate focus targets, not mouse-only hit areas.
+    path = ROOT / "src/components/common/CheckBox/index.tsx"
+    source = path.read_text(encoding="utf-8")
+    source = source.replace("import { useCallback, useEffect, useMemo, useState } from 'react'", "import { useCallback, useEffect, useMemo, useState } from 'react'", 1)
+    source = replace_once(
+        source,
+        "  const [isDisabled, setDisabled] = useState(false)",
+        "  const [isDisabled, setDisabled] = useState(false)\n  const [labelFocused, setLabelFocused] = useState(false)\n  const [helpFocused, setHelpFocused] = useState(false)",
+        "checkbox label and help focus states",
+    )
+    source = replace_once(
+        source,
+        '<TouchableOpacity style={styles.helpBtn} onPress={handleShowHelp}>',
+        '<TouchableOpacity focusable onFocus={() => setHelpFocused(true)} onBlur={() => setHelpFocused(false)} style={[styles.helpBtn, helpFocused ? styles.tvFocused : undefined]} onPress={handleShowHelp}>',
+        "checkbox help focus target",
+    )
+    source = replace_once(
+        source,
+        '<TouchableOpacity style={labelStyle} activeOpacity={0.3} onPress={handleLabelPress}>',
+        '<TouchableOpacity focusable onFocus={() => setLabelFocused(true)} onBlur={() => setLabelFocused(false)} style={[labelStyle, labelFocused ? styles.tvFocused : undefined]} activeOpacity={0.3} onPress={handleLabelPress}>',
+        "checkbox label focus target",
+    )
+    source = replace_once(
+        source,
+        "const styles = createStyle({\n  content:",
+        "const styles = createStyle({\n  tvFocused: { borderWidth: 2, borderColor: '#35A979', borderRadius: 8, backgroundColor: 'rgba(53,169,121,0.12)', elevation: 4 },\n  content:",
+        "checkbox label focus appearance",
+    )
+    path.write_text(source, encoding="utf-8")
+
+    # Dialog and popup close buttons must be D-pad reachable and visibly focused.
+    path = ROOT / "src/components/common/Dialog.tsx"
+    source = path.read_text(encoding="utf-8")
+    source = source.replace("import { useImperativeHandle, forwardRef, useMemo, useRef } from 'react'", "import { useImperativeHandle, forwardRef, useMemo, useRef, useState } from 'react'", 1)
+    source = replace_once(source, "  const modalRef = useRef<ModalType>(null)", "  const modalRef = useRef<ModalType>(null)\n  const [closeFocused, setCloseFocused] = useState(false)", "dialog close focus state")
+    source = replace_once(
+        source,
+        "return closeBtn\n      ? <TouchableHighlight style={{ ...styles.closeBtn, width: scaleSizeH(HEADER_HEIGHT) }}",
+        "return closeBtn\n      ? <TouchableHighlight focusable onFocus={() => setCloseFocused(true)} onBlur={() => setCloseFocused(false)} style={[styles.closeBtn, { width: scaleSizeH(HEADER_HEIGHT) }, closeFocused ? styles.closeBtnFocused : undefined]}",
+        "dialog close focus target",
+    )
+    source = replace_once(
+        source,
+        "  closeBtn: {",
+        "  closeBtnFocused: { borderWidth: 2, borderColor: '#35A979', borderRadius: 7, backgroundColor: 'rgba(53,169,121,0.14)', elevation: 5 },\n  closeBtn: {",
+        "dialog close focus appearance",
+    )
+    path.write_text(source, encoding="utf-8")
+
+    path = ROOT / "src/components/common/Popup.tsx"
+    source = path.read_text(encoding="utf-8")
+    source = source.replace("import { forwardRef, useImperativeHandle, useMemo, useRef } from 'react'", "import { forwardRef, useImperativeHandle, useMemo, useRef, useState } from 'react'", 1)
+    source = replace_once(source, "  const modalRef = useRef<ModalType>(null)", "  const modalRef = useRef<ModalType>(null)\n  const [closeFocused, setCloseFocused] = useState(false)", "popup close focus state")
+    source = replace_once(
+        source,
+        "? <TouchableOpacity style={styles.closeBtn} onPress={() => modalRef.current?.setVisible(false)}>",
+        "? <TouchableOpacity focusable onFocus={() => setCloseFocused(true)} onBlur={() => setCloseFocused(false)} style={[styles.closeBtn, closeFocused ? styles.closeBtnFocused : undefined]} onPress={() => modalRef.current?.setVisible(false)}>",
+        "popup close focus target",
+    )
+    source = replace_once(
+        source,
+        "  closeBtn: {",
+        "  closeBtnFocused: { borderWidth: 2, borderColor: '#35A979', borderRadius: 8, backgroundColor: 'rgba(53,169,121,0.14)', elevation: 5 },\n  closeBtn: {",
+        "popup close focus appearance",
+    )
+    path.write_text(source, encoding="utf-8")
+
+    # Menu focus state and selection feedback, preserving each menu row's dimensions.
+    path = ROOT / "src/components/common/Menu.tsx"
+    source = path.read_text(encoding="utf-8")
+    source = replace_once(
+        source,
+        "  const theme = useTheme()\n  const windowSize = useWindowSize()",
+        "  const theme = useTheme()\n  const windowSize = useWindowSize()\n  const [focusedAction, setFocusedAction] = useState<string | null>(null)",
+        "menu focus state",
+    )
+    source = replace_once(
+        source,
+        "style={{ ...styles.menuItem, width: menuItemStyle.width, height: menuItemStyle.height }}\n                      underlayColor={theme['c-primary-background-active']}",
+        "style={[styles.menuItem, { width: menuItemStyle.width, height: menuItemStyle.height }, focusedAction === menu.action ? { borderWidth: 2, borderColor: '#35A979', borderRadius: 7, backgroundColor: 'rgba(53,169,121,0.14)', elevation: 5 } : undefined]}\n                      onFocus={() => setFocusedAction(menu.action)}\n                      onBlur={() => setFocusedAction(null)}\n                      underlayColor={theme['c-primary-background-active']}",
+        "menu row focus appearance",
+    )
+    path.write_text(source, encoding="utf-8")
+
+    # Settings' direct TextInputs bypass the shared Input component.
+    path = ROOT / "src/screens/Home/Views/Setting/settings/Basic/Source.tsx"
+    source = path.read_text(encoding="utf-8")
+    source = source.replace("import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'", "import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'", 1)
+    source = replace_once(source, "  const [catalogUrl, setCatalogUrl] = useState(savedCatalogUrl)", "  const [catalogUrl, setCatalogUrl] = useState(savedCatalogUrl)\n  const [catalogFocused, setCatalogFocused] = useState(false)", "source catalog input focus state")
+    source = replace_once(
+        source,
+        '<TextInput value={catalogUrl} onChangeText={setCatalogUrl} placeholder="https://example.com/sources.json" accessibilityLabel="源清单地址" autoCapitalize="none" />',
+        '<TextInput focusable value={catalogUrl} onFocus={() => setCatalogFocused(true)} onBlur={() => setCatalogFocused(false)} onChangeText={setCatalogUrl} placeholder="https://example.com/sources.json" accessibilityLabel="源清单地址" autoCapitalize="none" style={{ borderWidth: catalogFocused ? 2 : 0, borderColor: "#35A979", borderRadius: 8, paddingHorizontal: 10, paddingVertical: 8 }} />',
+        "source catalog input focus target",
+    )
+    path.write_text(source, encoding="utf-8")
+
+    path = ROOT / "src/screens/Home/Views/Setting/settings/Basic/SourceQuickAdd.tsx"
+    source = path.read_text(encoding="utf-8")
+    source = replace_once(source, "  const [url, setUrl] = useState('')", "  const [url, setUrl] = useState('')\n  const [urlFocused, setUrlFocused] = useState(false)", "quick add input focus state")
+    source = replace_once(
+        source,
+        '<TextInput value={url} onChangeText={setUrl} placeholder="输入源链接或订阅地址" accessibilityLabel="快速添加地址" autoCapitalize="none" autoCorrect={false} style={{ color: theme[\'c-font\'] }} />',
+        '<TextInput focusable value={url} onFocus={() => setUrlFocused(true)} onBlur={() => setUrlFocused(false)} onChangeText={setUrl} placeholder="输入源链接或订阅地址" accessibilityLabel="快速添加地址" autoCapitalize="none" autoCorrect={false} style={{ color: theme[\'c-font\'], borderWidth: urlFocused ? 2 : 0, borderColor: "#35A979", borderRadius: 8, paddingHorizontal: 10, paddingVertical: 8 }} />',
+        "quick add input focus target",
+    )
+    path.write_text(source, encoding="utf-8")
+
+    # Native sliders need explicit TV focusability and a focused container treatment.
+    path = ROOT / "src/screens/Home/Views/Setting/components/Slider.tsx"
+    source = path.read_text(encoding="utf-8")
+    source = source.replace("import { memo } from 'react'", "import { memo, useState } from 'react'", 1)
+    source = replace_once(source, "  const theme = useTheme()", "  const theme = useTheme()\n  const [tvFocused, setTvFocused] = useState(false)", "settings slider focus state")
+    source = replace_once(
+        source,
+        "      value={value}\n      style={styles.slider}",
+        "      value={value}\n      focusable\n      onFocus={() => setTvFocused(true)}\n      onBlur={() => setTvFocused(false)}\n      style={[styles.slider, tvFocused ? styles.tvFocused : undefined]}",
+        "settings slider focus target",
+    )
+    source = replace_once(
+        source,
+        "const styles = createStyle({\n  slider:",
+        "const styles = createStyle({\n  tvFocused: { borderWidth: 2, borderColor: '#35A979', borderRadius: 10, backgroundColor: 'rgba(53,169,121,0.10)', elevation: 4 },\n  slider:",
+        "settings slider focus appearance",
+    )
+    path.write_text(source, encoding="utf-8")
+
+
+
 patch_button()
 patch_input_focus()
 patch_tv_focus_surfaces()
+patch_full_settings_focus()
 patch_my_lists()
 patch_slider_focus()
 patch_home_layout()
