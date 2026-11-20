@@ -72,7 +72,8 @@ export default () => {
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+    <View style={styles.container}>
+      <ScrollView style={styles.centerColumn} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
       <View style={styles.sectionHeader}>
         <Text size={22} color={theme['c-font']} style={styles.heading}>熱門歌單</Text>
         <TouchableOpacity focusable onPress={openSonglists}><Text color={theme['c-primary-font-active']}>更多歌單　›</Text></TouchableOpacity>
@@ -105,6 +106,8 @@ export default () => {
         {boards.length === 0 ? <Text color={theme['c-font-label']}>正在載入排行榜…</Text> : null}
       </View>
 
+      </ScrollView>
+      <ScrollView style={styles.rightColumn} contentContainerStyle={styles.rightContent} showsVerticalScrollIndicator={false}>
       <View style={styles.sectionHeader}>
         <Text size={22} color={theme['c-font']} style={styles.heading}>推薦歌曲</Text>
         <TouchableOpacity focusable onPress={() => setNavActiveId('nav_top')}><Text color={theme['c-primary-font-active']}>查看榜單　›</Text></TouchableOpacity>
@@ -122,13 +125,17 @@ export default () => {
         ))}
         {songs.length === 0 ? <Text color={theme['c-font-label']}>正在載入推薦歌曲…</Text> : null}
       </View>
-    </ScrollView>
+      </ScrollView>
+    </View>
   )
 }
 
 const styles = createStyle({
-  container: { flex: 1, minWidth: 0 },
+  container: { flex: 1, minWidth: 0, flexDirection: 'row', overflow: 'hidden' },
+  centerColumn: { flex: 1.65, minWidth: 0 },
+  rightColumn: { flex: 1, minWidth: 250, maxWidth: 380, borderLeftWidth: 1, borderLeftColor: '#303846' },
   content: { paddingHorizontal: 24, paddingTop: 18, paddingBottom: 28, gap: 14 },
+  rightContent: { paddingHorizontal: 18, paddingTop: 18, paddingBottom: 28, gap: 14 },
   sectionHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 8 },
   heading: { fontWeight: '700' },
   cardRow: { flexDirection: 'row', gap: 14, paddingVertical: 6, paddingRight: 12 },
