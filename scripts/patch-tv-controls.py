@@ -238,6 +238,7 @@ def patch_button() -> None:
         tvFocused ? {
           borderWidth: 2,
           borderColor: '#FFFFFF',
+          borderRadius: focusRadius,
           backgroundColor: 'rgba(255,255,255,0.12)',
           shadowColor: '#FFFFFF',
           shadowOpacity: 0.65,
