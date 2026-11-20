@@ -29,10 +29,70 @@ def patch_player_controls() -> None:
 def patch_player_bar() -> None:
     path = ROOT / "src/components/player/PlayerBar/index.tsx"
     source = path.read_text(encoding="utf-8")
-    source = replace_once(source, "    paddingVertical: 5,\n    paddingLeft: 5,", "    paddingVertical: 8,\n    paddingLeft: 8,", "player bar padding")
-    source = replace_once(source, "    paddingLeft: 5,\n    paddingRight: 5,", "    paddingLeft: 8,\n    paddingRight: 8,", "player bar control spacing")
+    source = source.replace(
+        "<Pic isHome={isHome} />",
+        "<Pic isHome={isHome} size={isHome ? 176 : 46} />",
+        1,
+    )
+    source = source.replace(
+        """    <View style={{ ...styles.container, backgroundColor: theme['c-content-background'] }}>""",
+        """    <View style={[
+      styles.container,
+      isHome ? styles.homeContainer : undefined,
+      { backgroundColor: theme['c-content-background'] },
+    ]}>""",
+        1,
+    )
+    source = source.replace(
+        """      <View style={styles.center}>""",
+        """      <View style={isHome ? styles.homeCenter : styles.center}>""",
+        1,
+    )
+    source = source.replace(
+        """      <View style={styles.right}>""",
+        """      <View style={isHome ? styles.homeRight : styles.right}>""",
+        1,
+    )
+    source = source.replace(
+        """  container: {
+    width: '100%',""",
+        """  homeContainer: {
+    width: '100%',
+    height: '100%',
+    flexDirection: 'column',
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingTop: 26,
+    paddingBottom: 20,
+    borderTopLeftRadius: 0,
+    borderTopRightRadius: 0,
+    elevation: 0,
+  },
+  homeCenter: {
+    width: '100%',
+    flexGrow: 0,
+    flexShrink: 1,
+    alignItems: 'center',
+    paddingLeft: 0,
+    marginTop: 22,
+  },
+  homeRight: {
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexGrow: 0,
+    flexShrink: 0,
+    paddingLeft: 0,
+    paddingRight: 0,
+    marginTop: 20,
+  },
+  container: {
+    width: '100%',""",
+        1,
+    )
     path.write_text(source, encoding="utf-8")
-
 
 def patch_button() -> None:
     target = ROOT / "src/components/common/Button.tsx"
@@ -142,105 +202,161 @@ def patch_my_lists() -> None:
 
 
 def patch_home_layout() -> None:
-    # Only relocate the existing navigation and player. Keep the original page content untouched.
+    # Keep the original navigation and player components and move only their placement.
     home = ROOT / "src/screens/Home/Horizontal/index.tsx"
-    home.write_text("""import { View } from 'react-native'
-import TopNavigation from './TopNavigation'
-import LeftPlayerPanel from './LeftPlayerPanel'
-import StatusBar from '@/components/common/StatusBar'
-import Main from './Main'
-import { createStyle } from '@/utils/tools'
+    source = home.read_text(encoding="utf-8")
+    source = source.replace(
+        "import Aside from './Aside'\nimport PlayerBar from '@/components/player/PlayerBar'",
+        "import Aside from './Aside'\nimport PlayerBar from '@/components/player/PlayerBar'",
+        1,
+    )
+    old_layout = """const styles = createStyle({
+  container: {
+    flex: 1,
+    flexDirection: 'row',
+  },
+  content: {
+    flex: 1,
+    overflow: 'hidden',
+  },
+})
 
-const styles = createStyle({
-  container: { flex: 1, flexDirection: 'column' },
-  content: { flex: 1, flexDirection: 'row', overflow: 'hidden' },
-  main: { flex: 1, overflow: 'hidden' },
+export default () => {
+  return (
+    <>
+      <StatusBar />
+      <View style={styles.container}>
+        <Aside />
+        <View style={styles.content}>
+          <Header />
+          <Main />
+          <PlayerBar isHome />
+        </View>
+      </View>
+    </>
+  )
+}
+"""
+    new_layout = """const styles = createStyle({
+  container: {
+    flex: 1,
+    flexDirection: 'column',
+    overflow: 'hidden',
+  },
+  content: {
+    flex: 1,
+    flexDirection: 'row',
+    overflow: 'hidden',
+  },
+  player: {
+    width: '31%',
+    flexGrow: 0,
+    flexShrink: 0,
+    overflow: 'hidden',
+  },
+  main: {
+    flex: 1,
+    overflow: 'hidden',
+  },
 })
 
 export default () => (
   <>
     <StatusBar />
     <View style={styles.container}>
-      <TopNavigation />
+      <Aside />
       <View style={styles.content}>
-        <LeftPlayerPanel />
+        <View style={styles.player}>
+          <PlayerBar isHome />
+        </View>
         <View style={styles.main}>
+          <Header />
           <Main />
         </View>
       </View>
     </View>
   </>
 )
-""", encoding="utf-8")
+"""
+    source = replace_once(source, old_layout, new_layout, "home horizontal layout")
+    home.write_text(source, encoding="utf-8")
 
-    nav = ROOT / "src/screens/Home/Horizontal/TopNavigation.tsx"
-    nav.write_text("""import { memo, useState } from 'react'
+    aside = ROOT / "src/screens/Home/Horizontal/Aside.tsx"
+    aside.write_text("""import { memo, useState } from 'react'
 import { ScrollView, TouchableOpacity, View } from 'react-native'
 import { useNavActiveId, useStatusbarHeight } from '@/store/common/hook'
 import { useTheme } from '@/store/theme/hook'
+import { useI18n } from '@/lang'
 import { Icon } from '@/components/common/Icon'
 import Text from '@/components/common/Text'
-import { createStyle } from '@/utils/tools'
+import { confirmDialog, createStyle, exitApp as backHome } from '@/utils/tools'
 import { NAV_MENUS } from '@/config/constant'
 import type { InitState } from '@/store/common/state'
 import { exitApp, setNavActiveId } from '@/core/common'
-import { confirmDialog, exitApp as backHome } from '@/utils/tools'
 import { useSettingValue } from '@/store/setting/hook'
-import { useI18n } from '@/lang'
 
 type IdType = InitState['navActiveId'] | 'nav_exit' | 'back_home'
 
-const MenuItem = ({ id, icon, active, onPress }: {
-  id: IdType, icon: string, active: boolean, onPress: (id: IdType) => void
+const MenuItem = ({ id, icon, onPress }: {
+  id: IdType
+  icon: string
+  onPress: (id: IdType) => void
 }) => {
+  const activeId = useNavActiveId()
   const theme = useTheme()
   const t = useI18n()
   const [focused, setFocused] = useState(false)
+  const active = activeId === id
+
   return (
     <TouchableOpacity
       focusable
       onFocus={() => setFocused(true)}
       onBlur={() => setFocused(false)}
       onPress={() => onPress(id)}
-      style={[styles.item, active ? styles.active : undefined, focused ? styles.focused : undefined]}
+      style={[styles.menuItem, active ? styles.activeItem : undefined, focused ? styles.focusedItem : undefined]}
     >
-      <Icon name={icon} size={19} color={active ? '#FFFFFF' : theme['c-font-label']} />
-      <Text size={13} color={active ? '#FFFFFF' : theme['c-font-label']}>{t(id)}</Text>
+      <Icon name={icon} size={20} color={active ? '#FFFFFF' : theme['c-font-label']} />
+      <Text size={14} color={active ? '#FFFFFF' : theme['c-font-label']}>{t(id)}</Text>
     </TouchableOpacity>
   )
 }
 
 export default memo(() => {
-  const activeId = useNavActiveId()
   const theme = useTheme()
   const statusBarHeight = useStatusbarHeight()
   const showBackBtn = useSettingValue('common.showBackBtn')
   const showExitBtn = useSettingValue('common.showExitBtn')
 
   const handlePress = (id: IdType) => {
-    if (id === 'nav_exit') {
-      void confirmDialog({
-        message: global.i18n.t('exit_app_tip'),
-        confirmButtonText: global.i18n.t('list_remove_tip_button'),
-      }).then(isExit => { if (isExit) exitApp('Exit Btn') })
-      return
+    switch (id) {
+      case 'nav_exit':
+        void confirmDialog({
+          message: global.i18n.t('exit_app_tip'),
+          confirmButtonText: global.i18n.t('list_remove_tip_button'),
+        }).then(isExit => { if (isExit) exitApp('Exit Btn') })
+        return
+      case 'back_home':
+        backHome()
+        return
     }
-    if (id === 'back_home') { backHome(); return }
     global.app_event.changeMenuVisible(false)
     setNavActiveId(id)
   }
 
   return (
-    <View style={[styles.container, { paddingTop: statusBarHeight, borderBottomColor: theme['c-border-background'] }]}>
+    <View style={[styles.container, {
+      paddingTop: statusBarHeight,
+      borderBottomColor: theme['c-border-background'],
+      backgroundColor: theme['c-content-background'],
+    }]}>
       <View style={styles.logo}>
-        <Icon name="logo" color={theme['c-primary-dark-100-alpha-300']} size={19} />
+        <Icon name="logo" color={theme['c-primary-dark-100-alpha-300']} size={24} />
       </View>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.items}>
-        {NAV_MENUS.map(menu => (
-          <MenuItem key={menu.id} id={menu.id} icon={menu.icon} active={activeId === menu.id} onPress={handlePress} />
-        ))}
-        {showBackBtn ? <MenuItem id="back_home" icon="home" active={false} onPress={handlePress} /> : null}
-        {showExitBtn ? <MenuItem id="nav_exit" icon="exit2" active={false} onPress={handlePress} /> : null}
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.menuList}>
+        {NAV_MENUS.map(menu => <MenuItem key={menu.id} id={menu.id} icon={menu.icon} onPress={handlePress} />)}
+        {showBackBtn ? <MenuItem id="back_home" icon="home" onPress={handlePress} /> : null}
+        {showExitBtn ? <MenuItem id="nav_exit" icon="exit2" onPress={handlePress} /> : null}
       </ScrollView>
     </View>
   )
@@ -248,63 +364,44 @@ export default memo(() => {
 
 const styles = createStyle({
   container: {
-    height: 58,
+    width: '100%',
+    height: 94,
     flexDirection: 'row',
     alignItems: 'center',
     borderBottomWidth: 1,
-    paddingHorizontal: 14,
+    paddingHorizontal: 24,
+    flexGrow: 0,
+    flexShrink: 0,
   },
-  logo: { width: 42, alignItems: 'flex-start', justifyContent: 'center' },
-  items: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  item: {
-    height: 38, minWidth: 88, paddingHorizontal: 13, borderRadius: 9,
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+  logo: {
+    width: 54,
+    alignItems: 'flex-start',
+    justifyContent: 'center',
   },
-  active: { backgroundColor: '#16866A' },
-  focused: { borderWidth: 2, borderColor: '#FFFFFF' },
-})
-""", encoding="utf-8")
-
-    panel = ROOT / "src/screens/Home/Horizontal/LeftPlayerPanel.tsx"
-    panel.write_text("""import { View } from 'react-native'
-import Pic from '@/components/player/PlayerBar/components/Pic'
-import Title from '@/components/player/PlayerBar/components/Title'
-import PlayInfo from '@/components/player/PlayerBar/components/PlayInfo'
-import ControlBtn from '@/components/player/PlayerBar/components/ControlBtn'
-import { useTheme } from '@/store/theme/hook'
-import { createStyle } from '@/utils/tools'
-
-export default () => {
-  const theme = useTheme()
-  return (
-    <View style={[styles.container, { backgroundColor: theme['c-content-background'], borderRightColor: theme['c-border-background'] }]}>
-      <View style={styles.cover}><Pic isHome size={112} /></View>
-      <View style={styles.title}><Title isHome /></View>
-      <View style={styles.lyric}><PlayInfo isHome /></View>
-      <View style={styles.controls}><ControlBtn /></View>
-    </View>
-  )
-}
-
-const styles = createStyle({
-  container: {
-    width: 224, flexGrow: 0, flexShrink: 0,
-    borderRightWidth: 1, paddingHorizontal: 14, paddingVertical: 18,
+  menuList: {
+    flexDirection: 'row',
     alignItems: 'center',
+    gap: 12,
   },
-  cover: { width: 112, height: 112, marginBottom: 16 },
-  title: { width: '100%', minHeight: 34, justifyContent: 'center', alignItems: 'center' },
-  lyric: { width: '100%', minHeight: 54, justifyContent: 'center', marginTop: 6 },
-  controls: { width: '100%', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginTop: 12 },
+  menuItem: {
+    height: 48,
+    minWidth: 112,
+    paddingHorizontal: 16,
+    borderRadius: 9,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+  },
+  activeItem: {
+    backgroundColor: '#16866A',
+  },
+  focusedItem: {
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
+  },
 })
 """, encoding="utf-8")
-
-    pic = ROOT / "src/components/player/PlayerBar/components/Pic.tsx"
-    source = pic.read_text(encoding="utf-8")
-    source = source.replace("export default ({ isHome }: { isHome: boolean }) => {", "export default ({ isHome, size = 46 }: { isHome: boolean, size?: number }) => {", 1)
-    source = source.replace("  const musicInfo = usePlayerMusicInfo()", "  const musicInfo = usePlayerMusicInfo()" + chr(10) + "  const imageSize = scaleSizeH(size)", 1)
-    source = source.replace("<Image url={musicInfo.pic} nativeID={NAV_SHEAR_NATIVE_IDS.playDetail_pic} style={styles.image} onError={handleError} />", "<Image url={musicInfo.pic} nativeID={NAV_SHEAR_NATIVE_IDS.playDetail_pic} style={{ width: imageSize, height: imageSize, borderRadius: 3 }} onError={handleError} />", 1)
-    pic.write_text(source, encoding="utf-8")
 
 patch_home_layout()
 patch_button()
