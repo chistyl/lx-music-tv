@@ -28,7 +28,7 @@ android {
         release {
             ndk {
                 abiFilters.clear()
-                abiFilters.add("arm64-v8a")
+                abiFilters.addAll(listOf("x86", "x86_64", "arm64-v8a"))
             }
 
             optimization {
