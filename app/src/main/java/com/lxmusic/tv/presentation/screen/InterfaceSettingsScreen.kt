@@ -122,7 +122,10 @@ fun InterfaceSettingsScreen(
                 item {
                     SectionTitle("主题色")
                     Spacer(modifier = Modifier.height(12.dp))
-                    Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                    Row(
+                        modifier = Modifier.focusGroup(),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
                         LXThemeColor.values().forEach { color ->
                             ThemeColorCard(
                                 color = color,
