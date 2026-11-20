@@ -181,6 +181,59 @@ def patch_legacy_focus_styles() -> None:
 
 
 
+
+def patch_song_row_focus() -> None:
+    # The upstream song row is a direct TouchableOpacity, not the shared Button.
+    # Add focus state to its primary row and overflow-menu target without changing
+    # row height, spacing, press handlers, long-press handlers, or data behavior.
+    path = ROOT / "src/screens/Home/Views/Mylist/MusicList/ListItem.tsx"
+    source = path.read_text(encoding="utf-8")
+    source = replace_once(
+        source,
+        "import { memo, useRef } from 'react'",
+        "import { memo, useRef, useState } from 'react'",
+        "song row focus React import",
+    )
+    source = replace_once(
+        source,
+        "  const theme = useTheme()\n\n  const isSelected",
+        "  const theme = useTheme()\n  const [itemFocused, setItemFocused] = useState(false)\n  const [moreFocused, setMoreFocused] = useState(false)\n\n  const isSelected",
+        "song row focus state",
+    )
+    source = replace_once(
+        source,
+        '<TouchableOpacity style={styles.listItemLeft} onPress={() => { onPress(item, index) }} onLongPress={() => { onLongPress(item, index) }}>',
+        '<TouchableOpacity focusable onFocus={() => setItemFocused(true)} onBlur={() => setItemFocused(false)} style={[styles.listItemLeft, itemFocused ? styles.tvFocused : undefined]} onPress={() => { onPress(item, index) }} onLongPress={() => { onLongPress(item, index) }}>',
+        "song row remote focus handlers",
+    )
+    source = replace_once(
+        source,
+        '<TouchableOpacity onPress={handleShowMenu} ref={moreButtonRef} style={styles.moreButton}>',
+        '<TouchableOpacity focusable onFocus={() => setMoreFocused(true)} onBlur={() => setMoreFocused(false)} onPress={handleShowMenu} ref={moreButtonRef} style={[styles.moreButton, moreFocused ? styles.tvFocused : undefined]}>',
+        "song overflow menu remote focus handlers",
+    )
+    source = replace_once(
+        source,
+        "const styles = createStyle({\n  listItem:",
+        """const styles = createStyle({
+  tvFocused: {
+    borderWidth: 1.5,
+    borderColor: '#78AEFF',
+    borderRadius: 6,
+    shadowColor: '#78AEFF',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.34,
+    shadowRadius: 5,
+    elevation: 2,
+  },
+  listItem:""",
+        "song row soft ice-blue focus style",
+    )
+    path.write_text(source, encoding="utf-8")
+
+
+patch_song_row_focus()
+
 patch_theme()
 patch_shared_button_focus()
 patch_legacy_focus_styles()
