@@ -20,74 +20,38 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Apply requested feature removals
-        run: python3 scripts/patch-lx-tv-features.py
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 18
-          cache: npm
-          cache-dependency-path: upstream/lx-music-mobile-auto-source/package-lock.json
-
-      - name: Add Traditional Chinese conversion dependency
-        working-directory: upstream/lx-music-mobile-auto-source
-        run: npm install --package-lock-only opencc-js@1.4.2
-
-      - name: Install JavaScript dependencies
-        working-directory: upstream/lx-music-mobile-auto-source
-        run: npm ci
-
-      - name: Run upstream custom-source tests
-        working-directory: upstream/lx-music-mobile-auto-source
-        run: npm run test:custom-sources
-
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
 
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
       - name: Install Android SDK packages
         run: |
-          echo "ANDROID_HOME=$ANDROID_HOME"
-          SDKMANAGER="$(find "$ANDROID_HOME/cmdline-tools" -type f -name sdkmanager | sort | tail -n 1)"
-          test -n "$SDKMANAGER"
-          echo "Using SDK manager: $SDKMANAGER"
-          yes | "$SDKMANAGER" --licenses
-          "$SDKMANAGER" --install "platform-tools" "platforms;android-34" "build-tools;34.0.0"
+          yes | sdkmanager --licenses
+          sdkmanager "platform-tools" "platforms;android-37" "build-tools;37.0.0"
 
-      - name: Prepare Android TV manifest
+      - name: Verify TV application source is included
         run: |
-          python3 scripts/prepare-android-tv.py
-          python3 scripts/patch-tv-controls.py
-          grep -n "LEANBACK_LAUNCHER\\|android.software.leanback\\|screenOrientation" upstream/lx-music-mobile-auto-source/android/app/src/main/AndroidManifest.xml
-          grep -n "focusable\\|tvFocused\\|handleFocus" upstream/lx-music-mobile-auto-source/src/components/common/Button.tsx
+          test -f app/src/main/java/com/lxmusic/tv/presentation/screen/MainScreen.kt
+          grep -q "TopNavigationBar(" app/src/main/java/com/lxmusic/tv/presentation/screen/MainScreen.kt
+          grep -q "NowPlayingPanel(" app/src/main/java/com/lxmusic/tv/presentation/screen/MainScreen.kt
+          echo "Confirmed: building the native LXMusicTV Compose application."
 
-      - name: Generate Android JS bundle
-        working-directory: upstream/lx-music-mobile-auto-source
-        run: npm run bundle-android
-
-      - name: Assemble debug APK
-        timeout-minutes: 50
-        working-directory: upstream/lx-music-mobile-auto-source/android
+      - name: Assemble native Android TV APK
         run: |
-          set -o pipefail
-          for attempt in 1 2; do
-            echo "Gradle build attempt ${attempt}/2"
-            if timeout 20m ./gradlew --no-daemon --stacktrace --console=plain -PreactNativeArchitectures=x86,x86_64 assembleDebug 2>&1 | tee "gradle-build-attempt-${attempt}.log"; then
-              exit 0
-            else
-              status=$?
-              echo "Gradle build attempt ${attempt} failed with exit code ${status}."
-            fi
-            if [ "$attempt" -lt 2 ]; then
-              echo "Retrying once after 15 seconds."
-              sleep 15
-            fi
-          done
-          echo "Both Gradle build attempts failed. See gradle-build-attempt-*.log above."
-          exit 1
+          chmod +x ./gradlew
+          ./gradlew --no-daemon --stacktrace --console=plain :app:assembleDebug
+
+      - name: Verify APK output
+        run: |
+          APK="app/build/outputs/apk/debug/app-debug.apk"
+          test -s "$APK"
+          ls -lh "$APK"
+          sha256sum "$APK"
 
       - name: Package complete source tree
         run: |
@@ -96,19 +60,11 @@ jobs:
             -x './.git/*' './**/.git/*' './**/node_modules/*' \
                './**/build/*' './**/.gradle/*' './dist/*'
 
-      - name: Upload APK - x86
+      - name: Upload Android TV APK
         uses: actions/upload-artifact@v4
         with:
-          name: lx-music-tv-apk-x86
-          path: upstream/lx-music-mobile-auto-source/android/app/build/outputs/apk/debug/*x86.apk
-          if-no-files-found: error
-          retention-days: 30
-
-      - name: Upload APK - x86_64
-        uses: actions/upload-artifact@v4
-        with:
-          name: lx-music-tv-apk-x86_64
-          path: upstream/lx-music-mobile-auto-source/android/app/build/outputs/apk/debug/*x86_64.apk
+          name: lx-music-tv-apk-universal
+          path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 30
 
