@@ -14,7 +14,7 @@ def replace_once(source: str, old: str, new: str, label: str) -> str:
 def patch_player_controls() -> None:
     path = ROOT / "src/components/player/PlayerBar/components/ControlBtn.tsx"
     source = path.read_text(encoding="utf-8")
-    source = source.replace("import { TouchableOpacity } from 'react-native'", "import { TouchableOpacity } from 'react-native'\nimport { useState } from 'react'", 1)
+    source = source.replace("import { TouchableOpacity } from 'react-native'", "import { TouchableOpacity } from 'react-native'\nimport { useState } from 'react'\nimport { useSettingValue } from '@/store/setting/hook'\nimport { updateSetting } from '@/core/common'\nimport { MUSIC_TOGGLE_MODE_LIST } from '@/config/constant'", 1)
     for name in ("PlayPrevBtn", "PlayNextBtn", "TogglePlayBtn"):
         start = source.index(f"const {name} = () => {{")
         end = source.find("\n}\n", start) + 3
@@ -22,6 +22,38 @@ def patch_player_controls() -> None:
         block = block.replace("  const theme = useTheme()", "  const theme = useTheme()\n  const [tvFocused, setTvFocused] = useState(false)", 1)
         block = block.replace("style={styles.cotrolBtn}", "focusable\n      onFocus={() => setTvFocused(true)}\n      onBlur={() => setTvFocused(false)}\n      style={[styles.cotrolBtn, tvFocused ? styles.focusedControl : undefined]}", 1)
         source = source[:start] + block + source[end:]
+    source = replace_once(source, "const styles = createStyle({", """const PlayModeBtn = () => {
+  const theme = useTheme()
+  const [tvFocused, setTvFocused] = useState(false)
+  const togglePlayMethod = useSettingValue('player.togglePlayMethod')
+  const modeIcons: Record<string, string> = {
+    listLoop: 'list-loop',
+    random: 'list-random',
+    list: 'list-order',
+    singleLoop: 'single-loop',
+    none: 'single',
+  }
+  const toggleNextPlayMode = () => {
+    let index = MUSIC_TOGGLE_MODE_LIST.indexOf(togglePlayMethod)
+    if (++index >= MUSIC_TOGGLE_MODE_LIST.length) index = 0
+    updateSetting({ 'player.togglePlayMethod': MUSIC_TOGGLE_MODE_LIST[index] })
+  }
+  return (
+    <TouchableOpacity
+      focusable
+      onFocus={() => setTvFocused(true)}
+      onBlur={() => setTvFocused(false)}
+      style={[styles.cotrolBtn, tvFocused ? styles.focusedControl : undefined]}
+      activeOpacity={0.5}
+      onPress={toggleNextPlayMode}
+    >
+      <Icon name={modeIcons[togglePlayMethod] || 'list-loop'} color={theme['c-button-font']} size={BTN_SIZE} />
+    </TouchableOpacity>
+  )
+}
+
+const styles = createStyle({""", "insert playback mode control")
+    source = replace_once(source, "      <PlayNextBtn />\n    </>", "      <PlayNextBtn />\n      <PlayModeBtn />\n    </>", "render playback mode control")
     source = replace_once(source, "    width: 46,\n    height: 46,", "    width: 60,\n    height: 60,", "player control target")
     source = replace_once(source, "const styles = createStyle({\n  cotrolBtn: {", "const styles = createStyle({\n  focusedControl: { borderWidth: 2, borderColor: '#FFFFFF', borderRadius: 30 },\n  cotrolBtn: {", "player focus style")
     path.write_text(source, encoding="utf-8")
