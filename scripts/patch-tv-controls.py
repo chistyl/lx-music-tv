@@ -335,6 +335,60 @@ def patch_tv_focus_surfaces() -> None:
     )
     path.write_text(source, encoding="utf-8")
 
+    # Checkbox controls: keep the square checkbox silhouette and provide a rounded focus frame.
+    path = ROOT / "src/components/common/CheckBox/Checkbox.tsx"
+    source = path.read_text(encoding="utf-8")
+    source = source.replace("import * as React from 'react'", "import * as React from 'react'", 1)
+    source = replace_once(
+        source,
+        "  const checked = status === 'checked'",
+        "  const [tvFocused, setTvFocused] = React.useState(false)\n  const checked = status === 'checked'",
+        "checkbox focus state",
+    )
+    source = replace_once(
+        source,
+        """      {...rest}
+      onPress={onPress}
+      disabled={disabled}
+      accessibilityRole="checkbox"
+      accessibilityState={{ disabled, checked }}
+      accessibilityLiveRegion="polite"
+      style={{ ...styles.container, padding: PADDING, marginLeft: -PADDING }}""",
+        """      {...rest}
+      focusable
+      onFocus={() => setTvFocused(true)}
+      onBlur={() => setTvFocused(false)}
+      onPress={onPress}
+      disabled={disabled}
+      accessibilityRole="checkbox"
+      accessibilityState={{ disabled, checked }}
+      accessibilityLiveRegion="polite"
+      style={[
+        styles.container,
+        { padding: PADDING, marginLeft: -PADDING },
+        tvFocused ? styles.focusedContainer : undefined,
+      ]}""",
+        "checkbox remote focus target",
+    )
+    source = replace_once(
+        source,
+        "const styles = createStyle({\n  container:",
+        "const styles = createStyle({\n  focusedContainer: { borderWidth: 2, borderColor: '#FFFFFF', borderRadius: 7, backgroundColor: 'rgba(255,255,255,0.10)', elevation: 5 },\n  container:",
+        "checkbox focus frame shape",
+    )
+    path.write_text(source, encoding="utf-8")
+
+    # Modal close control: give the small square close target a TV-sized focus hit area.
+    path = ROOT / "src/components/common/Dialog.tsx"
+    source = path.read_text(encoding="utf-8")
+    source = replace_once(
+        source,
+        "return closeBtn\n      ? <TouchableHighlight style={{ ...styles.closeBtn, width: scaleSizeH(HEADER_HEIGHT) }}",
+        "return closeBtn\n      ? <TouchableHighlight focusable style={{ ...styles.closeBtn, width: scaleSizeH(HEADER_HEIGHT), borderRadius: 5, borderWidth: 1, borderColor: 'transparent' }}",
+        "dialog close button focus target",
+    )
+    path.write_text(source, encoding="utf-8")
+
 def patch_navigation(relative_path: str) -> None:
     target = ROOT / relative_path
     source = target.read_text(encoding="utf-8")
