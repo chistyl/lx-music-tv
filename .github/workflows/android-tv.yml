@@ -17,6 +17,7 @@ on:
       - fix/lx-tv-nav-proportions-run146
       - fix/lx-tv-nav-compact-selected-icons-run151
       - fix/lx-tv-nav-tile-compact-run153
+      - fix/lx-tv-all-windows-remote-focus-run154
   workflow_dispatch:
 
 permissions:
