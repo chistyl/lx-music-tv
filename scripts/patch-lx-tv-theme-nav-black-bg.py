@@ -37,6 +37,19 @@ source = replace_once(
     "    minWidth: 0,\n    flexShrink: 0,",
     "prevent navigation item width compression",
 )
+# Requested refinement only: slightly reduce the selected tile height and nav icon size.
+source = replace_once(
+    source,
+    "    height: 44,\n    paddingHorizontal: 8,",
+    "    height: 38,\n    paddingHorizontal: 8,",
+    "reduce top navigation selected tile height",
+)
+source = replace_once(
+    source,
+    "<Icon name={icon} size={20} color={active ? theme['c-000'] : focused ? theme['c-primary-font-active'] : theme['c-font-label']} />",
+    "<Icon name={icon} size={18} color={active ? theme['c-000'] : focused ? theme['c-primary-font-active'] : theme['c-font-label']} />",
+    "slightly reduce top navigation icon size",
+)
 aside.write_text(source, encoding="utf-8")
 
 
@@ -52,4 +65,4 @@ source = replace_once(
 )
 theme_file.write_text(source, encoding="utf-8")
 
-print("Applied only the requested top-navigation selected tile and black-theme background changes.")
+print("Applied only the requested top-navigation selected tile height and icon size refinements.")
