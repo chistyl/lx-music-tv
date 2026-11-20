@@ -21,7 +21,7 @@ const useTVFocus = (style: any, onFocus?: (event: any) => void, onBlur?: (event:
   const theme = useTheme()
   const flatStyle = style && typeof style !== 'function' ? StyleSheet.flatten(style) : undefined
   const radius = flatStyle?.borderRadius
-    ?? (typeof flatStyle?.width === 'number' && flatStyle.width === flatStyle.height ? flatStyle.width / 2 : 6)
+    ?? (typeof flatStyle?.width === 'number' && flatStyle.width === flatStyle.height ? flatStyle.width / 2 : 0)
 
   return {
     focusable: focusable !== false,
@@ -39,7 +39,7 @@ const useTVFocus = (style: any, onFocus?: (event: any) => void, onBlur?: (event:
         style={[
           StyleSheet.absoluteFillObject,
           {
-            borderWidth: 2,
+            borderWidth: 1,
             borderColor: theme['c-primary-font-active'] || '#FFFFFF',
             borderRadius: radius,
           },
