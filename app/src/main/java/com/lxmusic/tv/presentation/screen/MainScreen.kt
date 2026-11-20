@@ -658,7 +658,8 @@ fun DiscCoverButton(
             .onFocusChanged { focused = it.isFocused }
             .clip(CircleShape)
             // 深色圆环（黑胶边缘，固定深色不随主题）；聚焦时主题色发光
-            .background(if (focused) LXPrimary.copy(alpha = 0.40f) else Color(0xFF3A3A40))
+            .background(if (focused) LXFocusFill else Color(0xFF3A3A40))
+            .lxCircleButtonFocus()
             .clickable { onClick() }
     ) {
         Box(
