@@ -104,6 +104,14 @@ jobs:
           if-no-files-found: error
           retention-days: 30
 
+      - name: Upload universal APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: lx-music-tv-apk-universal
+          path: upstream/lx-music-mobile-auto-source/android/app/build/outputs/apk/debug/*universal*.apk
+          if-no-files-found: error
+          retention-days: 30
+
       - name: Upload complete source ZIP
         uses: actions/upload-artifact@v4
         with:

@@ -114,7 +114,7 @@ def patch_android_abis() -> None:
     path = ROOT / "android/app/build.gradle"
     source = path.read_text(encoding="utf-8")
     source = replace_once(source, 'return value ? value.split(",") : ["armeabi-v7a", "x86", "x86_64", "arm64-v8a"]', 'return value ? value.split(",") : ["x86", "x86_64"]', "default Android TV ABIs")
-    source = replace_once(source, "universalApk true  // If true, also generate a universal APK", "universalApk false // Deliver only the two requested Intel ABI APKs", "disable universal APK")
+    source = replace_once(source, "universalApk true  // If true, also generate a universal APK", "universalApk true  // Generate a universal APK in addition to x86 and x86_64 APKs", "enable universal APK")
     path.write_text(source, encoding="utf-8")
 
 def patch_my_lists() -> None:
