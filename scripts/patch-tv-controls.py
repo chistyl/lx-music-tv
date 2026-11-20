@@ -14,17 +14,19 @@ def replace_once(source: str, old: str, new: str, label: str) -> str:
 def patch_player_controls() -> None:
     path = ROOT / "src/components/player/PlayerBar/components/ControlBtn.tsx"
     source = path.read_text(encoding="utf-8")
-    source = source.replace("import { TouchableOpacity } from 'react-native'", "import { TouchableOpacity } from 'react-native'\nimport { useSettingValue } from '@/store/setting/hook'\nimport { updateSetting } from '@/core/common'\nimport { MUSIC_TOGGLE_MODE_LIST } from '@/config/constant'", 1)
+    source = source.replace(
+        "import { TouchableOpacity } from 'react-native'",
+        "import { TouchableOpacity } from 'react-native'\\nimport { useSettingValue } from '@/store/setting/hook'\\nimport { updateSetting } from '@/core/common'\\nimport { MUSIC_TOGGLE_MODE_LIST } from '@/config/constant'",
+        1,
+    )
     for name in ("PlayPrevBtn", "PlayNextBtn", "TogglePlayBtn"):
         start = source.index(f"const {name} = () => {{")
-        end = source.find("\n}\n", start) + 3
+        end = source.find("\\n}\\n", start) + 3
         block = source[start:end]
         block = block.replace("style={styles.cotrolBtn}", "focusable style={styles.cotrolBtn}", 1)
-        block = block.replace("style={styles.cotrolBtn}", "focusable\n      style={styles.cotrolBtn}", 1)
         source = source[:start] + block + source[end:]
     source = replace_once(source, "const styles = createStyle({", """const PlayModeBtn = () => {
   const theme = useTheme()
-  const [tvFocused, setTvFocused] = useState(false)
   const togglePlayMethod = useSettingValue('player.togglePlayMethod')
   const modeIcons: Record<string, string> = {
     listLoop: 'list-loop',
@@ -41,9 +43,7 @@ def patch_player_controls() -> None:
   return (
     <TouchableOpacity
       focusable
-      onFocus={() => setTvFocused(true)}
-      onBlur={() => setTvFocused(false)}
-      focusable\n      style={styles.cotrolBtn}
+      style={styles.cotrolBtn}
       activeOpacity={0.5}
       onPress={toggleNextPlayMode}
     >
@@ -53,11 +53,11 @@ def patch_player_controls() -> None:
 }
 
 const styles = createStyle({""", "insert playback mode control")
-    source = replace_once(source, "      <PlayNextBtn />\n    </>", "      <PlayNextBtn />\n      <PlayModeBtn />\n    </>", "render playback mode control")
+    source = replace_once(source, "      <PlayNextBtn />\\n    </>", "      <PlayNextBtn />\\n      <PlayModeBtn />\\n    </>", "render playback mode control")
     source = replace_once(source, "const BTN_SIZE = 24", "const BTN_SIZE = 19", "reduce player control icon size")
-    source = replace_once(source, "    width: 46,\n    height: 46,", "    width: 40,\n    height: 40,", "reduce player control touch container")
-    source = replace_once(source, "const styles = createStyle({\n  cotrolBtn: {", "const styles = createStyle({\n  cotrolBtn: {", "player focus style")
+    source = replace_once(source, "    width: 46,\\n    height: 46,", "    width: 40,\\n    height: 40,", "reduce player control touch container")
     path.write_text(source, encoding="utf-8")
+
 
 def patch_player_bar() -> None:
     path = ROOT / "src/components/player/PlayerBar/index.tsx"
