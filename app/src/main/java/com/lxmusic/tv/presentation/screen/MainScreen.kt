@@ -237,10 +237,9 @@ fun MainScreen(
 
     // 全站主题由 MainActivity 根部的 LXMusicTheme 统一提供，此处不再嵌套 LXMusicTheme
     //（嵌套的默认 darkTheme=false 会把 currentLXTheme 强制写回浅色，导致深色模式返回后失效）
-    Row(
+    Column(
         modifier = Modifier
             .fillMaxSize()
-            // 2.5 浅色主题：主区浅灰白 #F5F5F7（仿 EchoMusic）
             .background(LXSurfaceMain)
             // 2.8 记录用户「上键」时间（区分「用户方向键主动聚焦 logo」与「系统默认分配」）：
             // 聚焦 logo 的唯一方向键路径是「上键」（从选中 tab 按上），进详情/切页用的是右/下/确定键；
@@ -274,9 +273,24 @@ fun MainScreen(
                 onNavigateToPlayer = onNavigateToPlayer,
                 onPlayPause = onPlayPause,
                 modifier = Modifier
-                    // 2.6 窄图标栏：宽度只够放 1 个图标（选中时底部才显示文字），参考 blbl/BBLL
-                    .width(72.dp)
+                    .fillMaxWidth()
+                    .height(84.dp)
+            )
+
+            // 下方内容：左侧播放器 + 原有功能内容区
+            Row(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+            ) {
+            LeftPlayerPanel(
+                song = currentSong,
+                isPlaying = isPlaying,
+                onOpenPlayer = onNavigateToPlayer,
+                onPlayPause = onPlayPause,
+                modifier = Modifier
                     .fillMaxHeight()
+                    .fillMaxWidth(0.37f)
             )
 
             // 主内容区域
@@ -357,11 +371,95 @@ fun MainScreen(
                     .weight(1f)
                     .fillMaxHeight()
             )
+            }
         }
     }
 
 /**
- * 左侧导航栏
+ * 左側播放器區：沿用原歌曲資料與播放事件，僅調整至主畫面左欄。
+ */
+@Composable
+private fun LeftPlayerPanel(
+    song: Song?,
+    isPlaying: Boolean,
+    onOpenPlayer: () -> Unit,
+    onPlayPause: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .background(LXSurfaceSidebar)
+            .padding(horizontal = 20.dp, vertical = 18.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        if (song != null) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth(0.82f)
+                    .aspectRatio(1f)
+                    .clip(CircleShape)
+                    .background(LXSurfaceVariant)
+                    .clickable { onOpenPlayer() },
+                contentAlignment = Alignment.Center
+            ) {
+                if (!song.picUrl.isNullOrBlank()) {
+                    RemoteImage(
+                        url = song.picUrl,
+                        contentDescription = song.name,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    Icon(
+                        imageVector = platformIcon(song.platform),
+                        contentDescription = null,
+                        tint = platformBrandColor(song.platform),
+                        modifier = Modifier.size(64.dp)
+                    )
+                }
+            }
+            Spacer(Modifier.height(20.dp))
+            Text(
+                text = song.name,
+                color = LXTextPrimary,
+                fontSize = 21.sp,
+                fontWeight = FontWeight.Medium,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.fillMaxWidth().clickable { onOpenPlayer() }
+            )
+            Text(
+                text = song.singer,
+                color = LXTextSecondary,
+                fontSize = 15.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.fillMaxWidth().padding(top = 5.dp)
+            )
+            Spacer(Modifier.height(22.dp))
+            Box(
+                modifier = Modifier
+                    .size(64.dp)
+                    .lxCircleButtonFocus()
+                    .clickable { onPlayPause() },
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
+                    contentDescription = if (isPlaying) "暂停" else "播放",
+                    tint = LXPrimary,
+                    modifier = Modifier.size(38.dp)
+                )
+            }
+        } else {
+            Text("尚未播放歌曲", color = LXTextSecondary, fontSize = 16.sp)
+        }
+    }
+}
+
+/**
+ * 左側導航欄
  */
 @Composable
 fun NavigationSidebar(
@@ -412,11 +510,12 @@ fun NavigationSidebar(
                 .matchParentSize()
                 .background(LXSidebarGradientBrush)
         )
-        Column(
+        Row(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 6.dp, vertical = 10.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
+                .padding(horizontal = 18.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(14.dp)
         ) {
         // Logo区域（窄栏：小图标 + 底部显示当前音乐平台名；2.8 可点击弹出下拉菜单切换平台）
         // 焦点样式与下方 tab 项（NavigationItem）完全一致：聚焦 LXFocusFill 背景 + 同款边框，
@@ -428,8 +527,8 @@ fun NavigationSidebar(
         Box {
             Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(64.dp)
+                    .width(150.dp)
+                    .fillMaxHeight()
                     .clip(RoundedCornerShape(10.dp))
                     .background(logoBgColor)
                     .onFocusChanged {
@@ -469,7 +568,7 @@ fun NavigationSidebar(
             DropdownMenu(
                 expanded = logoMenuExpanded,
                 onDismissRequest = { logoMenuExpanded = false },
-                modifier = Modifier.width(60.dp),
+                modifier = Modifier.width(150.dp),
                 containerColor = LXSurfaceVariant
             ) {
                 // 可选平台（排除本地音乐），仅显示平台短名（如 酷狗/QQ）
@@ -530,20 +629,7 @@ fun NavigationSidebar(
                 focusRequester = navRequesters.getOrNull(index),
                 // 从导航栏按右键：精确进入右侧内容第一项（而非空间最近项，避免落到第 N 项）
                 onEnterContent = { contentEnterRequester.requestFocus() },
-                modifier = Modifier.fillMaxWidth()
-            )
-        }
-
-        Spacer(modifier = Modifier.weight(1f))
-
-        // 正在播放控制条（常驻，窄栏版：封面进播放页 + 播放/暂停）
-        if (currentSong != null) {
-            NowPlayingBar(
-                song = currentSong,
-                isPlaying = isPlaying,
-                onClick = onNavigateToPlayer,
-                onPlayPause = onPlayPause,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.weight(1f).fillMaxHeight()
             )
         }
     }
@@ -700,7 +786,7 @@ fun NavigationItem(
     var isFocused by remember { mutableStateOf(false) }
     val bgColor = if (isFocused) LXFocusFill else Color.Transparent
 
-    Column(
+    Row(
         modifier = modifier
             .clip(RoundedCornerShape(10.dp))
             .background(bgColor)
@@ -723,8 +809,9 @@ fun NavigationItem(
                 unfocusedWidth = 0.dp
             )
             .clickable { onClick() }
-            .padding(horizontal = 4.dp, vertical = 6.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+            .padding(horizontal = 12.dp, vertical = 6.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center
     ) {
         Icon(
             imageVector = item.icon,
