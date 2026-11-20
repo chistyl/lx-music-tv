@@ -1056,6 +1056,9 @@ patch_home_layout()
 patch_player_controls()
 patch_player_bar()
 patch_progress_seek()
+# Keep native pressable targets D-pad reachable without wrapping every touchable
+# in a new component; this preserves native navigation and avoids focus traps.
+patch_all_touchables_focusable()
 # Global touchable wrapping is intentionally disabled: it made decorative and
 # container touchables steal D-pad focus across every settings dialog.
 print("Applied TV layout relocation and remote focus adaptations.")
