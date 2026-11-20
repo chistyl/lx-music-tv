@@ -18,6 +18,7 @@ on:
       - fix/lx-tv-nav-compact-selected-icons-run151
       - fix/lx-tv-nav-tile-compact-run153
       - fix/lx-tv-remote-shape-focus-run156
+      - fix/lx-tv-premium-focus-run167
   workflow_dispatch:
 
 permissions:
