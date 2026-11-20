@@ -315,9 +315,11 @@ fun LXMusicApp() {
                 onPlayPause = { viewModel.togglePlayPause() },
                 onPrevious = { viewModel.playPrevious() },
                 onNext = { viewModel.playNext() },
-                progressMs = homeProgress,
+                progressMs = (homeProgress * homeDuration.toFloat()).toLong(),
                 durationMs = homeDuration,
-                onSeek = { viewModel.seekTo(it) },
+                onSeek = { positionMs ->
+                    if (homeDuration > 0L) viewModel.seekTo(positionMs.toFloat() / homeDuration.toFloat())
+                },
                 defaultPlatform = defaultPlatform,
                 onDefaultPlatformChange = { viewModel.setDefaultPlatform(it) },
                 preferredQuality = preferredQuality,
