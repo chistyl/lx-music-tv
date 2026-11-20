@@ -810,7 +810,8 @@ fun NavigationItem(
                 unfocusedWidth = 0.dp
             )
             .clickable { onClick() }
-            .padding(horizontal = 12.dp, vertical = 6.dp),
+            // TV 遙控器優先：整個導覽項維持較大的可聚焦／可確認區域
+            .padding(horizontal = 18.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
     ) {
@@ -818,17 +819,17 @@ fun NavigationItem(
             imageVector = item.icon,
             contentDescription = item.description,
             tint = contentColor,
-            modifier = Modifier.size(24.dp)
+            modifier = Modifier.size(28.dp)
         )
 
-        // 仅选中时在图标底部显示文字，否则只显示图标（参考 blbl/BBLL 窄侧栏）
+        // 保留未選中時的精簡圖示；選中時以清楚的大字標示目前頁籤
         if (isSelected) {
             Text(
                 text = item.title,
                 color = contentColor,
-                fontSize = 11.sp,
+                fontSize = 15.sp,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(top = 3.dp)
+                modifier = Modifier.padding(start = 10.dp)
             )
         }
     }
