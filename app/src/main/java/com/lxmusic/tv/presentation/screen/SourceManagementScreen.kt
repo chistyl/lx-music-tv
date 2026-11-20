@@ -50,6 +50,7 @@ import com.lxmusic.tv.presentation.theme.LXSurfaceMain
 import com.lxmusic.tv.presentation.theme.LXSurfaceVariant
 import com.lxmusic.tv.presentation.theme.LXTextPrimary
 import com.lxmusic.tv.presentation.theme.LXTextSecondary
+import kotlinx.coroutines.delay
 
 /**
  * 播放源管理界面
@@ -76,6 +77,22 @@ fun SourceManagementScreen(
     var showDeleteDialog by remember { mutableStateOf<MusicSource?>(null) }
     // 平台配置弹窗状态：当前配置的源 + 平台选择集合
     var platformConfigSource by remember { mutableStateOf<MusicSource?>(null) }
+    var pendingSourceFocusRestore by remember { mutableStateOf<FocusRequester?>(null) }
+    var deleteDialogReturnRequester by remember { mutableStateOf<FocusRequester?>(null) }
+    var platformDialogReturnRequester by remember { mutableStateOf<FocusRequester?>(null) }
+
+    LaunchedEffect(pendingSourceFocusRestore) {
+        val requester = pendingSourceFocusRestore
+        if (requester != null) {
+            delay(120)
+            try {
+                requester.requestFocus()
+            } catch (_: IllegalStateException) {
+                // 若原播放源項目已移除或尚未掛載，交由系統焦點處理。
+            }
+            pendingSourceFocusRestore = null
+        }
+    }
     // 播放源排序：启用的源按「启用顺序」排前面（优先级从高到低，先启用优先），未启用的按导入顺序排后面
     val orderedSources = remember(sources) {
         val enabled = sources.filter { it.isEnabled }
@@ -197,8 +214,14 @@ fun SourceManagementScreen(
                         // 启用源显示优先级序号（1 = 最高）
                         priority = if (source.isEnabled) index + 1 else null,
                         onToggleEnabled = { enabled -> onToggleSource(source.id, enabled) },
-                        onDelete = { showDeleteDialog = source },
-                        onConfigurePlatforms = { platformConfigSource = source },
+                        onDelete = { requester ->
+                            deleteDialogReturnRequester = requester
+                            showDeleteDialog = source
+                        },
+                        onConfigurePlatforms = { requester ->
+                            platformDialogReturnRequester = requester
+                            platformConfigSource = source
+                        },
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
@@ -213,7 +236,11 @@ fun SourceManagementScreen(
                     onDeleteSource(source.id)
                     showDeleteDialog = null
                 },
-                onDismiss = { showDeleteDialog = null }
+                onDismiss = {
+                    showDeleteDialog = null
+                    pendingSourceFocusRestore = deleteDialogReturnRequester
+                    deleteDialogReturnRequester = null
+                }
             )
         }
 
@@ -225,8 +252,14 @@ fun SourceManagementScreen(
                 onConfirm = { platforms ->
                     onSetSourcePlatforms(source.id, platforms)
                     platformConfigSource = null
+                    pendingSourceFocusRestore = platformDialogReturnRequester
+                    platformDialogReturnRequester = null
                 },
-                onDismiss = { platformConfigSource = null }
+                onDismiss = {
+                    platformConfigSource = null
+                    pendingSourceFocusRestore = platformDialogReturnRequester
+                    platformDialogReturnRequester = null
+                }
             )
         }
         }
@@ -393,10 +426,13 @@ fun SourceItem(
     source: MusicSource,
     priority: Int? = null,
     onToggleEnabled: (Boolean) -> Unit,
-    onDelete: () -> Unit,
-    onConfigurePlatforms: () -> Unit = {},
+    onDelete: (FocusRequester) -> Unit,
+    onConfigurePlatforms: (FocusRequester) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
+    val platformConfigFocusRequester = remember { FocusRequester() }
+    val deleteFocusRequester = remember { FocusRequester() }
+
     Card(
         // 卡片自身不设焦点节点：若卡片 focusable 会拦截方向键，导致遥控器
         // 无法把焦点移入卡片内部的「启用/平台配置/删除」操作（需按两次确定）。
@@ -514,14 +550,14 @@ fun SourceItem(
                 CacheActionButton(
                     text = "平台配置",
                     hint = "设置生效平台",
-                    onClick = onConfigurePlatforms,
-                    modifier = Modifier.weight(1f)
+                    onClick = { onConfigurePlatforms(platformConfigFocusRequester) },
+                    modifier = Modifier.weight(1f).focusRequester(platformConfigFocusRequester)
                 )
                 CacheActionButton(
                     text = "删除",
                     hint = "移除该播放源",
-                    onClick = onDelete,
-                    modifier = Modifier.weight(1f)
+                    onClick = { onDelete(deleteFocusRequester) },
+                    modifier = Modifier.weight(1f).focusRequester(deleteFocusRequester)
                 )
             }
         }
