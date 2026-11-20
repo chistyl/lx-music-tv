@@ -4,51 +4,27 @@ root = Path("upstream/lx-music-mobile-auto-source/src/screens/Home/Horizontal")
 index = root / "index.tsx"
 aside = root / "Aside.tsx"
 
-source = index.read_text(encoding="utf-8")
-old = """const styles = createStyle({
-  container: {
-    flex: 1,
-    flexDirection: 'column',
-    overflow: 'hidden',
-  },
-  content: {
-    flex: 1,
-    minHeight: 0,
-    flexDirection: 'row',
-    overflow: 'hidden',
-  },
-  player: {
-    width: '26%',
-    flexGrow: 0,
-    flexShrink: 0,
-    overflow: 'hidden',
-  },
-  main: {
-    flex: 1,
-    minWidth: 0,
-    overflow: 'hidden',
-  },
-})
-
-export default () => (
-  <>
-    <StatusBar />
-    <View style={styles.container}>
-      <Aside />
-      <View style={styles.content}>
-        <View style={styles.player}>
-          <PlayerBar isHome />
-        </View>
-        <View style={styles.main}>
-          <Header />
-          <Main />
-        </View>
-      </View>
-    </View>
-  </>
-)
+index_source = index.read_text(encoding="utf-8")
+expected_imports = """import { View } from 'react-native'
+import Aside from './Aside'
+import PlayerBar from '@/components/player/PlayerBar'
+import StatusBar from '@/components/common/StatusBar'
+import Header from './Header'
+import Main from './Main'
+import { createStyle } from '@/utils/tools'
 """
-new = """const styles = createStyle({
+if expected_imports not in index_source:
+    raise SystemExit("Run154 stopped: upstream Horizontal/index.tsx imports differ from pinned source")
+
+new_index = """import { View } from 'react-native'
+import Aside from './Aside'
+import PlayerBar from '@/components/player/PlayerBar'
+import StatusBar from '@/components/common/StatusBar'
+import Header from './Header'
+import Main from './Main'
+import { createStyle } from '@/utils/tools'
+
+const styles = createStyle({
   container: {
     flex: 1,
     flexDirection: 'column',
@@ -60,27 +36,27 @@ new = """const styles = createStyle({
     minHeight: 0,
     flexDirection: 'row',
     overflow: 'hidden',
-    paddingHorizontal: 18,
-    paddingTop: 8,
-    paddingBottom: 14,
-    gap: 16,
+    paddingHorizontal: 22,
+    paddingTop: 14,
+    paddingBottom: 18,
   },
   main: {
     flex: 1,
     minWidth: 0,
     overflow: 'hidden',
+    marginRight: 18,
     borderRadius: 18,
   },
   player: {
-    width: '27%',
+    width: '28%',
+    minWidth: 290,
     maxWidth: 390,
-    minWidth: 280,
     flexGrow: 0,
     flexShrink: 0,
     overflow: 'hidden',
     borderRadius: 22,
     borderWidth: 1,
-    borderColor: 'rgba(120, 165, 225, 0.16)',
+    borderColor: 'rgba(120, 165, 225, 0.18)',
     backgroundColor: '#0D1420',
   },
 })
@@ -103,16 +79,29 @@ export default () => (
   </>
 )
 """
-if old not in source:
-    raise SystemExit("Run154 layout patch stopped: Horizontal/index.tsx no longer matches the verified Run153 structure")
-index.write_text(source.replace(old, new), encoding="utf-8")
+index.write_text(new_index, encoding="utf-8")
 
 source = aside.read_text(encoding="utf-8")
-source = source.replace(">Music</Text>", ">LX Music TV</Text>")
-source = source.replace("width: 138,", "width: 178,")
-source = source.replace("height: 72,", "height: 78,")
+replacements = [
+    ("borderRightWidth: BorderWidths.normal,", "borderBottomWidth: BorderWidths.normal,"),
+    ("paddingBottom: 10,\n    width: NAV_WIDTH,", "paddingHorizontal: 18,\n    paddingBottom: 0,\n    width: '100%',\n    flexDirection: 'row',\n    alignItems: 'center',"),
+    ("paddingTop: 15,\n    paddingBottom: 15,\n    flexDirection: 'row',\n    justifyContent: 'center',", "paddingTop: 10,\n    paddingBottom: 10,\n    paddingLeft: 8,\n    paddingRight: 24,\n    flexDirection: 'row',\n    justifyContent: 'flex-start',"),
+    ("menus: {\n    flex: 1,\n  },", "menus: {\n    flex: 1,\n    minWidth: 0,\n  },"),
+    ("paddingBottom: 15,\n  },\n  menuItem:", "paddingBottom: 0,\n    flexDirection: 'row',\n    alignItems: 'center',\n  },\n  menuItem:"),
+    ("paddingTop: 15,\n    paddingBottom: 15,", "paddingTop: 13,\n    paddingBottom: 13,\n    paddingLeft: 18,\n    paddingRight: 18,"),
+    ("<ScrollView style={styles.menus}>", "<ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.menus}>"),
+    ("<TouchableOpacity style={styles.menuItem} onPress={() => { onPress(id) }}>", "<TouchableOpacity focusable style={styles.menuItem} onPress={() => { onPress(id) }}>"),
+]
+for old, new in replacements:
+    if old not in source:
+        raise SystemExit(f"Run154 stopped: expected Aside.tsx fragment not found: {old!r}")
+    source = source.replace(old, new, 1)
+
+source = source.replace(
+    "return (\n    <View style={{ ...styles.container, borderRightColor: theme['c-border-background'] }}>",
+    "return (\n    <View style={{ ...styles.container, borderBottomColor: theme['c-border-background'] }}>",
+    1,
+)
 aside.write_text(source, encoding="utf-8")
 
-print("Run154: home navigation remains top-mounted; content now uses a wide main area with the existing player panel on the right. Existing navigation and player components are retained.")
-
-# Layout changes are intentionally limited to the existing home and player components.
+print("Run154 layout patch applied: top horizontal navigation, left content canvas, right player panel. Existing screen routing and player actions remain connected.")
