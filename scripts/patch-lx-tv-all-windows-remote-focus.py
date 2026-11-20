@@ -14,11 +14,9 @@ import {
   TouchableOpacity as RNTouchableOpacity,
   View,
 } from 'react-native'
-import { useTheme } from '@/store/theme/hook'
 
 const useTVFocus = (style: any, onFocus?: (event: any) => void, onBlur?: (event: any) => void, focusable?: boolean) => {
   const [focused, setFocused] = useState(false)
-  const theme = useTheme()
   const flatStyle = style && typeof style !== 'function' ? StyleSheet.flatten(style) : undefined
   const radius = flatStyle?.borderRadius
     ?? (typeof flatStyle?.width === 'number' && flatStyle.width === flatStyle.height ? flatStyle.width / 2 : 0)
@@ -39,9 +37,15 @@ const useTVFocus = (style: any, onFocus?: (event: any) => void, onBlur?: (event:
         style={[
           StyleSheet.absoluteFillObject,
           {
-            borderWidth: 1,
-            borderColor: theme['c-primary-font-active'] || '#FFFFFF',
+            borderWidth: 1.5,
+            borderColor: '#78AEFF',
             borderRadius: radius,
+            backgroundColor: 'rgba(120, 174, 255, 0.10)',
+            shadowColor: '#78AEFF',
+            shadowOffset: { width: 0, height: 0 },
+            shadowOpacity: 0.42,
+            shadowRadius: 8,
+            elevation: 5,
           },
         ]}
       />
