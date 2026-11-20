@@ -27,7 +27,8 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import kotlin.math.max
 
-private val LXFocusGreen = Color(0xFF36C98A)
+import com.lxmusic.tv.presentation.theme.FocusBorder
+import com.lxmusic.tv.presentation.theme.LXFocusFill
 
 /**
  * 将 Shape.createOutline 得到的 Outline 转为可描边的 Path。
@@ -157,7 +158,7 @@ suspend fun requestInitialFocus(
  */
 @Composable
 fun Modifier.lxFocusBorder(
-    focusedColor: Color = LXFocusGreen,
+    focusedColor: Color = FocusBorder,
     unfocusedColor: Color = Color.Transparent,
     focusedWidth: Dp = 2.dp,
     unfocusedWidth: Dp = 0.dp,
@@ -239,8 +240,8 @@ fun Modifier.lxFocusBorder(
  */
 @Composable
 fun Modifier.lxCircleButtonFocus(
-    fillColor: Color = LXFocusGreen.copy(alpha = 0.12f),
-    strokeColor: Color = LXFocusGreen,
+    fillColor: Color = LXFocusFill,
+    strokeColor: Color = FocusBorder,
     strokeWidth: Dp = 2.dp
 ): Modifier {
     var isFocused by remember { mutableStateOf(false) }
@@ -283,7 +284,7 @@ fun Modifier.lxCircleButtonFocus(
  */
 @Composable
 fun Modifier.lxBackButtonFocus(
-    focusedColor: Color = LXFocusGreen,
+    focusedColor: Color = FocusBorder,
     glow: Boolean = false,
     animated: Boolean = false
 ): Modifier {
@@ -304,7 +305,7 @@ fun Modifier.lxBackButtonFocus(
  */
 @Composable
 fun Modifier.lxSelectorFocus(
-    focusedColor: Color = LXFocusGreen,
+    focusedColor: Color = FocusBorder,
     focusedWidth: Dp = 2.dp,
     focusedScale: Float = 1.0f,
     glow: Boolean = true,
