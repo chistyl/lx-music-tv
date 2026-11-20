@@ -17,7 +17,7 @@ source = aside.read_text(encoding="utf-8")
 source = replace_once(
     source,
     "style={[styles.menuItem, active ? styles.activeItem : undefined, focused ? [styles.focusedItem, { borderColor: theme['c-primary-font-active'] }] : undefined]}",
-    "style={[styles.menuItem, focused && !active ? [styles.focusedItem, { borderColor: theme['c-primary-font-active'] }] : undefined, active ? { backgroundColor: theme['c-primary'] } : undefined]}",
+    "style={[styles.menuItem, active ? [styles.activeItem, { backgroundColor: theme['c-primary'] }] : undefined, focused ? [styles.focusedItem, { borderColor: theme['c-primary-font-active'] }] : undefined]}",
     "selected navigation theme-color tile and focus priority",
 )
 source = source.replace(
