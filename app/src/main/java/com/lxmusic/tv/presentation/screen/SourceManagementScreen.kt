@@ -548,6 +548,7 @@ fun PlatformConfigDialog(
         MusicPlatform.MG.key to MusicPlatform.MG.displayName
     )
     var selected by remember { mutableStateOf(selectedPlatforms) }
+    val selectedPlatformIndex = platforms.indexOfFirst { selectedPlatforms.contains(it.first) }.let { if (it >= 0) it else 0 }
     val firstPlatformRequester = remember { FocusRequester() }
     var initialFocusRequested by remember { mutableStateOf(false) }
 
@@ -608,7 +609,7 @@ fun PlatformConfigDialog(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(vertical = 3.dp)
-                                .then(if (key == platforms.first().first) Modifier.focusRequester(firstPlatformRequester) else Modifier)
+                                .then(if (platforms.indexOfFirst { it.first == key } == selectedPlatformIndex) Modifier.focusRequester(firstPlatformRequester) else Modifier)
                                 .lxSelectorFocus(shape = RoundedCornerShape(8.dp), glow = false, animated = false)
                                 .clickable {
                                     selected = if (isChecked) selected - key else selected + key
