@@ -345,10 +345,12 @@ fun MainScreen(
                 // 2.9 启动默认页面
                 defaultStartupTab = defaultStartupTab,
                 onDefaultStartupTabChange = onDefaultStartupTabChange,
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.weight(1f).fillMaxHeight()
             )
         }
     }
+}
+
 /**
  * 左侧导航栏
  */
