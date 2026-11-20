@@ -233,144 +233,6 @@ def patch_android_abis() -> None:
     path.write_text(source, encoding="utf-8")
 
 
-def patch_songlist_reference_style() -> None:
-    root = ROOT / "src/screens/Home/Views/SongList"
-
-    # The category column uses plain text rows, not large filled buttons.
-    group = root / "TagList/TagGroup.tsx"
-    group.write_text("""import { View, TouchableOpacity } from 'react-native'
-import { type TagInfoItem } from '@/store/songlist/state'
-import { useTheme } from '@/store/theme/hook'
-import { createStyle } from '@/utils/tools'
-import Text from '@/components/common/Text'
-
-export interface TagGroupProps {
-  name: string
-  list: TagInfoItem[]
-  onTagChange: (name: string, id: string) => void
-  activeId: string
-}
-
-export default ({ name, list, onTagChange, activeId }: TagGroupProps) => {
-  const theme = useTheme()
-  return (
-    <View>
-      {name ? <Text style={styles.tagTypeTitle} color={theme['c-font-label']}>{name}</Text> : null}
-      <View style={styles.tagTypeList}>
-        {list.map(item => {
-          const active = activeId == item.id
-          return (
-            <TouchableOpacity
-              key={item.id}
-              focusable
-              onPress={() => onTagChange(item.name, item.id)}
-              style={styles.tagButton}
-            >
-              <Text style={styles.tagButtonText} color={active ? '#55AD8B' : theme['c-font']}>{item.name}</Text>
-            </TouchableOpacity>
-          )
-        })}
-      </View>
-    </View>
-  )
-}
-
-const styles = createStyle({
-  tagTypeTitle: { marginTop: 20, marginBottom: 10, fontSize: 16 },
-  tagTypeList: { flexDirection: 'column', width: '100%' },
-  tagButton: {
-    width: '100%',
-    minHeight: 48,
-    justifyContent: 'center',
-    paddingHorizontal: 12,
-    marginBottom: 2,
-    backgroundColor: 'transparent',
-  },
-  tagButtonText: { fontSize: 17 },
-})
-""", encoding="utf-8")
-
-    tag_list = root / "TagList/List.tsx"
-    source = tag_list.read_text(encoding="utf-8")
-    source = source.replace(
-        "<ScrollView style={{ flexShrink: 1, flexGrow: 0 }} keyboardShouldPersistTaps={'always'}>",
-        "<ScrollView style={{ flex: 1, width: '100%' }} contentContainerStyle={{ paddingBottom: 24 }} keyboardShouldPersistTaps={'always'}>",
-        1,
-    )
-    source = source.replace("    paddingLeft: 15,", "    paddingLeft: 18,\n    paddingRight: 12,", 1)
-    tag_list.write_text(source, encoding="utf-8")
-
-    # The upstream API returns playlist cards. Render them as compact TV rows,
-    # preserving the original detail navigation and playlist data.
-    list_item = root / "components/Songlist/ListItem.tsx"
-    list_item.write_text("""import { memo, useState } from 'react'
-import { View, TouchableOpacity } from 'react-native'
-import { createStyle } from '@/utils/tools'
-import { type ListInfoItem } from '@/store/songlist/state'
-import Text from '@/components/common/Text'
-import { NAV_SHEAR_NATIVE_IDS } from '@/config/constant'
-import { useTheme } from '@/store/theme/hook'
-import Image from '@/components/common/Image'
-
-export default memo(({ item, index, width, showSource, onPress }: {
-  item: ListInfoItem
-  index: number
-  showSource: boolean
-  width: number
-  onPress: (item: ListInfoItem, index: number) => void
-}) => {
-  const theme = useTheme()
-  const [focused, setFocused] = useState(false)
-  const handlePress = () => onPress(item, index)
-  return item.source ? (
-    <TouchableOpacity
-      focusable
-      onFocus={() => setFocused(true)}
-      onBlur={() => setFocused(false)}
-      onPress={handlePress}
-      style={[styles.row, { width: width - 18, borderBottomColor: theme['c-border-background'] }, focused ? styles.focused : undefined]}
-    >
-      <Text style={styles.index} color={theme['c-font-label']}>{index + 1}</Text>
-      <Image url={item.img} nativeID={`${NAV_SHEAR_NATIVE_IDS.songlistDetail_pic}_from_${item.id}`} style={styles.cover} />
-      <View style={styles.info}>
-        <Text style={styles.title} numberOfLines={1}>{item.name}</Text>
-        <Text style={styles.subtitle} color={theme['c-font-label']} numberOfLines={1}>{item.author || item.desc || item.source}</Text>
-      </View>
-      {showSource ? <Text style={styles.source} color={theme['c-font-label']}>{item.source}</Text> : null}
-    </TouchableOpacity>
-  ) : null
-})
-
-const styles = createStyle({
-  row: {
-    minHeight: 78,
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 12,
-    borderBottomWidth: 1,
-    backgroundColor: 'transparent',
-  },
-  focused: { backgroundColor: '#E8F5EF', borderRadius: 6 },
-  index: { width: 34, fontSize: 16 },
-  cover: { width: 56, height: 56, borderRadius: 4 },
-  info: { flex: 1, minWidth: 0, paddingLeft: 16, paddingRight: 10 },
-  title: { fontSize: 18 },
-  subtitle: { fontSize: 14, marginTop: 5 },
-  source: { fontSize: 13 },
-})
-""", encoding="utf-8")
-
-    list_file = root / "components/Songlist/List.tsx"
-    source = list_file.read_text(encoding="utf-8")
-    source = source.replace("const MIN_WIDTH = scaleSizeW(110)", "const MIN_WIDTH = scaleSizeW(900)", 1)
-    source = source.replace("const GAP = scaleSizeW(20)", "const GAP = scaleSizeW(12)", 1)
-    source = source.replace("const num = Math.max(Math.floor(width / computedItemWidth), 2)", "const num = 1", 1)
-    source = source.replace("    let whiteItemNum = (list.length % rowInfo.num)", "    let whiteItemNum = 0 // TV songlist is a single-column row list\n    /* let whiteItemNum = (list.length % rowInfo.num)", 1)
-    source = source.replace("    return list\n  }, [currentList, rowInfo])", "    return list\n    */\n  }, [currentList, rowInfo])", 1)
-    source = source.replace("                columnWrapperStyle={{ justifyContent: 'space-evenly' }}\n                numColumns={rowInfo.num}", "                numColumns={1}", 1)
-    source = source.replace("    paddingLeft: 10,\n    paddingRight: 10,", "    paddingLeft: 8,\n    paddingRight: 8,", 1)
-    list_file.write_text(source, encoding="utf-8")
-
 def patch_my_lists() -> None:
     path = ROOT / "src/screens/Home/Views/Mylist/MyList/List.tsx"
     source = path.read_text(encoding="utf-8")
@@ -395,101 +257,6 @@ def patch_my_lists() -> None:
 
 
 
-
-def patch_songlist_three_pane() -> None:
-    # Keep the native LX Music tag and song data components, but pin the tag
-    # categories beside the song list instead of hiding them in a swipe drawer.
-    root = ROOT / "src/screens/Home/Views/SongList"
-    index = root / "index.tsx"
-    index.write_text("""import { View } from 'react-native'
-import Content from './Content'
-import TagList from './TagList'
-import { createStyle } from '@/utils/tools'
-
-export default () => (
-  <View style={styles.container}>
-    <View style={styles.categories}>
-      <TagList />
-    </View>
-    <View style={styles.songs}>
-      <Content />
-    </View>
-  </View>
-)
-
-const styles = createStyle({
-  container: {
-    flex: 1,
-    flexDirection: 'row',
-    overflow: 'hidden',
-  },
-  categories: {
-    width: '26%',
-    minWidth: 190,
-    maxWidth: 330,
-    flexGrow: 0,
-    flexShrink: 0,
-    borderRightWidth: 1,
-    borderRightColor: '#E6ECE9',
-    overflow: 'hidden',
-  },
-  songs: {
-    flex: 1,
-    minWidth: 0,
-    overflow: 'hidden',
-  },
-})
-""", encoding="utf-8")
-
-    tag_index = root / "TagList/index.tsx"
-    source = tag_index.read_text(encoding="utf-8")
-    source = source.replace("const [visible, setVisible] = useState(false)", "const [visible, setVisible] = useState(true)", 1)
-    source = source.replace("    global.app_event.hideSonglistTagList()\n    requestAnimationFrame(() => {", "    requestAnimationFrame(() => {", 1)
-    if "global.app_event.hideSonglistTagList()" in source:
-        source = source.replace("    global.app_event.hideSonglistTagList()\n", "", 1)
-    tag_index.write_text(source, encoding="utf-8")
-
-    tag_list = root / "TagList/List.tsx"
-    source = tag_list.read_text(encoding="utf-8")
-    source = source.replace(
-        "<ScrollView style={{ flexShrink: 1, flexGrow: 0 }} keyboardShouldPersistTaps={'always'}>",
-        "<ScrollView style={{ flex: 1, width: '100%' }} keyboardShouldPersistTaps={'always'}>",
-        1,
-    )
-    tag_list.write_text(source, encoding="utf-8")
-
-    tag_group = root / "TagList/TagGroup.tsx"
-    source = tag_group.read_text(encoding="utf-8")
-    source = source.replace(
-        "  tagTypeList: {\n    flexDirection: 'row',\n    flexWrap: 'wrap',\n  },",
-        "  tagTypeList: {\n    flexDirection: 'column',\n    width: '100%',\n  },",
-        1,
-    )
-    source = source.replace(
-        "    marginRight: 10,\n    marginBottom: 10,",
-        "    width: '100%',\n    minHeight: 42,\n    justifyContent: 'center',\n    marginBottom: 4,\n    backgroundColor: 'transparent',",
-        1,
-    )
-    source = source.replace(
-        "    paddingTop: 8,\n    paddingBottom: 8,",
-        "    paddingTop: 8,\n    paddingBottom: 8,",
-        1,
-    )
-    source = source.replace(
-        "    fontSize: 13,",
-        "    fontSize: 18,",
-        1,
-    )
-    tag_group.write_text(source, encoding="utf-8")
-
-    content = root / "Content.tsx"
-    source = content.read_text(encoding="utf-8")
-    source = source.replace(
-        "      listRef.current?.loadList(info.source, info.sortId, info.tagId)",
-        "      listRef.current?.loadList(info.source, info.sortId, info.tagId)\n      global.app_event.showSonglistTagList(info.source, info.tagId)",
-        1,
-    )
-    content.write_text(source, encoding="utf-8")
 
 def patch_home_layout() -> None:
     # Keep the original navigation and player components and move only their placement.
@@ -562,6 +329,7 @@ export default () => (
           <PlayerBar isHome />
         </View>
         <View style={styles.main}>
+          <Header />
           <Main />
         </View>
       </View>
@@ -571,17 +339,6 @@ export default () => (
 """
     source = replace_once(source, old_layout, new_layout, "home horizontal layout")
     home.write_text(source, encoding="utf-8")
-
-    # Open the home screen on Song Lists by default.
-    common_state = ROOT / "src/store/common/state.ts"
-    state_source = common_state.read_text(encoding="utf-8")
-    state_source = replace_once(
-        state_source,
-        "  navActiveId: 'nav_search',\n  lastNavActiveId: 'nav_search',",
-        "  navActiveId: 'nav_songlist',\n  lastNavActiveId: 'nav_songlist',",
-        "TV home default leaderboard",
-    )
-    common_state.write_text(state_source, encoding="utf-8")
 
     aside = ROOT / "src/screens/Home/Horizontal/Aside.tsx"
     aside.write_text("""import { memo, useState } from 'react'
@@ -700,8 +457,6 @@ const styles = createStyle({
 """, encoding="utf-8")
 
 patch_home_layout()
-patch_songlist_three_pane()
-patch_songlist_reference_style()
 patch_button()
 patch_player_controls()
 patch_player_bar()
