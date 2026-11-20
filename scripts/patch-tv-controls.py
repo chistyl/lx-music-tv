@@ -56,7 +56,7 @@ const styles = createStyle({""", "insert playback mode control")
     source = replace_once(source, "      <PlayNextBtn />\n    </>", "      <PlayNextBtn />\n      <PlayModeBtn />\n    </>", "render playback mode control")
     source = replace_once(source, "const BTN_SIZE = 24", "const BTN_SIZE = 19", "reduce player control icon size")
     source = replace_once(source, "    width: 46,\n    height: 46,", "    width: 40,\n    height: 40,", "reduce player control touch container")
-    source = replace_once(source, "const styles = createStyle({\n  cotrolBtn: {", "const styles = createStyle({\n  focusedControl: { borderWidth: 2, borderColor: '#FFFFFF', borderRadius: 30 },\n  cotrolBtn: {", "player focus style")
+    source = replace_once(source, "const styles = createStyle({\n  cotrolBtn: {", "const styles = createStyle({\n  focusedControl: { borderWidth: 3, borderColor: '#FFFFFF', borderRadius: 24, backgroundColor: 'rgba(255,255,255,0.18)', elevation: 10 },\n  cotrolBtn: {", "player focus style")
     path.write_text(source, encoding="utf-8")
 
 def patch_player_bar() -> None:
@@ -229,7 +229,7 @@ def patch_button() -> None:
       onBlur={handleBlur}
       style={StyleSheet.compose(
         StyleSheet.compose({ opacity: disabled ? 0.3 : 1 }, style),
-        tvFocused ? { borderWidth: 2, borderColor: theme['c-primary-font-active'], borderRadius: 6 } : undefined,
+        tvFocused ? { borderWidth: 2, borderColor: '#FFFFFF', backgroundColor: 'rgba(255,255,255,0.14)', elevation: 8 } : undefined,
       )}
       {...props}""",
         1,
@@ -283,7 +283,7 @@ def patch_my_lists() -> None:
     source = replace_once(source, "  const theme = useTheme()\n  const moreButtonRef", "  const theme = useTheme()\n  const [nameFocused, setNameFocused] = useState(false)\n  const [moreFocused, setMoreFocused] = useState(false)\n  const moreButtonRef", "playlist focus state")
     source = replace_once(source, '<TouchableOpacity style={styles.listName} onPress={handlePress}>', '<TouchableOpacity focusable onFocus={() => setNameFocused(true)} onBlur={() => setNameFocused(false)} style={[styles.listName, nameFocused ? styles.tvFocused : undefined]} onPress={handlePress}>', "playlist name focus")
     source = replace_once(source, '<TouchableOpacity onPress={handleShowMenu} ref={moreButtonRef} style={styles.listMoreBtn}>', '<TouchableOpacity focusable onFocus={() => setMoreFocused(true)} onBlur={() => setMoreFocused(false)} onPress={handleShowMenu} ref={moreButtonRef} style={[styles.listMoreBtn, moreFocused ? styles.tvFocused : undefined]}>', "playlist menu focus")
-    source = replace_once(source, "const styles = createStyle({\n  container:", "const styles = createStyle({\n  tvFocused: { borderWidth: 2, borderColor: '#FFFFFF', borderRadius: 6 },\n  container:", "playlist focus style")
+    source = replace_once(source, "const styles = createStyle({\n  container:", "const styles = createStyle({\n  tvFocused: { borderWidth: 2, borderColor: '#FFFFFF', backgroundColor: 'rgba(255,255,255,0.16)', elevation: 8 },\n  container:", "playlist focus style")
     source = replace_once(source, "    width: 36,", "    width: 52,", "playlist menu target")
     path.write_text(source, encoding="utf-8")
 
@@ -500,7 +500,84 @@ const styles = createStyle({
 })
 """, encoding="utf-8")
 
+def patch_common_focus_visibility() -> None:
+    # Shared controls use a bright, high-contrast focus treatment. Do not override
+    # borderRadius: each component keeps its native square, rounded, or circular geometry.
+    button = ROOT / "src/components/common/Button.tsx"
+    source = button.read_text(encoding="utf-8")
+    source = source.replace(
+        "import { useMemo, useRef, useImperativeHandle, forwardRef } from 'react'",
+        "import { useMemo, useRef, useImperativeHandle, forwardRef, useState } from 'react'",
+        1,
+    )
+    source = source.replace(
+        "({ ripple: propsRipple = {}, disabled, children, style, ...props }, ref) => {",
+        "({ ripple: propsRipple = {}, disabled, children, style, onFocus, onBlur, ...props }, ref) => {",
+        1,
+    )
+    if "const [tvFocused, setTvFocused] = useState(false)" not in source:
+        source = source.replace(
+            "  const theme = useTheme()",
+            """  const theme = useTheme()
+  const [tvFocused, setTvFocused] = useState(false)
+  const handleFocus = (event: any) => {
+    setTvFocused(true)
+    onFocus?.(event)
+  }
+  const handleBlur = (event: any) => {
+    setTvFocused(false)
+    onBlur?.(event)
+  }""",
+            1,
+        )
+    source = source.replace(
+        """      disabled={disabled}
+      style={StyleSheet.compose({ opacity: disabled ? 0.3 : 1 }, style)}
+      {...props}""",
+        """      disabled={disabled}
+      focusable
+      onFocus={handleFocus}
+      onBlur={handleBlur}
+      style={StyleSheet.compose(
+        StyleSheet.compose({ opacity: disabled ? 0.3 : 1 }, style),
+        tvFocused ? { borderWidth: 2, borderColor: '#FFFFFF', backgroundColor: 'rgba(255,255,255,0.16)', elevation: 8 } : undefined,
+      )}
+      {...props}""",
+        1,
+    )
+    if "focusable" not in source or "tvFocused" not in source:
+        raise SystemExit("Failed to patch shared Button.tsx focus handling")
+    button.write_text(source, encoding="utf-8")
+
+    # Text inputs visibly indicate keyboard focus while retaining their original shape.
+    input_path = ROOT / "src/components/common/Input.tsx"
+    source = input_path.read_text(encoding="utf-8")
+    source = source.replace(
+        "import { useRef, useImperativeHandle, forwardRef, useCallback } from 'react'",
+        "import { useRef, useImperativeHandle, forwardRef, useCallback, useState } from 'react'",
+        1,
+    )
+    source = source.replace(
+        "  const theme = useTheme()",
+        "  const theme = useTheme()\n  const [tvFocused, setTvFocused] = useState(false)",
+        1,
+    )
+    source = source.replace(
+        "        onChangeText={changeText}",
+        "        onChangeText={changeText}\n        onFocus={(event) => { setTvFocused(true); props.onFocus?.(event) }}\n        onBlur={(event) => { setTvFocused(false); props.onBlur?.(event) }}",
+        1,
+    )
+    source = source.replace(
+        "style={StyleSheet.compose({ ...styles.input, color: theme['c-font'], fontSize: setSpText(size) }, style)}",
+        "style={StyleSheet.compose(StyleSheet.compose({ ...styles.input, color: theme['c-font'], fontSize: setSpText(size) }, style), tvFocused ? { borderWidth: 2, borderColor: '#FFFFFF', backgroundColor: 'rgba(255,255,255,0.10)', elevation: 6 } : undefined)}",
+        1,
+    )
+    input_path.write_text(source, encoding="utf-8")
+
 patch_home_layout()
 patch_player_controls()
 patch_player_bar()
-print("Applied TV layout relocation and remote focus adaptations.")
+patch_button()
+patch_my_lists()
+patch_common_focus_visibility()
+print("Applied TV layout relocation and high-contrast remote focus adaptations.")
