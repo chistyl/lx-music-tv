@@ -246,31 +246,25 @@ p.write_text(s)
 print("Applied: install built-in Wildflower source once; user can remove it permanently")
 
 
-# Hide lyric text only in the left home player; keep status text and playback time.
-p = "src/components/player/PlayerBar/components/Status.tsx"
-s = (ROOT / p).read_text()
-s = s.replace(
-    "export default ({ autoUpdate }: { autoUpdate: boolean }) => {",
-    "export default ({ autoUpdate, isHome }: { autoUpdate: boolean, isHome: boolean }) => {",
-    1,
-)
-s = s.replace(
-    "  const status = isPlay ? text : statusText",
-    "  const status = isHome ? statusText : isPlay ? text : statusText",
-    1,
-)
-(ROOT / p).write_text(s)
-print("Applied: hide lyric text in the left home player")
-
+# Hide the entire lyric/status text row only in the left home player.
+# Keep song title, elapsed/total time, progress bar, and controls unchanged.
 p = "src/components/player/PlayerBar/components/PlayInfo.tsx"
 s = (ROOT / p).read_text()
-s = s.replace(
-    "<Status autoUpdate={autoUpdate} />",
-    "<Status autoUpdate={autoUpdate} isHome={isHome} />",
-    1,
-)
+old_status_row = """      <View style={styles.status}>
+        <Status autoUpdate={autoUpdate} />
+      </View>
+"""
+new_status_row = """      {!isHome && (
+        <View style={styles.status}>
+          <Status autoUpdate={autoUpdate} />
+        </View>
+      )}
+"""
+if old_status_row not in s:
+    raise SystemExit("Expected PlayInfo status row not found; refusing to build without applying lyric-row fix")
+s = s.replace(old_status_row, new_status_row, 1)
 (ROOT / p).write_text(s)
-print("Applied: scope lyric hiding to the left home player only")
+print("Applied: hide lyric/status row only in the left home player")
 
 
 # Match the requested custom-source settings layout:
