@@ -168,8 +168,8 @@ data class LXThemeColors(
                 1.0f to Color.Transparent
             ),
             shadowCard = Color(0x14000000),
-            focusBorder = Color(0x801A1A1A),
-            focusFill = Color(0xFF1D1D1F).copy(alpha = 0.05f),
+            focusBorder = cfg.primary,
+            focusFill = cfg.primary.copy(alpha = 0.08f),
         )
 
         /** 深色令牌（参考 EchoMusic 暗色表面系统：深底 + 浅字 + 强调色）；主强调色取自所选主题色 */
@@ -208,8 +208,8 @@ data class LXThemeColors(
                 1.0f to Color.Transparent
             ),
             shadowCard = Color(0x40000000),
-            focusBorder = Color(0xB3FFFFFF),        // 深色底上的浅色焦点边框
-            focusFill = Color(0xFFFFFFFF).copy(alpha = 0.10f),
+            focusBorder = cfg.primary,             // 焦點色跟隨目前主題色
+            focusFill = cfg.primary.copy(alpha = 0.18f),
         )
     }
 }
