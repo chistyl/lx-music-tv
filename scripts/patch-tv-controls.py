@@ -443,6 +443,37 @@ def patch_input_focus() -> None:
     target.write_text(source, encoding="utf-8")
 
 
+
+def patch_slider_focus() -> None:
+    # Native sliders remain adjustable with the D-pad; the focus frame follows
+    # the rectangular track container rather than changing the thumb geometry.
+    for relative_path in (
+        "src/components/common/Slider.tsx",
+        "src/screens/Home/Views/Setting/components/Slider.tsx",
+    ):
+        path = ROOT / relative_path
+        source = path.read_text(encoding="utf-8")
+        source = source.replace("import { memo } from 'react'", "import { memo, useState } from 'react'", 1)
+        source = replace_once(
+            source,
+            "  const theme = useTheme()",
+            "  const theme = useTheme()\n  const [tvFocused, setTvFocused] = useState(false)",
+            f"slider focus state: {relative_path}",
+        )
+        source = replace_once(
+            source,
+            "      value={value}\n      style={styles.slider}",
+            "      value={value}\n      focusable\n      onFocus={() => setTvFocused(true)}\n      onBlur={() => setTvFocused(false)}\n      style={[styles.slider, tvFocused ? styles.tvFocused : undefined]}",
+            f"slider remote focus target: {relative_path}",
+        )
+        source = replace_once(
+            source,
+            "const styles = createStyle({\n  slider:",
+            "const styles = createStyle({\n  tvFocused: { borderWidth: 2, borderColor: '#FFFFFF', borderRadius: 10, backgroundColor: 'rgba(255,255,255,0.10)', elevation: 5 },\n  slider:",
+            f"slider focus frame: {relative_path}",
+        )
+        path.write_text(source, encoding="utf-8")
+
 def patch_navigation(relative_path: str) -> None:
     target = ROOT / relative_path
     source = target.read_text(encoding="utf-8")
@@ -714,6 +745,8 @@ const styles = createStyle({
 patch_button()
 patch_input_focus()
 patch_tv_focus_surfaces()
+patch_my_lists()
+patch_slider_focus()
 patch_home_layout()
 patch_player_controls()
 patch_player_bar()
