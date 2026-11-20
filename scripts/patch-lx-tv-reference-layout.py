@@ -1,30 +1,57 @@
 from pathlib import Path
 
-root = Path("upstream/lx-music-mobile-auto-source/src/screens/Home/Horizontal")
-index = root / "index.tsx"
-aside = root / "Aside.tsx"
+ROOT = Path("upstream/lx-music-mobile-auto-source")
+home = ROOT / "src/screens/Home/Horizontal/index.tsx"
+aside = ROOT / "src/screens/Home/Horizontal/Aside.tsx"
+player = ROOT / "src/components/player/PlayerBar/index.tsx"
 
-index_source = index.read_text(encoding="utf-8")
-expected_imports = """import { View } from 'react-native'
-import Aside from './Aside'
-import PlayerBar from '@/components/player/PlayerBar'
-import StatusBar from '@/components/common/StatusBar'
-import Header from './Header'
-import Main from './Main'
-import { createStyle } from '@/utils/tools'
+# patch-tv-controls.py runs first and supplies the TV-specific top navigation,
+# player focus states, vertical player composition, and the initial layout.
+source = home.read_text(encoding="utf-8")
+old_layout = """const styles = createStyle({
+  container: {
+    flex: 1,
+    flexDirection: 'column',
+    overflow: 'hidden',
+  },
+  content: {
+    flex: 1,
+    minHeight: 0,
+    flexDirection: 'row',
+    overflow: 'hidden',
+  },
+  player: {
+    width: '26%',
+    flexGrow: 0,
+    flexShrink: 0,
+    overflow: 'hidden',
+  },
+  main: {
+    flex: 1,
+    minWidth: 0,
+    overflow: 'hidden',
+  },
+})
+
+export default () => (
+  <>
+    <StatusBar />
+    <View style={styles.container}>
+      <Aside />
+      <View style={styles.content}>
+        <View style={styles.player}>
+          <PlayerBar isHome />
+        </View>
+        <View style={styles.main}>
+          <Header />
+          <Main />
+        </View>
+      </View>
+    </View>
+  </>
+)
 """
-if expected_imports not in index_source:
-    raise SystemExit("Run154 stopped: upstream Horizontal/index.tsx imports differ from pinned source")
-
-new_index = """import { View } from 'react-native'
-import Aside from './Aside'
-import PlayerBar from '@/components/player/PlayerBar'
-import StatusBar from '@/components/common/StatusBar'
-import Header from './Header'
-import Main from './Main'
-import { createStyle } from '@/utils/tools'
-
-const styles = createStyle({
+new_layout = """const styles = createStyle({
   container: {
     flex: 1,
     flexDirection: 'column',
@@ -79,165 +106,36 @@ export default () => (
   </>
 )
 """
-index.write_text(new_index, encoding="utf-8")
+if old_layout not in source:
+    if new_layout not in source:
+        raise SystemExit("Run154 stopped: expected TV-layout output from patch-tv-controls.py was not found")
+else:
+    source = source.replace(old_layout, new_layout, 1)
+    home.write_text(source, encoding="utf-8")
 
+# Refine the already-horizontal, focusable navigation without replacing its logic.
 source = aside.read_text(encoding="utf-8")
-source = source.replace("const NAV_WIDTH = 68\n\n", "", 1)
-source = source.replace(
-    "import { Icon } from '@/components/common/Icon'\n",
-    "import { Icon } from '@/components/common/Icon'\nimport Text from '@/components/common/Text'\n",
-    1,
-)
-old_menu = """  return activeId == id
-    ? <View style={styles.menuItem}>
-        <View style={styles.iconContent}>
-          <Icon name={icon} size={20} color={theme['c-primary-font-active']} />
-        </View>
-        {/* <Text style={styles.text} size={14} color={theme['c-primary-font']}>{t(id)}</Text> */}
-      </View>
-    : <TouchableOpacity focusable style={styles.menuItem} onPress={() => { onPress(id) }}>
-        <View style={styles.iconContent}>
-          <Icon name={icon} size={20} color={theme['c-font-label']} />
-        </View>
-        {/* <Text style={styles.text} size={14}>{t(id)}</Text> */}
-      </TouchableOpacity>
-"""
-new_menu = """  return (
-    <TouchableOpacity
-      focusable
-      style={{
-        ...styles.menuItem,
-        backgroundColor: activeId == id ? theme['c-primary-background'] : 'transparent',
-        borderRadius: 12,
-      }}
-      onPress={() => { onPress(id) }}
-      activeOpacity={0.82}
-    >
-      <View style={styles.iconContent}>
-        <Icon
-          name={icon}
-          size={20}
-          color={activeId == id ? theme['c-primary-font-active'] : theme['c-font-label']}
-        />
-      </View>
-      <Text
-        style={styles.text}
-        size={14}
-        color={activeId == id ? theme['c-primary-font-active'] : theme['c-font-label']}
-      >{global.i18n.t(id)}</Text>
-    </TouchableOpacity>
-  )
-"""
-if old_menu not in source:
-    raise SystemExit("Run154 stopped: MenuItem source differs from pinned upstream")
-source = source.replace(old_menu, new_menu, 1)
-replacements = [
-    ("borderRightWidth: BorderWidths.normal,", "borderBottomWidth: BorderWidths.normal,"),
-    ("paddingBottom: 10,\n    width: NAV_WIDTH,", "paddingHorizontal: 18,\n    paddingBottom: 0,\n    width: '100%',\n    flexDirection: 'row',\n    alignItems: 'center',"),
-    ("paddingTop: 15,\n    paddingBottom: 15,\n    flexDirection: 'row',\n    justifyContent: 'center',", "paddingTop: 10,\n    paddingBottom: 10,\n    paddingLeft: 8,\n    paddingRight: 24,\n    flexDirection: 'row',\n    justifyContent: 'flex-start',"),
-    ("menus: {\n    flex: 1,\n  },", "menus: {\n    flex: 1,\n    minWidth: 0,\n  },"),
-    ("paddingBottom: 15,\n  },\n  menuItem:", "paddingBottom: 0,\n    flexDirection: 'row',\n    alignItems: 'center',\n  },\n  menuItem:"),
-    ("paddingTop: 15,\n    paddingBottom: 15,", "paddingTop: 13,\n    paddingBottom: 13,\n    paddingLeft: 18,\n    paddingRight: 18,"),
-    ("<ScrollView style={styles.menus}>", "<ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.menus}>"),
-]
-for old, new in replacements:
-    if old not in source:
-        raise SystemExit(f"Run154 stopped: expected Aside.tsx fragment not found: {old!r}")
-    source = source.replace(old, new, 1)
-
-source = source.replace(
-    "return (\n    <View style={{ ...styles.container, borderRightColor: theme['c-border-background'] }}>",
-    "return (\n    <View style={{ ...styles.container, borderBottomColor: theme['c-border-background'] }}>",
-    1,
-)
+for old, new, label in (
+    ('<Text size={18} color={theme[\'c-primary-font-active\']} style={styles.logoText}>Music</Text>',
+     '<Text size={18} color={theme[\'c-primary-font-active\']} style={styles.logoText}>LX Music TV</Text>', "brand label"),
+    ("height: 72,", "height: 78,", "navigation height"),
+    ("width: 138,", "width: 178,", "brand width"),
+):
+    if old in source:
+        source = source.replace(old, new, 1)
+    elif new not in source:
+        raise SystemExit(f"Run154 stopped: expected navigation {label} anchor not found")
 aside.write_text(source, encoding="utf-8")
 
-player_root = Path("upstream/lx-music-mobile-auto-source/src/components/player/PlayerBar")
-player = player_root / "index.tsx"
-player_source = player.read_text(encoding="utf-8")
-player_old = """  container: {
-    width: '100%',
-    // height: 100,
-    // paddingTop: progressContentPadding,
-    // marginTop: -progressContentPadding,
-    // backgroundColor: 'rgba(0, 0, 0, .1)',
-    // borderTopWidth: BorderWidths.normal2,
-    paddingVertical: 5,
-    paddingLeft: 5,
-    // backgroundColor: AppColors.primary,
-    // backgroundColor: 'red',
-    borderTopLeftRadius: 6,
-    borderTopRightRadius: 6,
-    flexDirection: 'row',
-    alignItems: 'center',
-    elevation: 10,
-  },
-"""
-player_new = """  container: {
-    width: '100%',
-    height: '100%',
-    paddingVertical: 24,
-    paddingHorizontal: 20,
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    elevation: 10,
-  },
-"""
-if player_old not in player_source:
-    raise SystemExit("Run154 stopped: PlayerBar container styles differ from pinned upstream")
-player_source = player_source.replace(player_old, player_new, 1)
-player_source = player_source.replace(
-    """  center: {
-    flexDirection: 'column',
-    flexGrow: 1,
-    flexShrink: 1,
-    paddingLeft: 5,
-    height: '100%',
-""",
-    """  center: {
-    width: '100%',
-    flexDirection: 'column',
-    flexGrow: 0,
-    flexShrink: 1,
-    paddingLeft: 0,
-    alignItems: 'center',
-""",
-    1,
-)
-player_source = player_source.replace(
-    """  right: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flexGrow: 0,
-    flexShrink: 0,
-    paddingLeft: 5,
-    paddingRight: 5,
-  },
-""",
-    """  right: {
-    width: '100%',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexGrow: 0,
-    flexShrink: 0,
-    paddingTop: 18,
-    paddingLeft: 0,
-    paddingRight: 0,
-  },
-""",
-    1,
-)
-player.write_text(player_source, encoding="utf-8")
+# patch-tv-controls.py already makes the home player vertical and focusable.
+# Enlarge only the home cover; keep the detail-page cover unchanged.
+source = player.read_text(encoding="utf-8")
+old = "<Pic isHome={isHome} size={isHome ? 120 : 46} />"
+new = "<Pic isHome={isHome} size={isHome ? 210 : 46} />"
+if old in source:
+    source = source.replace(old, new, 1)
+elif new not in source:
+    raise SystemExit("Run154 stopped: expected TV player cover-size prop not found")
+player.write_text(source, encoding="utf-8")
 
-pic = player_root / "components" / "Pic.tsx"
-pic_source = pic.read_text(encoding="utf-8")
-if "const PIC_HEIGHT = scaleSizeH(46)" not in pic_source:
-    raise SystemExit("Run154 stopped: player cover size differs from pinned upstream")
-pic_source = pic_source.replace("const PIC_HEIGHT = scaleSizeH(46)", "const PIC_HEIGHT = scaleSizeH(210)", 1)
-pic_source = pic_source.replace("borderRadius: 2,", "borderRadius: 12,", 1)
-pic.write_text(pic_source, encoding="utf-8")
-
-print("Run154: reference layout, labeled D-pad navigation, and vertical player panel patches applied.")
-"Run154 layout patch applied: top horizontal navigation, left content canvas, right player panel. Existing screen routing and player actions remain connected.")
+print("Run154 reference layout applied: top navigation, left content, right vertical player; existing routes and remote controls retained.")
