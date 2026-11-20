@@ -225,6 +225,18 @@ def patch_navigation(relative_path: str) -> None:
         raise SystemExit(f"Failed to add focusable navigation item: {relative_path}")
     target.write_text(source, encoding="utf-8")
 
+def patch_tv_orientation() -> None:
+    path = ROOT / "android/app/src/main/AndroidManifest.xml"
+    source = path.read_text(encoding="utf-8")
+    source = replace_once(
+        source,
+        'android:name=".MainActivity"\\n        android:configChanges=',
+        'android:name=".MainActivity"\\n        android:screenOrientation="landscape"\\n        android:configChanges=',
+        "force TV main activity landscape",
+    )
+    path.write_text(source, encoding="utf-8")
+
+
 def patch_android_abis() -> None:
     path = ROOT / "android/app/build.gradle"
     source = path.read_text(encoding="utf-8")
@@ -328,12 +340,17 @@ const styles = createStyle({
     )
     source = source.replace(
         "    marginRight: 10,\n    marginBottom: 10,",
-        "    width: '92%',\n    minHeight: 40,\n    justifyContent: 'center',\n    marginBottom: 8,",
+        "    width: '100%',\n    minHeight: 42,\n    justifyContent: 'center',\n    marginBottom: 4,\n    backgroundColor: 'transparent',",
         1,
     )
     source = source.replace(
         "    paddingTop: 8,\n    paddingBottom: 8,",
-        "    paddingTop: 10,\n    paddingBottom: 10,",
+        "    paddingTop: 8,\n    paddingBottom: 8,",
+        1,
+    )
+    source = source.replace(
+        "    fontSize: 13,",
+        "    fontSize: 18,",
         1,
     )
     tag_group.write_text(source, encoding="utf-8")
@@ -557,6 +574,7 @@ const styles = createStyle({
 
 patch_home_layout()
 patch_songlist_three_pane()
+patch_tv_orientation()
 patch_button()
 patch_player_controls()
 patch_player_bar()
