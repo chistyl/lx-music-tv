@@ -31,7 +31,7 @@ def patch_player_bar() -> None:
     source = path.read_text(encoding="utf-8")
     source = source.replace(
         "<Pic isHome={isHome} />",
-        "<Pic isHome={isHome} size={isHome ? 176 : 46} />",
+        "<Pic isHome={isHome} size={isHome ? 120 : 46} />",
         1,
     )
     source = source.replace(
@@ -272,7 +272,7 @@ export default () => {
     overflow: 'hidden',
   },
   player: {
-    width: '31%',
+    width: '36%',
     flexGrow: 0,
     flexShrink: 0,
     overflow: 'hidden',
@@ -312,13 +312,12 @@ import { useTheme } from '@/store/theme/hook'
 import { useI18n } from '@/lang'
 import { Icon } from '@/components/common/Icon'
 import Text from '@/components/common/Text'
-import { confirmDialog, createStyle, exitApp as backHome } from '@/utils/tools'
+import { createStyle } from '@/utils/tools'
 import { NAV_MENUS } from '@/config/constant'
 import type { InitState } from '@/store/common/state'
-import { exitApp, setNavActiveId } from '@/core/common'
-import { useSettingValue } from '@/store/setting/hook'
+import { setNavActiveId } from '@/core/common'
 
-type IdType = InitState['navActiveId'] | 'nav_exit' | 'back_home'
+type IdType = InitState['navActiveId']
 
 const MenuItem = ({ id, icon, onPress }: {
   id: IdType
@@ -339,8 +338,8 @@ const MenuItem = ({ id, icon, onPress }: {
       onPress={() => onPress(id)}
       style={[styles.menuItem, active ? styles.activeItem : undefined, focused ? styles.focusedItem : undefined]}
     >
-      <Icon name={icon} size={20} color={active ? '#FFFFFF' : theme['c-font-label']} />
-      <Text size={14} color={active ? '#FFFFFF' : theme['c-font-label']}>{t(id)}</Text>
+      <Icon name={icon} size={20} color={active || focused ? '#16866A' : theme['c-font-label']} />
+      <Text size={14} color={active || focused ? '#16866A' : theme['c-font-label']}>{t(id)}</Text>
     </TouchableOpacity>
   )
 }
@@ -348,21 +347,8 @@ const MenuItem = ({ id, icon, onPress }: {
 export default memo(() => {
   const theme = useTheme()
   const statusBarHeight = useStatusbarHeight()
-  const showBackBtn = useSettingValue('common.showBackBtn')
-  const showExitBtn = useSettingValue('common.showExitBtn')
 
   const handlePress = (id: IdType) => {
-    switch (id) {
-      case 'nav_exit':
-        void confirmDialog({
-          message: global.i18n.t('exit_app_tip'),
-          confirmButtonText: global.i18n.t('list_remove_tip_button'),
-        }).then(isExit => { if (isExit) exitApp('Exit Btn') })
-        return
-      case 'back_home':
-        backHome()
-        return
-    }
     global.app_event.changeMenuVisible(false)
     setNavActiveId(id)
   }
@@ -374,12 +360,11 @@ export default memo(() => {
       backgroundColor: theme['c-content-background'],
     }]}>
       <View style={styles.logo}>
-        <Icon name="logo" color={theme['c-primary-dark-100-alpha-300']} size={24} />
+        <Icon name="logo" color="#16866A" size={25} />
+        <Text size={18} color="#16866A" style={styles.logoText}>Music</Text>
       </View>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.menuList}>
         {NAV_MENUS.map(menu => <MenuItem key={menu.id} id={menu.id} icon={menu.icon} onPress={handlePress} />)}
-        {showBackBtn ? <MenuItem id="back_home" icon="home" onPress={handlePress} /> : null}
-        {showExitBtn ? <MenuItem id="nav_exit" icon="exit2" onPress={handlePress} /> : null}
       </ScrollView>
     </View>
   )
@@ -388,7 +373,7 @@ export default memo(() => {
 const styles = createStyle({
   container: {
     width: '100%',
-    height: 94,
+    height: 76,
     flexDirection: 'row',
     alignItems: 'center',
     borderBottomWidth: 1,
@@ -397,31 +382,39 @@ const styles = createStyle({
     flexShrink: 0,
   },
   logo: {
-    width: 54,
-    alignItems: 'flex-start',
-    justifyContent: 'center',
-  },
-  menuList: {
+    width: 150,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    justifyContent: 'flex-start',
+    gap: 10,
+  },
+  logoText: {
+    fontWeight: '600',
+    letterSpacing: 0.3,
+  },
+  menuList: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
   },
   menuItem: {
     height: 48,
-    minWidth: 112,
-    paddingHorizontal: 16,
+    minWidth: 104,
+    paddingHorizontal: 14,
     borderRadius: 9,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 10,
+    gap: 9,
   },
   activeItem: {
-    backgroundColor: '#16866A',
+    backgroundColor: 'transparent',
   },
   focusedItem: {
     borderWidth: 2,
-    borderColor: '#FFFFFF',
+    borderColor: '#16866A',
   },
 })
 """, encoding="utf-8")
