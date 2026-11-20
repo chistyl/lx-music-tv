@@ -404,6 +404,45 @@ def patch_tv_focus_surfaces() -> None:
     )
     path.write_text(source, encoding="utf-8")
 
+
+def patch_input_focus() -> None:
+    target = ROOT / "src/components/common/Input.tsx"
+    source = target.read_text(encoding="utf-8")
+    source = source.replace(
+        "import { useRef, useImperativeHandle, forwardRef, useCallback } from 'react'",
+        "import { useRef, useImperativeHandle, forwardRef, useCallback, useState } from 'react'",
+        1,
+    )
+    source = replace_once(
+        source,
+        "({ onChangeText, onClearText, clearBtn, style, size = 14, ...props }, ref) => {",
+        "({ onChangeText, onClearText, clearBtn, style, size = 14, onFocus, onBlur, ...props }, ref) => {",
+        "input focus callbacks",
+    )
+    source = replace_once(
+        source,
+        "  const inputRef = useRef<TextInput>(null)\n  const theme = useTheme()",
+        "  const inputRef = useRef<TextInput>(null)\n  const theme = useTheme()\n  const [tvFocused, setTvFocused] = useState(false)",
+        "input focus state",
+    )
+    source = replace_once(
+        source,
+        """        onChangeText={changeText}
+        autoComplete="off"
+        style={StyleSheet.compose({ ...styles.input, color: theme['c-font'], fontSize: setSpText(size) }, style)}""",
+        """        onChangeText={changeText}
+        autoComplete="off"
+        onFocus={(event) => { setTvFocused(true); onFocus?.(event) }}
+        onBlur={(event) => { setTvFocused(false); onBlur?.(event) }}
+        style={StyleSheet.compose(
+          StyleSheet.compose({ ...styles.input, color: theme['c-font'], fontSize: setSpText(size) }, style),
+          tvFocused ? { borderWidth: 2, borderColor: '#FFFFFF', backgroundColor: 'rgba(255,255,255,0.10)', elevation: 4 } : undefined,
+        )}""",
+        "input remote focus treatment",
+    )
+    target.write_text(source, encoding="utf-8")
+
+
 def patch_navigation(relative_path: str) -> None:
     target = ROOT / relative_path
     source = target.read_text(encoding="utf-8")
@@ -673,6 +712,7 @@ const styles = createStyle({
 """, encoding="utf-8")
 
 patch_button()
+patch_input_focus()
 patch_tv_focus_surfaces()
 patch_home_layout()
 patch_player_controls()
