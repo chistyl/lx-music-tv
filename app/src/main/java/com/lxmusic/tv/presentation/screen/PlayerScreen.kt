@@ -67,6 +67,7 @@ import com.lxmusic.tv.presentation.component.requestInitialFocus
 import com.lxmusic.tv.presentation.theme.FocusBorder
 import com.lxmusic.tv.presentation.theme.LXCardDark
 import com.lxmusic.tv.presentation.theme.LXPrimary
+import com.lxmusic.tv.presentation.theme.LXFocusFill
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.max
@@ -912,9 +913,19 @@ private fun ControlCircleButton(
                 val half = ring / 2f
                 // 半透明黑色实心圆：半径扩到整圆 r，使中间填充与外环(FocusBorder)边缘贴合，
                 // 消除中间色与边框之间的空带（点：圆形按钮边框与中间色的小间隔）
-                drawCircle(color = Color.Black.copy(alpha = 0.35f), radius = r)
+                drawCircle(color = LXFocusFill, radius = r)
                 // 外环：居中于 r - half，strokes 宽度 15px → 跨度 [r-15, r]，完整落在 Box 内。
                 // 颜色统一为黑色半透明 FocusBorder（仿播放页播放列表暗色面板，与全站焦点边框一致）
+                drawCircle(
+                    color = FocusBorder.copy(alpha = 0.12f),
+                    radius = r - half,
+                    style = Stroke(width = ring + 10f)
+                )
+                drawCircle(
+                    color = FocusBorder.copy(alpha = 0.20f),
+                    radius = r - half,
+                    style = Stroke(width = ring + 4f)
+                )
                 drawCircle(
                     color = FocusBorder,
                     radius = r - half,
