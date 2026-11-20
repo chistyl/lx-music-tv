@@ -66,6 +66,20 @@ edit(
     "convert quick-add input placeholder",
 )
 
+# Apply the new default once to existing installations too, then preserve later user choices.
+edit(
+    "src/config/setting.ts",
+    "  const updatedSetting = updateSetting(setting, true)\n  void saveData(storageDataPrefix.setting, updatedSetting.setting)",
+    """  const updatedSetting = updateSetting(setting, true)
+  const s2tDefaultMigrated = await getData<boolean>('@lx_tv_s2t_default_v1')
+  if (!s2tDefaultMigrated) {
+    updatedSetting.setting['player.isS2t'] = true
+    await saveData('@lx_tv_s2t_default_v1', true)
+  }
+  void saveData(storageDataPrefix.setting, updatedSetting.setting)""",
+    "enable lyric conversion once for existing installations without overriding later user choices",
+)
+
 # 3. Enable Simplified-to-Traditional conversion by default for new settings profiles.
 edit(
     "src/config/defaultSetting.ts",
