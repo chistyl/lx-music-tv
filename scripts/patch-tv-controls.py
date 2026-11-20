@@ -393,18 +393,6 @@ def patch_tv_focus_surfaces() -> None:
     )
     path.write_text(source, encoding="utf-8")
 
-    # Modal close control: give the small square close target a TV-sized focus hit area.
-    path = ROOT / "src/components/common/Dialog.tsx"
-    source = path.read_text(encoding="utf-8")
-    source = replace_once(
-        source,
-        "return closeBtn\n      ? <TouchableHighlight style={{ ...styles.closeBtn, width: scaleSizeH(HEADER_HEIGHT) }}",
-        "return closeBtn\n      ? <TouchableHighlight focusable style={{ ...styles.closeBtn, width: scaleSizeH(HEADER_HEIGHT), borderRadius: 5, borderWidth: 1, borderColor: 'transparent' }}",
-        "dialog close button focus target",
-    )
-    path.write_text(source, encoding="utf-8")
-
-
 def patch_input_focus() -> None:
     target = ROOT / "src/components/common/Input.tsx"
     source = target.read_text(encoding="utf-8")
@@ -903,8 +891,9 @@ def patch_full_settings_focus() -> None:
     path.write_text(source, encoding="utf-8")
 
 
-    # Every React Native touch target must be reachable with a D-pad.
-    # Components that already expose focusable are left unchanged.
+
+def patch_all_touchables_focusable() -> None:
+    # Last pass: every remaining touch target in the TV app becomes D-pad reachable.
     import re
     for path in (ROOT / "src").rglob("*.tsx"):
         source = path.read_text(encoding="utf-8")
@@ -912,7 +901,6 @@ def patch_full_settings_focus() -> None:
         updated = re.sub(r"<TouchableHighlight(?![^>]*\bfocusable)(?=[\s>])", "<TouchableHighlight focusable", updated)
         if updated != source:
             path.write_text(updated, encoding="utf-8")
-
 
 patch_button()
 patch_input_focus()
@@ -942,4 +930,5 @@ patch_slider_focus()
 patch_home_layout()
 patch_player_controls()
 patch_player_bar()
+patch_all_touchables_focusable()
 print("Applied TV layout relocation and remote focus adaptations.")
