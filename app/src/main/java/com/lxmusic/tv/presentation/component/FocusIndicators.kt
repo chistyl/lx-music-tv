@@ -276,7 +276,6 @@ fun Modifier.lxCircleButtonFocus(
                 )
             }
         }
-        .clip(shape)
 }
 
 /**
