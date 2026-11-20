@@ -21,9 +21,12 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.lxmusic.tv.presentation.theme.LXPrimary
+
+private val LXFocusGreen = Color(0xFF36C98A)
 import kotlinx.coroutines.delay
 import kotlin.math.max
 
@@ -112,7 +115,7 @@ suspend fun requestInitialFocus(
  */
 @Composable
 fun Modifier.lxFocusBorder(
-    focusedColor: Color = LXPrimary,
+    focusedColor: Color = LXFocusGreen,
     unfocusedColor: Color = Color.Transparent,
     focusedWidth: Dp = 2.dp,
     unfocusedWidth: Dp = 0.dp,
@@ -154,14 +157,23 @@ fun Modifier.lxFocusBorder(
                 val outline = shape.createOutline(size, layoutDirection, this)
                 // ★ 修复2：传【正数】向内收缩 stroke/2，描边外边缘恰好贴合 shape 外边缘
                 val insetOutline = outline.insetBy(stroke / 2f)
+                val focusPath = outlineToPath(insetOutline)
+                val haloStrength = if (glow) 0.16f else 0.08f
                 drawPath(
-                    path = outlineToPath(insetOutline),
+                    path = focusPath,
+                    color = borderColor.copy(alpha = haloStrength * 0.55f),
+                    style = Stroke(width = 9.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round)
+                )
+                drawPath(
+                    path = focusPath,
+                    color = borderColor.copy(alpha = haloStrength),
+                    style = Stroke(width = 5.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round)
+                )
+                drawPath(path = focusPath, color = borderColor.copy(alpha = 0.07f), style = Fill)
+                drawPath(
+                    path = focusPath,
                     color = borderColor,
-                    style = Stroke(
-                        width = stroke,
-                        cap = StrokeCap.Round,
-                        join = StrokeJoin.Round
-                    )
+                    style = Stroke(width = stroke, cap = StrokeCap.Round, join = StrokeJoin.Round)
                 )
             }
         }
@@ -185,8 +197,8 @@ fun Modifier.lxFocusBorder(
  */
 @Composable
 fun Modifier.lxCircleButtonFocus(
-    fillColor: Color = LXPrimary.copy(alpha = 0.14f),
-    strokeColor: Color = LXPrimary,
+    fillColor: Color = LXFocusGreen.copy(alpha = 0.12f),
+    strokeColor: Color = LXFocusGreen,
     strokeWidth: Dp = 2.dp
 ): Modifier {
     var isFocused by remember { mutableStateOf(false) }
@@ -200,13 +212,21 @@ fun Modifier.lxCircleButtonFocus(
                 val r = size.minDimension / 2f
                 drawCircle(color = fillColor, radius = r)
             }
-            // 图标内容（被圆形裁剪，居中显示）
+            // 圖示內容維持清晰，焦點效果只在外緣形成層次
             drawContent()
-            // ② 焦点环：画在内容之上，描边居中在 (r - stroke/2)，外边缘 = r，
-            //    与填充圆边缘完全重合（无空带），且只在边缘、不遮挡中央图标
             if (isFocused) {
                 val r = size.minDimension / 2f
                 val stroke = strokeWidth.toPx()
+                drawCircle(
+                    color = strokeColor.copy(alpha = 0.10f),
+                    radius = r - stroke / 2f,
+                    style = Stroke(width = 9.dp.toPx())
+                )
+                drawCircle(
+                    color = strokeColor.copy(alpha = 0.18f),
+                    radius = r - stroke / 2f,
+                    style = Stroke(width = 5.dp.toPx())
+                )
                 drawCircle(
                     color = strokeColor,
                     radius = r - stroke / 2f,
