@@ -437,6 +437,7 @@ def patch_slider_focus() -> None:
     # the rectangular track container rather than changing the thumb geometry.
     for relative_path in (
         "src/components/common/Slider.tsx",
+        "src/screens/Home/Views/Setting/components/Slider.tsx",
     ):
         path = ROOT / relative_path
         source = path.read_text(encoding="utf-8")
