@@ -77,7 +77,7 @@ fun InterfaceSettingsScreen(
                     onClick = onBack,
                     modifier = Modifier
                         .size(48.dp)
-                        .lxBackButtonFocus(focusedColor = FocusBorder, glow = false, animated = false)
+                        .lxBackButtonFocus(glow = true, animated = true)
                         .focusRequester(backRequester)
                 ) {
                     Icon(
