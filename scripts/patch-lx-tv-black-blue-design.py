@@ -280,12 +280,7 @@ def patch_navigation_focus() -> None:
     source = replace_once(
         source,
         "  menuItem: {\n",
-        """  menuItem: {
-    borderRadius: 10,
-    marginHorizontal: 7,
-    marginVertical: 3,
-  },
-  menuItemActive: {
+        """  menuItemActive: {
     backgroundColor: 'rgba(120, 174, 255, 0.14)',
   },
   tvFocused: {
@@ -298,13 +293,14 @@ def patch_navigation_focus() -> None:
     shadowRadius: 5,
     elevation: 2,
   },
-  menuItemLegacy: {
+  menuItem: {
+    flexDirection: 'row',
+    borderRadius: 10,
+    marginHorizontal: 7,
+    marginVertical: 3,
 """,
         "navigation capsule style tokens",
     )
-    # Remove the temporary legacy style key; its body remains the original
-    # padding/alignment declaration and is renamed back to menuItemLegacy.
-    source = source.replace("  menuItemLegacy: {", "  menuItemLegacy: {", 1)
     path.write_text(source, encoding="utf-8")
 
 
