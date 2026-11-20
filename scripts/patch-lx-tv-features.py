@@ -244,3 +244,30 @@ if "wildflowerInstallKey" not in s:
 """, 1)
 p.write_text(s)
 print("Applied: install built-in Wildflower source once; user can remove it permanently")
+
+
+# Hide lyric text only in the left home player; keep status text and playback time.
+p = "src/components/player/PlayerBar/components/Status.tsx"
+s = (ROOT / p).read_text()
+s = s.replace(
+    "export default ({ autoUpdate }: { autoUpdate: boolean }) => {",
+    "export default ({ autoUpdate, isHome }: { autoUpdate: boolean, isHome: boolean }) => {",
+    1,
+)
+s = s.replace(
+    "  const status = isPlay ? text : statusText",
+    "  const status = isHome ? statusText : isPlay ? text : statusText",
+    1,
+)
+(ROOT / p).write_text(s)
+print("Applied: hide lyric text in the left home player")
+
+p = "src/components/player/PlayerBar/components/PlayInfo.tsx"
+s = (ROOT / p).read_text()
+s = s.replace(
+    "<Status autoUpdate={autoUpdate} />",
+    "<Status autoUpdate={autoUpdate} isHome={isHome} />",
+    1,
+)
+(ROOT / p).write_text(s)
+print("Applied: scope lyric hiding to the left home player only")
