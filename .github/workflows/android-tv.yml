@@ -15,6 +15,7 @@ on:
       - fix/lx-tv-top-nav-theme-selected-block-run139
       - fix/lx-tv-dark-sidebar-background-141414-run140
       - fix/lx-tv-top-nav-player-bg-selected-theme-run141
+      - fix/lx-tv-force-141414-version269-run142
   workflow_dispatch:
 
 permissions:
