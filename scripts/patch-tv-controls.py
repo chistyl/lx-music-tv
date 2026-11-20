@@ -302,7 +302,7 @@ const styles = createStyle({
     pic = ROOT / "src/components/player/PlayerBar/components/Pic.tsx"
     source = pic.read_text(encoding="utf-8")
     source = source.replace("export default ({ isHome }: { isHome: boolean }) => {", "export default ({ isHome, size = 46 }: { isHome: boolean, size?: number }) => {", 1)
-    source = source.replace("  const musicInfo = usePlayerMusicInfo()", "  const musicInfo = usePlayerMusicInfo()\\n  const imageSize = scaleSizeH(size)", 1)
+    source = source.replace("  const musicInfo = usePlayerMusicInfo()", "  const musicInfo = usePlayerMusicInfo()\n  const imageSize = scaleSizeH(size)", 1)
     source = source.replace("<Image url={musicInfo.pic} nativeID={NAV_SHEAR_NATIVE_IDS.playDetail_pic} style={styles.image} onError={handleError} />", "<Image url={musicInfo.pic} nativeID={NAV_SHEAR_NATIVE_IDS.playDetail_pic} style={{ width: imageSize, height: imageSize, borderRadius: 3 }} onError={handleError} />", 1)
     pic.write_text(source, encoding="utf-8")
 
