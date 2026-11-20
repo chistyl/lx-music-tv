@@ -968,23 +968,22 @@ export default TVTouchableOpacity
             nonlocal changed
             names = match.group(1)
             additions = []
-            if re.search(r"\\bTouchableOpacity\\b", names):
-                names = re.sub(r"\\bTouchableOpacity\\b(?!\\s+as)", "TouchableOpacity as NativeTouchableOpacity", names)
+            if re.search(r"\bTouchableOpacity\\b", names):
+                names = re.sub(r"\bTouchableOpacity\\b(?!\\s+as)", "TouchableOpacity as NativeTouchableOpacity", names)
                 additions.append("import TouchableOpacity from '@/components/common/TVTouchableOpacity'")
-            if re.search(r"\\bTouchableHighlight\\b", names):
-                names = re.sub(r"\\bTouchableHighlight\\b(?!\\s+as)", "TouchableHighlight as NativeTouchableHighlight", names)
+            if re.search(r"\bTouchableHighlight\\b", names):
+                names = re.sub(r"\bTouchableHighlight\\b(?!\\s+as)", "TouchableHighlight as NativeTouchableHighlight", names)
                 additions.append("import { TVTouchableHighlight as TouchableHighlight } from '@/components/common/TVTouchableOpacity'")
             if additions:
                 changed = True
-                return "import {" + names + "} from 'react-native'\\n" + "\\n".join(additions)
+                return "import {" + names + "} from 'react-native'\n" + "\\n".join(additions)
             return match.group(0)
         updated = re.sub(r"import\\s*\\{([^}]+)\\}\\s*from\\s*'react-native'", rewrite_import, source, flags=re.S)
         if changed:
             path.write_text(updated, encoding="utf-8")
 
 
-def patch_all_touchables_focusable()
-patch_global_touchable_focus() -> None:
+def patch_all_touchables_focusable() -> None:
     # Last pass: every remaining touch target in the TV app becomes D-pad reachable.
     import re
     for path in (ROOT / "src").rglob("*.tsx"):
@@ -1023,4 +1022,5 @@ patch_home_layout()
 patch_player_controls()
 patch_player_bar()
 patch_all_touchables_focusable()
+patch_global_touchable_focus()
 print("Applied TV layout relocation and remote focus adaptations.")
