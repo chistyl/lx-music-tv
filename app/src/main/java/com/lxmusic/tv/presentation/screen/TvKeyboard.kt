@@ -18,6 +18,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lxmusic.tv.presentation.theme.FocusBorder
+import com.lxmusic.tv.presentation.theme.LXFocusFill
 import com.lxmusic.tv.presentation.theme.LXSurfaceVariant
 import com.lxmusic.tv.presentation.theme.LXTextPrimary
 import com.lxmusic.tv.presentation.theme.LXPrimary
@@ -127,14 +128,14 @@ fun KeyboardKey(
     highlighted: Boolean = false
 ) {
     var isFocused by remember { mutableStateOf(false) }
-    // 2.5 浅色主题：字母/数字键浅灰底深字；聚焦浅红底白字；搜索键红底白字
+    // 字母/数字键聚焦填充跟随所选主题色；搜索键保留既有强调底色
     val bgColor = when {
         highlighted -> LXPrimary
-        isFocused -> LXPrimary.copy(alpha = 0.35f)
+        isFocused -> LXFocusFill
         else -> LXSurfaceVariant
     }
     val textColor = if (isFocused || highlighted) Color.White else LXTextPrimary
-    // 焦点边框：仅聚焦时显示统一 FocusBorder（深色）；未聚焦不画边框（去掉高亮「搜索」键的白色边框）
+    // 焦点边框使用主题色；未聚焦不画边框
     val borderColor = if (isFocused) FocusBorder else Color.Transparent
 
     Box(
@@ -144,7 +145,7 @@ fun KeyboardKey(
             .onFocusChanged { isFocused = it.isFocused }
             .clip(RoundedCornerShape(6.dp))
             .background(bgColor)
-            .border(if (isFocused) 3.dp else 0.dp, borderColor, RoundedCornerShape(6.dp))
+            .border(if (isFocused) 2.dp else 0.dp, borderColor, RoundedCornerShape(6.dp))
             // 聚焦不放大，避免超出按键边框范围（焦点靠亮红边框 + 底色变化体现）
             .clickable { onClick() },
         contentAlignment = Alignment.Center
