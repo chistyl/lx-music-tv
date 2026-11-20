@@ -2382,10 +2382,11 @@ fun DeviceInfoDialog(onDismiss: () -> Unit) {
     var initialFocusRequested by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
-        if (!initialFocusRequested) {
-            initialFocusRequested = true
-            try { confirmRequester.requestFocus() } catch (_: Exception) {}
-        }
+        requestInitialFocus(
+            focusRequester = confirmRequester,
+            attempted = { initialFocusRequested },
+            markAttempted = { initialFocusRequested = true }
+        )
     }
 
     val brand = Build.BRAND.replaceFirstChar { it.uppercase() }
