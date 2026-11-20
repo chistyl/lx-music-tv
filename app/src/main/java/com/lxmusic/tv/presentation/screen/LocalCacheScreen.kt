@@ -31,6 +31,7 @@ import com.lxmusic.tv.data.model.Song
 import com.lxmusic.tv.presentation.component.RemoteImage
 import com.lxmusic.tv.presentation.component.lxCircleButtonFocus
 import com.lxmusic.tv.presentation.component.lxFocusBorder
+import com.lxmusic.tv.presentation.component.lxSelectorFocus
 import com.lxmusic.tv.presentation.theme.LXCardDark
 import com.lxmusic.tv.presentation.theme.LXOnCardDark
 import com.lxmusic.tv.presentation.theme.LXOnCardDarkSecondary
