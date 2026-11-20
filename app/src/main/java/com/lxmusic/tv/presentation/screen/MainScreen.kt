@@ -90,6 +90,7 @@ import com.lxmusic.tv.presentation.theme.LXTextSecondary
 import com.lxmusic.tv.util.ScreenAdaptation
 import com.lxmusic.tv.presentation.theme.LXOnCardDark
 import com.lxmusic.tv.presentation.theme.LXOnCardDarkSecondary
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
