@@ -228,6 +228,24 @@ def patch_navigation(relative_path: str) -> None:
         raise SystemExit(f"Failed to add focusable navigation item: {relative_path}")
     target.write_text(source, encoding="utf-8")
 
+def patch_register_screens() -> None:
+    path = ROOT / "src/navigation/registerScreens.tsx"
+    source = path.read_text(encoding="utf-8")
+    old = """import {
+  Home,
+  PlayDetail,
+  SonglistDetail,
+  Comment,
+  // Setting,
+} from '@/screens'"""
+    new = """import Home from '../screens/Home'
+import PlayDetail from '../screens/PlayDetail'
+import SonglistDetail from '../screens/SonglistDetail'
+import Comment from '../screens/Comment'"""
+    source = replace_once(source, old, new, "avoid screens barrel initialization cycle")
+    path.write_text(source, encoding="utf-8")
+
+
 def patch_android_abis() -> None:
     path = ROOT / "android/app/build.gradle"
     source = path.read_text(encoding="utf-8")
@@ -459,6 +477,7 @@ const styles = createStyle({
 })
 """, encoding="utf-8")
 
+patch_register_screens()
 patch_home_layout()
 patch_player_controls()
 patch_player_bar()
