@@ -270,7 +270,7 @@ import { removeComponentId } from '@/core/common'""",
     )
     source = replace_once(
         source,
-        "      removeComponentId(componentId)",
+        "    removeComponentId(componentId)",
         "      commonActions.removeComponentId(componentId)",
         "remove component id without core/common barrel",
     )
