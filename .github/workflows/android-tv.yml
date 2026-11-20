@@ -7,6 +7,7 @@ on:
       - feature/lx-tv-layout-run100
       - fix/lx-tv-theme-player-controls-run117
       - fix/lx-tv-player-spacing-theme-run130
+      - fix/lx-tv-three-color-only-run144
   workflow_dispatch:
 
 permissions:
