@@ -437,7 +437,7 @@ const styles = createStyle({
     gap: 8,
   },
   menuItem: {
-    height: 38,
+    height: 48,
     minWidth: 104,
     paddingHorizontal: 14,
     borderRadius: 9,
