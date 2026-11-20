@@ -111,6 +111,11 @@ fun MainScreen(
     currentSong: com.lxmusic.tv.data.model.Song? = null,
     isPlaying: Boolean = false,
     onPlayPause: () -> Unit = {},
+    onPrevious: () -> Unit = {},
+    onNext: () -> Unit = {},
+    progressMs: Long = 0L,
+    durationMs: Long = currentSong?.duration ?: 0L,
+    onSeek: (Long) -> Unit = {},
     defaultPlatform: MusicPlatform = MusicPlatform.KW,
     onDefaultPlatformChange: (MusicPlatform) -> Unit = {},
     preferredQuality: AudioQuality = AudioQuality.FLAC,
@@ -288,9 +293,14 @@ fun MainScreen(
                 isPlaying = isPlaying,
                 onOpenPlayer = onNavigateToPlayer,
                 onPlayPause = onPlayPause,
+                onPrevious = onPrevious,
+                onNext = onNext,
+                progressMs = progressMs,
+                durationMs = durationMs,
+                onSeek = onSeek,
                 modifier = Modifier
                     .fillMaxHeight()
-                    .fillMaxWidth(0.37f)
+                    .fillMaxWidth(0.30f)
             )
 
             // 主内容区域
@@ -384,19 +394,25 @@ private fun LeftPlayerPanel(
     isPlaying: Boolean,
     onOpenPlayer: () -> Unit,
     onPlayPause: () -> Unit,
+    onPrevious: () -> Unit,
+    onNext: () -> Unit,
+    progressMs: Long,
+    durationMs: Long,
+    onSeek: (Long) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
         modifier = modifier
             .background(LXSurfaceSidebar)
-            .padding(horizontal = 20.dp, vertical = 18.dp),
+            .padding(horizontal = 22.dp, vertical = 14.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
         if (song != null) {
             Box(
                 modifier = Modifier
-                    .fillMaxWidth(0.82f)
+                    .fillMaxWidth(0.78f)
+                    .heightIn(max = 250.dp)
                     .aspectRatio(1f)
                     .clip(CircleShape)
                     .background(LXSurfaceVariant)
@@ -419,7 +435,7 @@ private fun LeftPlayerPanel(
                     )
                 }
             }
-            Spacer(Modifier.height(20.dp))
+            Spacer(Modifier.height(14.dp))
             Text(
                 text = song.name,
                 color = LXTextPrimary,
@@ -437,20 +453,43 @@ private fun LeftPlayerPanel(
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.fillMaxWidth().padding(top = 5.dp)
             )
-            Spacer(Modifier.height(22.dp))
-            Box(
-                modifier = Modifier
-                    .size(64.dp)
-                    .lxCircleButtonFocus()
-                    .clickable { onPlayPause() },
-                contentAlignment = Alignment.Center
+            Spacer(Modifier.height(10.dp))
+            Slider(
+                value = if (durationMs > 0L) (progressMs.toFloat() / durationMs.toFloat()).coerceIn(0f, 1f) else 0f,
+                onValueChange = { fraction -> if (durationMs > 0L) onSeek((fraction * durationMs).toLong()) },
+                valueRange = 0f..1f,
+                modifier = Modifier.fillMaxWidth()
+            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Icon(
-                    imageVector = if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
-                    contentDescription = if (isPlaying) "暂停" else "播放",
-                    tint = LXPrimary,
-                    modifier = Modifier.size(38.dp)
-                )
+                Text(formatDuration(progressMs), color = LXTextSecondary, fontSize = 12.sp)
+                Text(formatDuration(durationMs), color = LXTextSecondary, fontSize = 12.sp)
+            }
+            Spacer(Modifier.height(8.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(onClick = onPrevious, modifier = Modifier.size(48.dp)) {
+                    Icon(Icons.Default.SkipPrevious, contentDescription = "上一首", tint = LXPrimary, modifier = Modifier.size(30.dp))
+                }
+                Box(
+                    modifier = Modifier.size(58.dp).lxCircleButtonFocus().clickable { onPlayPause() },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
+                        contentDescription = if (isPlaying) "暂停" else "播放",
+                        tint = LXPrimary,
+                        modifier = Modifier.size(36.dp)
+                    )
+                }
+                IconButton(onClick = onNext, modifier = Modifier.size(48.dp)) {
+                    Icon(Icons.Default.SkipNext, contentDescription = "下一首", tint = LXPrimary, modifier = Modifier.size(30.dp))
+                }
             }
         } else {
             Text("尚未播放歌曲", color = LXTextSecondary, fontSize = 16.sp)
@@ -551,6 +590,13 @@ fun NavigationSidebar(
                     painter = painterResource(R.drawable.ic_logo),
                     contentDescription = "LX Music",
                     modifier = Modifier.size(32.dp)
+                )
+                Text(
+                    text = "Music",
+                    fontSize = 23.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = LXPrimary,
+                    maxLines = 1
                 )
                 // 当前默认音乐平台（短名，如 酷狗/QQ）
                 Text(
