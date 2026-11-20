@@ -65,8 +65,10 @@ export const TVTouchableHighlight = forwardRef<any, any>((props, ref) => {
   const focus = useTVFocus(style, onFocus, onBlur, focusable)
   return (
     <RNTouchableHighlight {...rest} ref={ref} style={style} focusable={focus.focusable} onFocus={focus.onFocus} onBlur={focus.onBlur}>
-      {children}
-      {focus.frame}
+      <View collapsable={false}>
+        {children}
+        {focus.frame}
+      </View>
     </RNTouchableHighlight>
   )
 })
