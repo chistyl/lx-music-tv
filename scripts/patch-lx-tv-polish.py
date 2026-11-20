@@ -122,8 +122,8 @@ edit(
 edit(
     "src/core/init/dataInit.ts",
     "  setNavActiveId((await getViewPrevState()).id)",
-    "  setNavActiveId('nav_songlist')",
-    "default startup navigation to Songlist",
+    "  setNavActiveId('nav_home')",
+    "default startup navigation to TV Home dashboard",
 )
 
 print("LX TV polish patch completed.")
