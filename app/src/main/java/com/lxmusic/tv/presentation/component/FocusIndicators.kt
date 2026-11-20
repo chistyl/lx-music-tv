@@ -44,6 +44,49 @@ private fun outlineToPath(outline: Outline): Path {
 }
 
 /**
+ * 焦點外框使用更柔和的圓角；圓形元件保持原本圓形。
+ */
+private fun Outline.withSoftCorners(minRadiusPx: Float): Outline {
+    return when (this) {
+        is Outline.Rounded -> {
+            val r = roundRect
+            fun soft(c: CornerRadius) = CornerRadius(
+                x = max(c.x, minRadiusPx),
+                y = max(c.y, minRadiusPx)
+            )
+            Outline.Rounded(
+                RoundRect(
+                    left = r.left,
+                    top = r.top,
+                    right = r.right,
+                    bottom = r.bottom,
+                    topLeftCornerRadius = soft(r.topLeftCornerRadius),
+                    topRightCornerRadius = soft(r.topRightCornerRadius),
+                    bottomRightCornerRadius = soft(r.bottomRightCornerRadius),
+                    bottomLeftCornerRadius = soft(r.bottomLeftCornerRadius)
+                )
+            )
+        }
+        is Outline.Rectangle -> {
+            val r = rect
+            Outline.Rounded(
+                RoundRect(
+                    left = r.left,
+                    top = r.top,
+                    right = r.right,
+                    bottom = r.bottom,
+                    topLeftCornerRadius = CornerRadius(minRadiusPx, minRadiusPx),
+                    topRightCornerRadius = CornerRadius(minRadiusPx, minRadiusPx),
+                    bottomRightCornerRadius = CornerRadius(minRadiusPx, minRadiusPx),
+                    bottomLeftCornerRadius = CornerRadius(minRadiusPx, minRadiusPx)
+                )
+            )
+        }
+        is Outline.Generic -> this
+    }
+}
+
+/**
  * 将描边轮廓向内（+）收缩或向外（-）扩张指定像素。
  * 注意：传【正数】= 向内收缩（本文件统一传 stroke/2，使描边外边缘贴合 shape 外边缘）。
  */
@@ -154,7 +197,7 @@ fun Modifier.lxFocusBorder(
             drawContent()
             if (borderWidth > 0.dp) {
                 val stroke = borderWidth.toPx()
-                val outline = shape.createOutline(size, layoutDirection, this)
+                val outline = shape.createOutline(size, layoutDirection, this).withSoftCorners(16.dp.toPx())
                 // ★ 修复2：传【正数】向内收缩 stroke/2，描边外边缘恰好贴合 shape 外边缘
                 val insetOutline = outline.insetBy(stroke / 2f)
                 val focusPath = outlineToPath(insetOutline)
@@ -289,7 +332,7 @@ fun Modifier.lxSelectorFocus(
             drawContent()
             if (focusedWidth > 0.dp) {
                 val stroke = focusedWidth.toPx()
-                val outline = shape.createOutline(size, layoutDirection, this)
+                val outline = shape.createOutline(size, layoutDirection, this).withSoftCorners(16.dp.toPx())
                 val insetOutline = outline.insetBy(stroke / 2f)
                 drawPath(
                     path = outlineToPath(insetOutline),
