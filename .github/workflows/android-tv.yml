@@ -161,7 +161,7 @@ jobs:
 
       - name: Install Android SDK packages
         run: |
-          sdkmanager --install "platforms;android-37" "build-tools;35.0.0"
+          sdkmanager --install "platforms;android-37.0" "build-tools;37.0.0"
 
       - name: Compile native Android TV app
         run: ./gradlew --no-daemon :app:assembleDebug
