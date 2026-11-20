@@ -968,17 +968,17 @@ export default TVTouchableOpacity
             nonlocal changed
             names = match.group(1)
             additions = []
-            if re.search(r"\bTouchableOpacity\\b", names):
-                names = re.sub(r"\bTouchableOpacity\\b(?!\\s+as)", "TouchableOpacity as NativeTouchableOpacity", names)
+            if re.search(r"\bTouchableOpacity\b", names):
+                names = re.sub(r"\bTouchableOpacity\b(?!\s+as)", "TouchableOpacity as NativeTouchableOpacity", names)
                 additions.append("import TouchableOpacity from '@/components/common/TVTouchableOpacity'")
-            if re.search(r"\bTouchableHighlight\\b", names):
-                names = re.sub(r"\bTouchableHighlight\\b(?!\\s+as)", "TouchableHighlight as NativeTouchableHighlight", names)
+            if re.search(r"\bTouchableHighlight\b", names):
+                names = re.sub(r"\bTouchableHighlight\b(?!\s+as)", "TouchableHighlight as NativeTouchableHighlight", names)
                 additions.append("import { TVTouchableHighlight as TouchableHighlight } from '@/components/common/TVTouchableOpacity'")
             if additions:
                 changed = True
-                return "import {" + names + "} from 'react-native'\n" + "\\n".join(additions)
+                return "import {" + names + "} from 'react-native'\n" + "\n".join(additions)
             return match.group(0)
-        updated = re.sub(r"import\\s*\\{([^}]+)\\}\\s*from\\s*'react-native'", rewrite_import, source, flags=re.S)
+        updated = re.sub(r"import\s*\{([^}]+)\}\s*from\s*'react-native'", rewrite_import, source, flags=re.S)
         if changed:
             path.write_text(updated, encoding="utf-8")
 
