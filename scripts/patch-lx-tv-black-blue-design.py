@@ -237,6 +237,12 @@ def patch_navigation_focus() -> None:
     # currently selected entry, and preserve the existing menu actions.
     path = ROOT / "src/screens/Home/Horizontal/Aside.tsx"
     source = path.read_text(encoding="utf-8")
+    # patch-tv-controls.py already replaces Aside.tsx with the horizontal TV nav,
+    # including focus state and focusable D-pad targets. Do not reapply the
+    # legacy vertical-nav transformation to that already-adapted component.
+    if "const [focused, setFocused] = useState(false)" in source and "focusable" in source:
+        print("Skipped navigation focus patch: horizontal TV navigation is already focusable.")
+        return
     source = replace_once(
         source,
         "import { memo } from 'react'",
