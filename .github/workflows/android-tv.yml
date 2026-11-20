@@ -6,6 +6,7 @@ on:
       - feature/lx-mobile-auto-source-tv-r1
       - feature/lx-tv-layout-run100
       - fix/lx-tv-theme-player-controls-run117
+      - fix/lx-tv-player-spacing-theme-run130
   workflow_dispatch:
 
 permissions:
