@@ -457,8 +457,6 @@ const styles = createStyle({
 """, encoding="utf-8")
 
 patch_home_layout()
-patch_button()
 patch_player_controls()
 patch_player_bar()
-patch_my_lists()
 print("Applied TV layout relocation and remote focus adaptations.")
