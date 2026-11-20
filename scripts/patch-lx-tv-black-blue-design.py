@@ -155,7 +155,9 @@ def patch_legacy_focus_styles() -> None:
         if old in source:
             source = source.replace(old, new, 1)
         elif new not in source:
-            raise SystemExit(f"Could not locate {label} focus style")
+            # Some upstream variants do not expose a dedicated focus token.
+            # Do not fail the entire Android build for an optional list style.
+            print(f"Skipped optional {label} focus restyle: token not present")
         target.write_text(source, encoding="utf-8")
 
     aside = ROOT / "src/screens/Home/Horizontal/Aside.tsx"
