@@ -134,7 +134,7 @@ fun KeyboardKey(
         isFocused -> LXFocusFill
         else -> LXSurfaceVariant
     }
-    val textColor = if (isFocused || highlighted) Color.White else LXTextPrimary
+    val textColor = if (highlighted) Color.White else LXTextPrimary
     // 焦点边框使用主题色；未聚焦不画边框
     val borderColor = if (isFocused) FocusBorder else Color.Transparent
 
