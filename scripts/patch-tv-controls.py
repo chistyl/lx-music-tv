@@ -268,17 +268,19 @@ export default () => {
   },
   content: {
     flex: 1,
+    minHeight: 0,
     flexDirection: 'row',
     overflow: 'hidden',
   },
   player: {
-    width: '36%',
+    width: '30%',
     flexGrow: 0,
     flexShrink: 0,
     overflow: 'hidden',
   },
   main: {
     flex: 1,
+    minWidth: 0,
     overflow: 'hidden',
   },
 })
@@ -293,7 +295,6 @@ export default () => (
           <PlayerBar isHome />
         </View>
         <View style={styles.main}>
-          <Header />
           <Main />
         </View>
       </View>
@@ -303,6 +304,18 @@ export default () => (
 """
     source = replace_once(source, old_layout, new_layout, "home horizontal layout")
     home.write_text(source, encoding="utf-8")
+
+    # Open the home screen on the leaderboard so the center category list and
+    # right-side song list are visible beside the left player on first launch.
+    common_state = ROOT / "src/store/common/state.ts"
+    state_source = common_state.read_text(encoding="utf-8")
+    state_source = replace_once(
+        state_source,
+        "  navActiveId: 'nav_search',\\n  lastNavActiveId: 'nav_search',",
+        "  navActiveId: 'nav_top',\\n  lastNavActiveId: 'nav_top',",
+        "TV home default leaderboard",
+    )
+    common_state.write_text(state_source, encoding="utf-8")
 
     aside = ROOT / "src/screens/Home/Horizontal/Aside.tsx"
     aside.write_text("""import { memo, useState } from 'react'
