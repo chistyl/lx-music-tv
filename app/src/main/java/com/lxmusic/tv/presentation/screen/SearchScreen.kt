@@ -68,6 +68,7 @@ import com.lxmusic.tv.presentation.theme.LXTextPrimary
 import com.lxmusic.tv.presentation.theme.LXTextSecondary
 import com.lxmusic.tv.presentation.theme.LXBorder
 import com.lxmusic.tv.presentation.theme.LXPrimary
+import com.lxmusic.tv.presentation.theme.LXFocusFill
 
 /**
  * 各平台品牌色
@@ -304,10 +305,10 @@ fun SearchScreen(
                                 .height(58.dp)
                                 .clip(RoundedCornerShape(12.dp))
                                 .background(
-                                    if (searchBoxFocused) LXPrimary.copy(alpha = 0.35f) else LXSurfaceVariant
+                                    if (searchBoxFocused) LXFocusFill else LXSurfaceVariant
                                 )
                                 .border(
-                                    width = if (searchBoxFocused) 3.dp else 0.dp,
+                                    width = if (searchBoxFocused) 2.dp else 0.dp,
                                     color = if (searchBoxFocused) FocusBorder else Color.Transparent,
                                     shape = RoundedCornerShape(12.dp)
                                 )
@@ -465,10 +466,10 @@ fun SearchScreen(
                                 .onFocusChanged { qrBtnFocused = it.isFocused }
                                 .clip(RoundedCornerShape(12.dp))
                                 .background(
-                                    if (qrBtnFocused) LXPrimary.copy(alpha = 0.35f) else LXSurfaceVariant
+                                    if (qrBtnFocused) LXFocusFill else LXSurfaceVariant
                                 )
                                 .border(
-                                    width = if (qrBtnFocused) 3.dp else 0.dp,
+                                    width = if (qrBtnFocused) 2.dp else 0.dp,
                                     color = if (qrBtnFocused) FocusBorder else Color.Transparent,
                                     shape = RoundedCornerShape(12.dp)
                                 )
