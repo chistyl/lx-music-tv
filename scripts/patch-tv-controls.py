@@ -352,7 +352,7 @@ export default () => (
     home.write_text(source, encoding="utf-8")
 
     aside = ROOT / "src/screens/Home/Horizontal/Aside.tsx"
-    aside.write_text("""import { memo, useState } from 'react'
+    aside.write_text("""import { memo } from 'react'
 import { ScrollView, TouchableOpacity, View } from 'react-native'
 import { useNavActiveId, useStatusbarHeight } from '@/store/common/hook'
 import { useTheme } from '@/store/theme/hook'
@@ -387,7 +387,7 @@ const MenuItem = ({ id, icon, onPress }: {
       style={[styles.menuItem, active ? styles.activeItem : undefined]}
     >
       <Icon name={icon} size={20} color={active ? theme['c-primary-font-active'] : theme['c-font-label']} />
-      <Text size={14} color={active || focused ? theme['c-primary-font-active'] : theme['c-font-label']}>{t(id)}</Text>
+      <Text size={14} color={active ? theme['c-primary-font-active'] : theme['c-font-label']}>{t(id)}</Text>
     </TouchableOpacity>
   )
 }
