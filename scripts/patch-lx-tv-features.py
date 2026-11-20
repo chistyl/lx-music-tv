@@ -196,14 +196,17 @@ print("Applied: remove quick-add custom source panel")
 
 
 # Remove the "Other" category from both settings navigation layouts.
-edit("src/screens/Home/Views/Setting/Main.tsx",
-     "import Other from './settings/Other'\n", "", "remove horizontal Other settings import")
-edit("src/screens/Home/Views/Setting/Main.tsx",
-     "  'other',\n", "", "remove Other settings navigation item")
-edit("src/screens/Home/Views/Setting/Main.tsx",
-     "      case 'other': return <Other />\n", "", "remove horizontal Other settings screen")
-edit("src/screens/Home/Views/Setting/Vertical/Main.tsx",
-     "import Other from '../settings/Other'\n", "", "remove vertical Other settings import")
-edit("src/screens/Home/Views/Setting/Vertical/Main.tsx",
-     "    case 'other': return <Other />\n", "", "remove vertical Other settings screen")
+# These replacements are intentionally idempotent because upstream variants may already omit an entry.
+p = "src/screens/Home/Views/Setting/Main.tsx"
+s = (ROOT / p).read_text()
+s = s.replace("import Other from './settings/Other'\\n", "")
+s = s.replace("  'other',\\n", "")
+s = s.replace("      case 'other': return <Other />\\n", "")
+(ROOT / p).write_text(s)
+
+p = "src/screens/Home/Views/Setting/Vertical/Main.tsx"
+s = (ROOT / p).read_text()
+s = s.replace("import Other from '../settings/Other'\\n", "")
+s = s.replace("    case 'other': return <Other />\\n", "")
+(ROOT / p).write_text(s)
 print("Applied: remove Other settings category")
