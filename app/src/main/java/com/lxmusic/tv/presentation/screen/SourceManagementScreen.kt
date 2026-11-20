@@ -3,6 +3,7 @@ package com.lxmusic.tv.presentation.screen
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -49,6 +50,7 @@ import com.lxmusic.tv.presentation.theme.LXSurfaceMain
 import com.lxmusic.tv.presentation.theme.LXSurfaceVariant
 import com.lxmusic.tv.presentation.theme.LXTextPrimary
 import com.lxmusic.tv.presentation.theme.LXTextSecondary
+import kotlinx.coroutines.delay
 
 /**
  * 播放源管理界面
@@ -75,6 +77,22 @@ fun SourceManagementScreen(
     var showDeleteDialog by remember { mutableStateOf<MusicSource?>(null) }
     // 平台配置弹窗状态：当前配置的源 + 平台选择集合
     var platformConfigSource by remember { mutableStateOf<MusicSource?>(null) }
+    var pendingSourceFocusRestore by remember { mutableStateOf<FocusRequester?>(null) }
+    var deleteDialogReturnRequester by remember { mutableStateOf<FocusRequester?>(null) }
+    var platformDialogReturnRequester by remember { mutableStateOf<FocusRequester?>(null) }
+
+    LaunchedEffect(pendingSourceFocusRestore) {
+        val requester = pendingSourceFocusRestore
+        if (requester != null) {
+            delay(120)
+            try {
+                requester.requestFocus()
+            } catch (_: IllegalStateException) {
+                // 若原播放源項目已移除或尚未掛載，交由系統焦點處理。
+            }
+            pendingSourceFocusRestore = null
+        }
+    }
     // 播放源排序：启用的源按「启用顺序」排前面（优先级从高到低，先启用优先），未启用的按导入顺序排后面
     val orderedSources = remember(sources) {
         val enabled = sources.filter { it.isEnabled }
@@ -196,8 +214,14 @@ fun SourceManagementScreen(
                         // 启用源显示优先级序号（1 = 最高）
                         priority = if (source.isEnabled) index + 1 else null,
                         onToggleEnabled = { enabled -> onToggleSource(source.id, enabled) },
-                        onDelete = { showDeleteDialog = source },
-                        onConfigurePlatforms = { platformConfigSource = source },
+                        onDelete = { requester ->
+                            deleteDialogReturnRequester = requester
+                            showDeleteDialog = source
+                        },
+                        onConfigurePlatforms = { requester ->
+                            platformDialogReturnRequester = requester
+                            platformConfigSource = source
+                        },
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
@@ -211,8 +235,15 @@ fun SourceManagementScreen(
                 onConfirm = {
                     onDeleteSource(source.id)
                     showDeleteDialog = null
+                    // 刪除後原操作項已不存在，將焦點安全地移回頁面返回按鈕。
+                    pendingSourceFocusRestore = backFocusRequester
+                    deleteDialogReturnRequester = null
                 },
-                onDismiss = { showDeleteDialog = null }
+                onDismiss = {
+                    showDeleteDialog = null
+                    pendingSourceFocusRestore = deleteDialogReturnRequester
+                    deleteDialogReturnRequester = null
+                }
             )
         }
 
@@ -224,8 +255,14 @@ fun SourceManagementScreen(
                 onConfirm = { platforms ->
                     onSetSourcePlatforms(source.id, platforms)
                     platformConfigSource = null
+                    pendingSourceFocusRestore = platformDialogReturnRequester
+                    platformDialogReturnRequester = null
                 },
-                onDismiss = { platformConfigSource = null }
+                onDismiss = {
+                    platformConfigSource = null
+                    pendingSourceFocusRestore = platformDialogReturnRequester
+                    platformDialogReturnRequester = null
+                }
             )
         }
         }
@@ -392,10 +429,13 @@ fun SourceItem(
     source: MusicSource,
     priority: Int? = null,
     onToggleEnabled: (Boolean) -> Unit,
-    onDelete: () -> Unit,
-    onConfigurePlatforms: () -> Unit = {},
+    onDelete: (FocusRequester) -> Unit,
+    onConfigurePlatforms: (FocusRequester) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
+    val platformConfigFocusRequester = remember { FocusRequester() }
+    val deleteFocusRequester = remember { FocusRequester() }
+
     Card(
         // 卡片自身不设焦点节点：若卡片 focusable 会拦截方向键，导致遥控器
         // 无法把焦点移入卡片内部的「启用/平台配置/删除」操作（需按两次确定）。
@@ -513,14 +553,14 @@ fun SourceItem(
                 CacheActionButton(
                     text = "平台配置",
                     hint = "设置生效平台",
-                    onClick = onConfigurePlatforms,
-                    modifier = Modifier.weight(1f)
+                    onClick = { onConfigurePlatforms(platformConfigFocusRequester) },
+                    modifier = Modifier.weight(1f).focusRequester(platformConfigFocusRequester)
                 )
                 CacheActionButton(
                     text = "删除",
                     hint = "移除该播放源",
-                    onClick = onDelete,
-                    modifier = Modifier.weight(1f)
+                    onClick = { onDelete(deleteFocusRequester) },
+                    modifier = Modifier.weight(1f).focusRequester(deleteFocusRequester)
                 )
             }
         }
@@ -547,6 +587,17 @@ fun PlatformConfigDialog(
         MusicPlatform.MG.key to MusicPlatform.MG.displayName
     )
     var selected by remember { mutableStateOf(selectedPlatforms) }
+    val selectedPlatformIndex = platforms.indexOfFirst { selectedPlatforms.contains(it.first) }.let { if (it >= 0) it else 0 }
+    val firstPlatformRequester = remember { FocusRequester() }
+    var initialFocusRequested by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        requestInitialFocus(
+            focusRequester = firstPlatformRequester,
+            attempted = { initialFocusRequested },
+            markAttempted = { initialFocusRequested = true }
+        )
+    }
 
     Dialog(onDismissRequest = onDismiss) {
         Card(
@@ -558,7 +609,7 @@ fun PlatformConfigDialog(
             shape = RoundedCornerShape(16.dp),
             border = BorderStroke(1.dp, LXBorder)
         ) {
-            Column(modifier = Modifier.fillMaxSize().padding(20.dp)) {
+            Column(modifier = Modifier.fillMaxSize().padding(20.dp).focusGroup()) {
                 Text(
                     text = "平台配置",
                     fontSize = 22.sp,
@@ -597,6 +648,7 @@ fun PlatformConfigDialog(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(vertical = 3.dp)
+                                .then(if (platforms.indexOfFirst { it.first == key } == selectedPlatformIndex) Modifier.focusRequester(firstPlatformRequester) else Modifier)
                                 .lxSelectorFocus(shape = RoundedCornerShape(8.dp), glow = false, animated = false)
                                 .clickable {
                                     selected = if (isChecked) selected - key else selected + key
@@ -697,6 +749,16 @@ fun DeleteConfirmDialog(
     onConfirm: () -> Unit,
     onDismiss: () -> Unit
 ) {
+    val cancelRequester = remember { FocusRequester() }
+    var initialFocusRequested by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        requestInitialFocus(
+            focusRequester = cancelRequester,
+            attempted = { initialFocusRequested },
+            markAttempted = { initialFocusRequested = true }
+        )
+    }
+
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(text = "确认删除", fontWeight = FontWeight.Bold) },
@@ -709,7 +771,10 @@ fun DeleteConfirmDialog(
         },
         dismissButton = {
             // 取消：与「后台播放」一致的无背景文本按钮
-            TextButton(onClick = onDismiss) {
+            TextButton(
+                onClick = onDismiss,
+                modifier = Modifier.focusRequester(cancelRequester)
+            ) {
                 Text("取消", color = LXTextPrimary)
             }
         },

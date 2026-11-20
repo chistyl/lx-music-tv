@@ -90,6 +90,7 @@ import com.lxmusic.tv.presentation.theme.LXTextSecondary
 import com.lxmusic.tv.util.ScreenAdaptation
 import com.lxmusic.tv.presentation.theme.LXOnCardDark
 import com.lxmusic.tv.presentation.theme.LXOnCardDarkSecondary
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -1997,6 +1998,16 @@ fun SettingsScreen(
     var showLogExportDialog by remember { mutableStateOf(false) }
     // 2.8 HTTP 未启用询问弹窗开关（异常日志需要 Web 端访问，未开服务器先询问）
     var showEnableServerDialog by remember { mutableStateOf(false) }
+    val enableServerCancelRequester = remember { FocusRequester() }
+    LaunchedEffect(showEnableServerDialog) {
+        if (showEnableServerDialog) {
+            requestInitialFocus(
+                focusRequester = enableServerCancelRequester,
+                attempted = { false },
+                markAttempted = {}
+            )
+        }
+    }
     // 2.8 是否在等待服务器启动后自动弹异常日志弹窗（询问弹窗点了「开启」）
     var pendingLogDialogAfterServerStart by remember { mutableStateOf(false) }
 
@@ -2015,6 +2026,20 @@ fun SettingsScreen(
     var lastClickedIndex by rememberSaveable { mutableIntStateOf(-1) }
     // 各设置项的焦点请求器（共 10 项：默认音乐平台/播放源管理/启动默认页面/播放设置/歌词设置/界面设置/缓存管理/异常日志/设备信息/关于）
     val itemRequesters = remember { List(10) { FocusRequester() } }
+    // 對話框關閉後，將焦點還給原本開啟對話框的設定項。
+    var pendingSettingsFocusRestore by remember { mutableIntStateOf(-1) }
+    LaunchedEffect(pendingSettingsFocusRestore) {
+        val index = pendingSettingsFocusRestore
+        if (index in 0..9) {
+            delay(120)
+            try {
+                itemRequesters[index].requestFocus()
+            } catch (_: IllegalStateException) {
+                // 設定列表尚未掛載時，交由系統焦點處理。
+            }
+            pendingSettingsFocusRestore = -1
+        }
+    }
 
     // 重复点击「设置」tab：滚动回顶部（仅 tick 真正变化时，避免组件重建误触发）
     var lastRefreshTick by remember { mutableIntStateOf(refreshTick) }
@@ -2175,8 +2200,12 @@ fun SettingsScreen(
             onSelect = { platform ->
                 onDefaultPlatformChange(platform)
                 showPlatformDialog = false
+                pendingSettingsFocusRestore = 0
             },
-            onDismiss = { showPlatformDialog = false }
+            onDismiss = {
+                showPlatformDialog = false
+                pendingSettingsFocusRestore = 0
+            }
         )
     }
 
@@ -2187,8 +2216,12 @@ fun SettingsScreen(
             onSelect = { quality ->
                 onPreferredQualityChange(quality)
                 showQualityDialog = false
+                pendingSettingsFocusRestore = 3
             },
-            onDismiss = { showQualityDialog = false }
+            onDismiss = {
+                showQualityDialog = false
+                pendingSettingsFocusRestore = 3
+            }
         )
     }
 
@@ -2199,8 +2232,12 @@ fun SettingsScreen(
             onSelect = { tabIndex ->
                 onDefaultStartupTabChange(tabIndex)
                 showStartupTabDialog = false
+                pendingSettingsFocusRestore = 2
             },
-            onDismiss = { showStartupTabDialog = false }
+            onDismiss = {
+                showStartupTabDialog = false
+                pendingSettingsFocusRestore = 2
+            }
         )
     }
 
@@ -2209,25 +2246,37 @@ fun SettingsScreen(
         LyricsSettingsDialog(
             translationEnabled = lyricTranslationEnabled,
             onTranslationEnabledChange = onLyricTranslationEnabledChange,
-            onDismiss = { showLyricsDialog = false }
+            onDismiss = {
+                showLyricsDialog = false
+                pendingSettingsFocusRestore = 4
+            }
         )
     }
 
     // 2.9 设备信息对话框：显示设备型号、屏幕物理分辨率、DPI 与自适应视口
     if (showDeviceInfoDialog) {
-        DeviceInfoDialog(onDismiss = { showDeviceInfoDialog = false })
+        DeviceInfoDialog(onDismiss = {
+            showDeviceInfoDialog = false
+            pendingSettingsFocusRestore = 8
+        })
     }
 
     // 关于对话框：显示当前安装的版本号（versionName + versionCode），用于核对构建是否生效
     if (showAboutDialog) {
-        AboutDialog(onDismiss = { showAboutDialog = false })
+        AboutDialog(onDismiss = {
+            showAboutDialog = false
+            pendingSettingsFocusRestore = 9
+        })
     }
 
     // 2.8 异常日志需要 Web 端访问：HTTP 未开启时询问是否启用（与搜索页扫码推送交互一致），
     // 确认后启动服务器，serverUrl 更新 → LaunchedEffect 自动弹出异常日志弹窗
     if (showEnableServerDialog) {
         AlertDialog(
-            onDismissRequest = { showEnableServerDialog = false },
+            onDismissRequest = {
+                showEnableServerDialog = false
+                pendingSettingsFocusRestore = 7
+            },
             containerColor = LXSurfaceDialog,
             title = {
                 Text(
@@ -2254,7 +2303,13 @@ fun SettingsScreen(
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showEnableServerDialog = false }) {
+                TextButton(
+                    onClick = {
+                        showEnableServerDialog = false
+                        pendingSettingsFocusRestore = 7
+                    },
+                    modifier = Modifier.focusRequester(enableServerCancelRequester)
+                ) {
                     Text("取消", color = LXTextSecondary)
                 }
             }
@@ -2265,7 +2320,10 @@ fun SettingsScreen(
     if (showLogExportDialog) {
         LogExportDialog(
             serverUrl = serverUrl,
-            onDismiss = { showLogExportDialog = false }
+            onDismiss = {
+                showLogExportDialog = false
+                pendingSettingsFocusRestore = 7
+            }
         )
     }
 }
@@ -2280,6 +2338,11 @@ fun LogExportDialog(
     onDismiss: () -> Unit
 ) {
     val logUrl = serverUrl?.let { "$it/log" } ?: "需先开启 HTTP 服务器"
+    val closeRequester = remember { FocusRequester() }
+    var initialFocusRequested by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        requestInitialFocus(closeRequester, { initialFocusRequested }) { initialFocusRequested = true }
+    }
     AlertDialog(
         onDismissRequest = onDismiss,
         containerColor = LXSurfaceDialog,
@@ -2326,7 +2389,7 @@ fun LogExportDialog(
             }
         },
         confirmButton = {
-            TextButton(onClick = onDismiss) {
+            TextButton(onClick = onDismiss, modifier = Modifier.focusRequester(closeRequester)) {
                 Text("关闭", color = LXTextSecondary)
             }
         },
@@ -2364,10 +2427,11 @@ fun DeviceInfoDialog(onDismiss: () -> Unit) {
     var initialFocusRequested by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
-        if (!initialFocusRequested) {
-            initialFocusRequested = true
-            try { confirmRequester.requestFocus() } catch (_: Exception) {}
-        }
+        requestInitialFocus(
+            focusRequester = confirmRequester,
+            attempted = { initialFocusRequested },
+            markAttempted = { initialFocusRequested = true }
+        )
     }
 
     val brand = Build.BRAND.replaceFirstChar { it.uppercase() }
@@ -2468,6 +2532,11 @@ private fun DeviceInfoRow(label: String, value: String) {
  */
 @Composable
 fun AboutDialog(onDismiss: () -> Unit) {
+    val confirmRequester = remember { FocusRequester() }
+    var initialFocusRequested by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        requestInitialFocus(confirmRequester, { initialFocusRequested }) { initialFocusRequested = true }
+    }
     val context = LocalContext.current
     val versionName = remember {
         try {
@@ -2515,7 +2584,7 @@ fun AboutDialog(onDismiss: () -> Unit) {
             }
         },
         confirmButton = {
-            TextButton(onClick = onDismiss) {
+            TextButton(onClick = onDismiss, modifier = Modifier.focusRequester(confirmRequester)) {
                 Text("确定", color = LXPrimary)
             }
         }
@@ -2531,6 +2600,11 @@ fun LyricsSettingsDialog(
     onTranslationEnabledChange: (Boolean) -> Unit,
     onDismiss: () -> Unit
 ) {
+    val toggleRequester = remember { FocusRequester() }
+    var initialFocusRequested by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        requestInitialFocus(toggleRequester, { initialFocusRequested }) { initialFocusRequested = true }
+    }
     AlertDialog(
         onDismissRequest = onDismiss,
         containerColor = LXSurfaceDialog,
@@ -2541,6 +2615,7 @@ fun LyricsSettingsDialog(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .focusRequester(toggleRequester)
                         .lxFocusBorder(
                             shape = RoundedCornerShape(8.dp),
                             glow = false,
@@ -2989,7 +3064,7 @@ fun CacheActionButton(
             .onFocusChanged { isFocused = it.isFocused }
             .clip(RoundedCornerShape(12.dp))
             .background(bgColor)
-            .border(if (isFocused) 3.dp else 0.dp, borderColor, RoundedCornerShape(12.dp))
+            .border(if (isFocused) 2.dp else 0.dp, borderColor, RoundedCornerShape(12.dp))
             // 清除中禁用：不可点击 + 半透明置灰
             .alpha(if (enabled) 1f else 0.4f)
             .clickable(enabled = enabled) { onClick() },

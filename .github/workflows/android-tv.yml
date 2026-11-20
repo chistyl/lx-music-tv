@@ -18,6 +18,7 @@ on:
       - fix/lx-tv-nav-compact-selected-icons-run151
       - fix/lx-tv-nav-tile-compact-run153
       - fix/lx-tv-remove-source-quick-add-run154
+      - feature/lx-tv-theme-focus-clean-run239
   workflow_dispatch:
 
 permissions:
@@ -136,5 +137,39 @@ jobs:
         with:
           name: lx-music-tv-source
           path: dist/lx-music-tv-source.zip
+          if-no-files-found: error
+          retention-days: 30
+
+  # Compile the Kotlin/Compose Android TV application in this repository.
+  # The upstream bundle job above does not compile these native Kotlin sources.
+  native-app-compile:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
+
+      - name: Install Android SDK packages
+        run: |
+          sdkmanager --install "platforms;android-37.0" "build-tools;37.0.0"
+
+      - name: Compile native Android TV app
+        run: bash ./gradlew --no-daemon :app:assembleDebug
+
+      - name: Upload native debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: lx-music-tv-native-debug-apk
+          path: app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
           retention-days: 30

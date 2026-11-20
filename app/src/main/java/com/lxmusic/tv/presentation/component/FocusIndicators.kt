@@ -23,7 +23,6 @@ import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.lxmusic.tv.presentation.theme.FocusBorder
 import com.lxmusic.tv.presentation.theme.LXPrimary
 import kotlinx.coroutines.delay
 import kotlin.math.max
@@ -113,10 +112,10 @@ suspend fun requestInitialFocus(
  */
 @Composable
 fun Modifier.lxFocusBorder(
-    focusedColor: Color = FocusBorder,
-    unfocusedColor: Color = FocusBorder.copy(alpha = 0.18f),
-    focusedWidth: Dp = 3.dp,
-    unfocusedWidth: Dp = 1.dp,
+    focusedColor: Color = LXPrimary,
+    unfocusedColor: Color = Color.Transparent,
+    focusedWidth: Dp = 2.dp,
+    unfocusedWidth: Dp = 0.dp,
     focusedScale: Float = 1.0f,
     glow: Boolean = true,
     animated: Boolean = true,
@@ -186,9 +185,9 @@ fun Modifier.lxFocusBorder(
  */
 @Composable
 fun Modifier.lxCircleButtonFocus(
-    fillColor: Color = LXPrimary.copy(alpha = 0.18f),
-    strokeColor: Color = FocusBorder,
-    strokeWidth: Dp = 3.dp
+    fillColor: Color = LXPrimary.copy(alpha = 0.14f),
+    strokeColor: Color = LXPrimary,
+    strokeWidth: Dp = 2.dp
 ): Modifier {
     var isFocused by remember { mutableStateOf(false) }
     return this
@@ -222,7 +221,7 @@ fun Modifier.lxCircleButtonFocus(
  */
 @Composable
 fun Modifier.lxBackButtonFocus(
-    focusedColor: Color = FocusBorder,
+    focusedColor: Color = LXPrimary,
     glow: Boolean = false,
     animated: Boolean = false
 ): Modifier {
@@ -230,6 +229,7 @@ fun Modifier.lxBackButtonFocus(
         focusedColor = focusedColor,
         unfocusedColor = Color.Transparent,
         unfocusedWidth = 0.dp,
+        focusedWidth = 2.dp,
         focusedScale = 1.0f,
         glow = glow,
         animated = animated,
@@ -242,8 +242,8 @@ fun Modifier.lxBackButtonFocus(
  */
 @Composable
 fun Modifier.lxSelectorFocus(
-    focusedColor: Color = FocusBorder,
-    focusedWidth: Dp = 3.dp,
+    focusedColor: Color = LXPrimary,
+    focusedWidth: Dp = 2.dp,
     focusedScale: Float = 1.0f,
     glow: Boolean = true,
     animated: Boolean = true,
