@@ -56,7 +56,7 @@ export default () => {
           id: item.id,
           name: item.name,
           singer: item.singer,
-          pic: item.pic,
+          pic: item.meta.picUrl ?? undefined,
         })))
       } catch (error) {
         console.warn('TV dashboard data load failed', error)
