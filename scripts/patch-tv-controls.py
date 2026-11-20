@@ -745,16 +745,6 @@ const styles = createStyle({
 
 
 def patch_full_settings_focus() -> None:
-    # Every React Native touch target must be reachable with a D-pad.
-    # Components that already expose focusable are left unchanged.
-    import re
-    for path in (ROOT / "src").rglob("*.tsx"):
-        source = path.read_text(encoding="utf-8")
-        updated = re.sub(r"<TouchableOpacity(?![^>]*\bfocusable)(?=[\s>])", "<TouchableOpacity focusable", source)
-        updated = re.sub(r"<TouchableHighlight(?![^>]*\bfocusable)(?=[\s>])", "<TouchableHighlight focusable", updated)
-        if updated != source:
-            path.write_text(updated, encoding="utf-8")
-
     # Settings category list (vertical layout).
     path = ROOT / "src/screens/Home/Views/Setting/Vertical/NavList.tsx"
     source = path.read_text(encoding="utf-8")
@@ -839,7 +829,7 @@ def patch_full_settings_focus() -> None:
     source = replace_once(source, "  const modalRef = useRef<ModalType>(null)", "  const modalRef = useRef<ModalType>(null)\n  const [closeFocused, setCloseFocused] = useState(false)", "dialog close focus state")
     source = replace_once(
         source,
-        "return closeBtn\n      ? <TouchableHighlight style={{ ...styles.closeBtn, width: scaleSizeH(HEADER_HEIGHT) }}",
+        "return closeBtn\n      ? <TouchableHighlight focusable style={{ ...styles.closeBtn, width: scaleSizeH(HEADER_HEIGHT), borderRadius: 5, borderWidth: 1, borderColor: 'transparent' }}",
         "return closeBtn\n      ? <TouchableHighlight focusable onFocus={() => setCloseFocused(true)} onBlur={() => setCloseFocused(false)} style={[styles.closeBtn, { width: scaleSizeH(HEADER_HEIGHT) }, closeFocused ? styles.closeBtnFocused : undefined]}",
         "dialog close focus target",
     )
@@ -866,23 +856,6 @@ def patch_full_settings_focus() -> None:
         "  closeBtn: {",
         "  closeBtnFocused: { borderWidth: 2, borderColor: '#35A979', borderRadius: 8, backgroundColor: 'rgba(53,169,121,0.14)', elevation: 5 },\n  closeBtn: {",
         "popup close focus appearance",
-    )
-    path.write_text(source, encoding="utf-8")
-
-    # Menu focus state and selection feedback, preserving each menu row's dimensions.
-    path = ROOT / "src/components/common/Menu.tsx"
-    source = path.read_text(encoding="utf-8")
-    source = replace_once(
-        source,
-        "  const theme = useTheme()\n  const windowSize = useWindowSize()",
-        "  const theme = useTheme()\n  const windowSize = useWindowSize()\n  const [focusedAction, setFocusedAction] = useState<string | null>(null)",
-        "menu focus state",
-    )
-    source = replace_once(
-        source,
-        "style={{ ...styles.menuItem, width: menuItemStyle.width, height: menuItemStyle.height }}\n                      underlayColor={theme['c-primary-background-active']}",
-        "style={[styles.menuItem, { width: menuItemStyle.width, height: menuItemStyle.height }, focusedAction === menu.action ? { borderWidth: 2, borderColor: '#35A979', borderRadius: 7, backgroundColor: 'rgba(53,169,121,0.14)', elevation: 5 } : undefined]}\n                      onFocus={() => setFocusedAction(menu.action)}\n                      onBlur={() => setFocusedAction(null)}\n                      underlayColor={theme['c-primary-background-active']}",
-        "menu row focus appearance",
     )
     path.write_text(source, encoding="utf-8")
 
@@ -930,10 +903,39 @@ def patch_full_settings_focus() -> None:
     path.write_text(source, encoding="utf-8")
 
 
+    # Every React Native touch target must be reachable with a D-pad.
+    # Components that already expose focusable are left unchanged.
+    import re
+    for path in (ROOT / "src").rglob("*.tsx"):
+        source = path.read_text(encoding="utf-8")
+        updated = re.sub(r"<TouchableOpacity(?![^>]*\bfocusable)(?=[\s>])", "<TouchableOpacity focusable", source)
+        updated = re.sub(r"<TouchableHighlight(?![^>]*\bfocusable)(?=[\s>])", "<TouchableHighlight focusable", updated)
+        if updated != source:
+            path.write_text(updated, encoding="utf-8")
+
 
 patch_button()
 patch_input_focus()
+
+def patch_menu_focus_visual() -> None:
+    path = ROOT / "src/components/common/Menu.tsx"
+    source = path.read_text(encoding="utf-8")
+    source = replace_once(
+        source,
+        "  const theme = useTheme()\n  const windowSize = useWindowSize()",
+        "  const theme = useTheme()\n  const windowSize = useWindowSize()\n  const [focusedAction, setFocusedAction] = useState<string | null>(null)",
+        "menu focus state",
+    )
+    source = replace_once(
+        source,
+        "style={{ ...styles.menuItem, width: menuItemStyle.width, height: menuItemStyle.height, borderRadius: 6 }}\n                      underlayColor={theme['c-primary-background-active']}",
+        "style={[styles.menuItem, { width: menuItemStyle.width, height: menuItemStyle.height, borderRadius: 6 }, focusedAction === menu.action ? { borderWidth: 2, borderColor: '#35A979', backgroundColor: 'rgba(53,169,121,0.14)', elevation: 5 } : undefined]}\n                      onFocus={() => setFocusedAction(menu.action)}\n                      onBlur={() => setFocusedAction(null)}\n                      underlayColor={theme['c-primary-background-active']}",
+        "menu row focus appearance",
+    )
+    path.write_text(source, encoding="utf-8")
+
 patch_tv_focus_surfaces()
+patch_menu_focus_visual()
 patch_full_settings_focus()
 patch_my_lists()
 patch_slider_focus()
