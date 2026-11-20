@@ -4,55 +4,22 @@ ROOT = Path("upstream/lx-music-mobile-auto-source")
 target = ROOT / "src/screens/Home/Horizontal/Main.tsx"
 source = target.read_text(encoding="utf-8")
 
-if "const TVHomeDashboard = () =>" not in source:
-    source = source.replace(
-        "import { useEffect, useMemo, useState } from 'react'\n",
-        "import { useEffect, useMemo, useState } from 'react'\nimport { View } from 'react-native'\nimport { createStyle } from '@/utils/tools'\n",
-        1,
-    )
-    source = source.replace(
-        "const Main = () => {",
-        """const TVHomeDashboard = () => (
-  <View style={styles.dashboard}>
-    <View style={styles.primaryColumn}>
-      <SongList />
-    </View>
-    <View style={styles.secondaryColumn}>
-      <Leaderboard />
-    </View>
-  </View>
+# Do not disguise two complete feature pages as a dashboard. Keep their original
+# navigation destinations intact until the dedicated data-backed TV dashboard is
+# implemented and tested as independent components.
+source = source.replace(
+    "import { View } from 'react-native'\nimport { createStyle } from '@/utils/tools'\n",
+    "",
 )
-
-const styles = createStyle({
-  dashboard: {
-    flex: 1,
-    minHeight: 0,
-    flexDirection: 'row',
-    paddingHorizontal: 18,
-    paddingTop: 12,
-    paddingBottom: 16,
-    gap: 16,
-    overflow: 'hidden',
-  },
-  primaryColumn: {
-    flex: 1.55,
-    minWidth: 0,
-    overflow: 'hidden',
-  },
-  secondaryColumn: {
-    flex: 1,
-    minWidth: 0,
-    overflow: 'hidden',
-  },
-})
-
-const Main = () => {""",
-        1,
-    )
-    source = source.replace(
-        "case 'nav_songlist': return <SongList />",
-        "case 'nav_songlist': return <TVHomeDashboard />",
-        1,
-    )
+start = source.find("const TVHomeDashboard = () => (")
+if start >= 0:
+    end = source.find("\nconst Main = () => {", start)
+    if end < 0:
+        raise SystemExit("Could not locate Main component after temporary dashboard")
+    source = source[:start] + source[end + 1:]
+source = source.replace(
+    "case 'nav_songlist': return <TVHomeDashboard />",
+    "case 'nav_songlist': return <SongList />",
+)
 target.write_text(source, encoding="utf-8")
-print("Applied TV home dashboard: playlist and ranking content in separate remote-navigable columns.")
+print("Restored the original Songlist and Ranking destinations; removed the invalid page-in-page dashboard.")
