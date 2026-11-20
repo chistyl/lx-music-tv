@@ -252,14 +252,14 @@ import Comment from '../screens/Comment'"""
     source = path.read_text(encoding="utf-8")
     source = replace_once(
         source,
-        "import registerScreens from './registerScreens'\\nimport { removeComponentId } from '@/core/common'",
+        "import registerScreens from './registerScreens'\nimport { removeComponentId } from '@/core/common'",
         "import commonActions from '@/store/common/action'",
         "break navigation barrel initialization cycle",
     )
     source = replace_once(
         source,
-        "const init = (callback: () => void | Promise<void>) => {\\n  // Register all screens on launch\\n  registerScreens()",
-        "const init = (callback: () => void | Promise<void>) => {\\n  // Defer screen imports until the navigation barrel has finished initializing.\\n  const registerScreens = require('./registerScreens').default\\n  registerScreens()",
+        "const init = (callback: () => void | Promise<void>) => {\n  // Register all screens on launch\n  registerScreens()",
+        "const init = (callback: () => void | Promise<void>) => {\n  // Defer screen imports until the navigation barrel has finished initializing.\n  const registerScreens = require('./registerScreens').default\n  registerScreens()",
         "defer screen registration until navigation initialization",
     )
     source = replace_once(
