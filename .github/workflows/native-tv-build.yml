@@ -1,0 +1,74 @@
+name: LX Music native Android TV build
+
+on:
+  push:
+    branches:
+      - feature/lx-tv-mint-top-nav-left-player-v192
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Install Android SDK 36
+        run: |
+          SDKMANAGER="$(find "$ANDROID_HOME/cmdline-tools" -type f -name sdkmanager | sort | tail -n 1)"
+          test -n "$SDKMANAGER"
+          yes | "$SDKMANAGER" --licenses
+          "$SDKMANAGER" --install "platform-tools" "platforms;android-36" "build-tools;36.0.0"
+
+      - name: Verify native TV source
+        run: |
+          test -f app/src/main/java/com/lxmusic/tv/presentation/screen/MainScreen.kt
+          grep -q "TopNavigationBar(" app/src/main/java/com/lxmusic/tv/presentation/screen/MainScreen.kt
+          grep -q "NowPlayingPanel(" app/src/main/java/com/lxmusic/tv/presentation/screen/MainScreen.kt
+
+      - name: Assemble native Android TV APK
+        run: |
+          chmod +x ./gradlew
+          ./gradlew --no-daemon --stacktrace --console=plain :app:assembleDebug
+
+      - name: Verify APK
+        run: |
+          APK="app/build/outputs/apk/debug/app-debug.apk"
+          test -s "$APK"
+          ls -lh "$APK"
+          sha256sum "$APK"
+
+      - name: Package complete source tree
+        run: |
+          mkdir -p dist
+          zip -qr dist/lx-music-tv-source.zip . \
+            -x './.git/*' './**/.git/*' './**/node_modules/*' \
+               './**/build/*' './**/.gradle/*' './dist/*'
+
+      - name: Upload universal APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: lx-music-tv-apk-universal
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Upload complete source ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: lx-music-tv-source
+          path: dist/lx-music-tv-source.zip
+          if-no-files-found: error
+          retention-days: 30
