@@ -201,6 +201,20 @@ def patch_button() -> None:
     )
     source = replace_once(
         source,
+        """  const ripple = useMemo(() => ({
+    color: theme['c-primary-light-200-alpha-700'],
+    ...propsRipple,
+  }), [theme, propsRipple])""",
+        """  const ripple = useMemo(() => ({
+    color: theme['c-primary-light-200-alpha-700'],
+    ...propsRipple,
+  }), [theme, propsRipple])
+  const baseStyle = StyleSheet.flatten(style)
+  const focusRadius = baseStyle?.borderRadius ?? (baseStyle?.width != null && baseStyle.width === baseStyle.height ? 999 : 8)""",
+        "derive focus radius from original control shape",
+    )
+    source = replace_once(
+        source,
         "({ ripple: propsRipple = {}, disabled, children, style, ...props }, ref) => {",
         "({ ripple: propsRipple = {}, disabled, children, style, onFocus, onBlur, ...props }, ref) => {",
         "shared button focus callbacks",
