@@ -379,7 +379,7 @@ new_map = """          userApiList.map(({ id, name, desc, statusLabel }) => (
                   })
                 }}
               >
-                <Icon name="trash-2" color="#888888" size={20} />
+                <Icon name="remove" color="#888888" size={20} />
               </TouchableOpacity>
             </View>
           ))
