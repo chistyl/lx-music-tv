@@ -71,6 +71,7 @@ jobs:
 
       - name: Prepare Android TV manifest
         run: |
+          set -x
           python3 scripts/prepare-android-tv.py
           python3 scripts/patch-tv-controls.py
           python3 scripts/patch-lx-tv-polish.py
