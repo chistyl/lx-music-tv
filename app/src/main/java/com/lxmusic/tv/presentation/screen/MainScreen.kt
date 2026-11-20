@@ -1997,6 +1997,16 @@ fun SettingsScreen(
     var showLogExportDialog by remember { mutableStateOf(false) }
     // 2.8 HTTP 未启用询问弹窗开关（异常日志需要 Web 端访问，未开服务器先询问）
     var showEnableServerDialog by remember { mutableStateOf(false) }
+    val enableServerCancelRequester = remember { FocusRequester() }
+    LaunchedEffect(showEnableServerDialog) {
+        if (showEnableServerDialog) {
+            requestInitialFocus(
+                focusRequester = enableServerCancelRequester,
+                attempted = { false },
+                markAttempted = {}
+            )
+        }
+    }
     // 2.8 是否在等待服务器启动后自动弹异常日志弹窗（询问弹窗点了「开启」）
     var pendingLogDialogAfterServerStart by remember { mutableStateOf(false) }
 
@@ -2254,7 +2264,10 @@ fun SettingsScreen(
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showEnableServerDialog = false }) {
+                TextButton(
+                    onClick = { showEnableServerDialog = false },
+                    modifier = Modifier.focusRequester(enableServerCancelRequester)
+                ) {
                     Text("取消", color = LXTextSecondary)
                 }
             }
@@ -2280,6 +2293,11 @@ fun LogExportDialog(
     onDismiss: () -> Unit
 ) {
     val logUrl = serverUrl?.let { "$it/log" } ?: "需先开启 HTTP 服务器"
+    val closeRequester = remember { FocusRequester() }
+    var initialFocusRequested by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        requestInitialFocus(closeRequester, { initialFocusRequested }) { initialFocusRequested = true }
+    }
     AlertDialog(
         onDismissRequest = onDismiss,
         containerColor = LXSurfaceDialog,
@@ -2326,7 +2344,7 @@ fun LogExportDialog(
             }
         },
         confirmButton = {
-            TextButton(onClick = onDismiss) {
+            TextButton(onClick = onDismiss, modifier = Modifier.focusRequester(closeRequester)) {
                 Text("关闭", color = LXTextSecondary)
             }
         },
@@ -2468,6 +2486,11 @@ private fun DeviceInfoRow(label: String, value: String) {
  */
 @Composable
 fun AboutDialog(onDismiss: () -> Unit) {
+    val confirmRequester = remember { FocusRequester() }
+    var initialFocusRequested by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        requestInitialFocus(confirmRequester, { initialFocusRequested }) { initialFocusRequested = true }
+    }
     val context = LocalContext.current
     val versionName = remember {
         try {
@@ -2515,7 +2538,7 @@ fun AboutDialog(onDismiss: () -> Unit) {
             }
         },
         confirmButton = {
-            TextButton(onClick = onDismiss) {
+            TextButton(onClick = onDismiss, modifier = Modifier.focusRequester(confirmRequester)) {
                 Text("确定", color = LXPrimary)
             }
         }
@@ -2531,6 +2554,11 @@ fun LyricsSettingsDialog(
     onTranslationEnabledChange: (Boolean) -> Unit,
     onDismiss: () -> Unit
 ) {
+    val toggleRequester = remember { FocusRequester() }
+    var initialFocusRequested by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        requestInitialFocus(toggleRequester, { initialFocusRequested }) { initialFocusRequested = true }
+    }
     AlertDialog(
         onDismissRequest = onDismiss,
         containerColor = LXSurfaceDialog,
@@ -2541,6 +2569,7 @@ fun LyricsSettingsDialog(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .focusRequester(toggleRequester)
                         .lxFocusBorder(
                             shape = RoundedCornerShape(8.dp),
                             glow = false,
