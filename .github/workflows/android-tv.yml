@@ -1,5 +1,5 @@
 name: Android TV build
-# Rebuild after reducing the selected navigation tile height and width.
+# Build the isolated Android TV remote-focus adaptation branch.
 
 on:
   push:
