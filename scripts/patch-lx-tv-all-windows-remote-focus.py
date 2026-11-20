@@ -95,14 +95,14 @@ def main() -> None:
     totals = {"TouchableOpacity": 0, "TouchableHighlight": 0, "Pressable": 0}
     import_re = re.compile(r"import\s*\{([^}]+)\}\s*from\s*(['\"])react-native\\2", re.S)
     tag_patterns = {
-        "TouchableOpacity": (re.compile(r"(?<![A-Za-z0-9_$])<TouchableOpacity(?=[\\s/>])"), "<TVTouchableOpacity"),
-        "TouchableHighlight": (re.compile(r"(?<![A-Za-z0-9_$])<TouchableHighlight(?=[\\s/>])"), "<TVTouchableHighlight"),
-        "Pressable": (re.compile(r"(?<![A-Za-z0-9_$])<Pressable(?=[\\s/>])"), "<TVPressable"),
+        "TouchableOpacity": (re.compile(r"(?<![A-Za-z0-9_$])<TouchableOpacity(?=[\s/>])"), "<TVTouchableOpacity"),
+        "TouchableHighlight": (re.compile(r"(?<![A-Za-z0-9_$])<TouchableHighlight(?=[\s/>])"), "<TVTouchableHighlight"),
+        "Pressable": (re.compile(r"(?<![A-Za-z0-9_$])<Pressable(?=[\s/>])"), "<TVPressable"),
     }
     closing_patterns = {
-        "TouchableOpacity": (re.compile(r"</TouchableOpacity\\s*>"), "</TVTouchableOpacity>"),
-        "TouchableHighlight": (re.compile(r"</TouchableHighlight\\s*>"), "</TVTouchableHighlight>"),
-        "Pressable": (re.compile(r"</Pressable\\s*>"), "</TVPressable>"),
+        "TouchableOpacity": (re.compile(r"</TouchableOpacity\s*>"), "</TVTouchableOpacity>"),
+        "TouchableHighlight": (re.compile(r"</TouchableHighlight\s*>"), "</TVTouchableHighlight>"),
+        "Pressable": (re.compile(r"</Pressable\s*>"), "</TVPressable>"),
     }
     for path in SRC.rglob("*.tsx"):
         source = path.read_text(encoding="utf-8")
