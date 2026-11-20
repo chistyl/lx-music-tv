@@ -346,17 +346,23 @@ export default () => {
     flex: 1,
     minHeight: 0,
     flexDirection: 'row',
+    alignItems: 'stretch',
     overflow: 'hidden',
   },
   player: {
-    width: '26%',
+    width: '28%',
+    minWidth: 250,
+    maxWidth: 340,
     flexGrow: 0,
     flexShrink: 0,
+    alignSelf: 'stretch',
     overflow: 'hidden',
+    zIndex: 2,
   },
   main: {
     flex: 1,
     minWidth: 0,
+    alignSelf: 'stretch',
     overflow: 'hidden',
   },
 })
@@ -367,6 +373,7 @@ export default () => (
     <View style={styles.container}>
       <Aside />
       <View style={styles.content}>
+        {/* Player is deliberately the first column, physically left of all page content. */}
         <View style={styles.player}>
           <PlayerBar isHome />
         </View>
