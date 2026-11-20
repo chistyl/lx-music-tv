@@ -82,6 +82,7 @@ export default () => (
 index.write_text(new_index, encoding="utf-8")
 
 source = aside.read_text(encoding="utf-8")
+source = source.replace("const NAV_WIDTH = 68\n\n", "", 1)
 source = source.replace(
     "import { Icon } from '@/components/common/Icon'\n",
     "import { Icon } from '@/components/common/Icon'\nimport Text from '@/components/common/Text'\n",
@@ -138,7 +139,6 @@ replacements = [
     ("paddingBottom: 15,\n  },\n  menuItem:", "paddingBottom: 0,\n    flexDirection: 'row',\n    alignItems: 'center',\n  },\n  menuItem:"),
     ("paddingTop: 15,\n    paddingBottom: 15,", "paddingTop: 13,\n    paddingBottom: 13,\n    paddingLeft: 18,\n    paddingRight: 18,"),
     ("<ScrollView style={styles.menus}>", "<ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.menus}>"),
-    ("<TouchableOpacity style={styles.menuItem} onPress={() => { onPress(id) }}>", "<TouchableOpacity focusable style={styles.menuItem} onPress={() => { onPress(id) }}>"),
 ]
 for old, new in replacements:
     if old not in source:
