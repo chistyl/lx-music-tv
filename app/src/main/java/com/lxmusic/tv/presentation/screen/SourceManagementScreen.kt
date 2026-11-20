@@ -547,6 +547,16 @@ fun PlatformConfigDialog(
         MusicPlatform.MG.key to MusicPlatform.MG.displayName
     )
     var selected by remember { mutableStateOf(selectedPlatforms) }
+    val firstPlatformRequester = remember { FocusRequester() }
+    var initialFocusRequested by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        requestInitialFocus(
+            focusRequester = firstPlatformRequester,
+            attempted = { initialFocusRequested },
+            markAttempted = { initialFocusRequested = true }
+        )
+    }
 
     Dialog(onDismissRequest = onDismiss) {
         Card(
@@ -558,7 +568,7 @@ fun PlatformConfigDialog(
             shape = RoundedCornerShape(16.dp),
             border = BorderStroke(1.dp, LXBorder)
         ) {
-            Column(modifier = Modifier.fillMaxSize().padding(20.dp)) {
+            Column(modifier = Modifier.fillMaxSize().padding(20.dp).focusGroup()) {
                 Text(
                     text = "平台配置",
                     fontSize = 22.sp,
@@ -597,6 +607,7 @@ fun PlatformConfigDialog(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(vertical = 3.dp)
+                                .then(if (key == platforms.first().first) Modifier.focusRequester(firstPlatformRequester) else Modifier)
                                 .lxSelectorFocus(shape = RoundedCornerShape(8.dp), glow = false, animated = false)
                                 .clickable {
                                     selected = if (isChecked) selected - key else selected + key
@@ -697,6 +708,16 @@ fun DeleteConfirmDialog(
     onConfirm: () -> Unit,
     onDismiss: () -> Unit
 ) {
+    val cancelRequester = remember { FocusRequester() }
+    var initialFocusRequested by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        requestInitialFocus(
+            focusRequester = cancelRequester,
+            attempted = { initialFocusRequested },
+            markAttempted = { initialFocusRequested = true }
+        )
+    }
+
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(text = "确认删除", fontWeight = FontWeight.Bold) },
@@ -709,7 +730,10 @@ fun DeleteConfirmDialog(
         },
         dismissButton = {
             // 取消：与「后台播放」一致的无背景文本按钮
-            TextButton(onClick = onDismiss) {
+            TextButton(
+                onClick = onDismiss,
+                modifier = Modifier.focusRequester(cancelRequester)
+            ) {
                 Text("取消", color = LXTextPrimary)
             }
         },
