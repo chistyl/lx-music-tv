@@ -690,13 +690,13 @@ fun PlatformConfigDialog(
                 ) {
                     TextButton(
                         onClick = onDismiss,
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f).lxSelectorFocus(shape = RoundedCornerShape(8.dp))
                     ) {
                         Text(text = "取消", fontSize = 15.sp, color = LXTextPrimary)
                     }
                     TextButton(
                         onClick = { onConfirm(selected) },
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f).lxSelectorFocus(shape = RoundedCornerShape(8.dp))
                     ) {
                         Text(text = "保存", fontSize = 15.sp, color = LXPrimary)
                     }
@@ -765,7 +765,10 @@ fun DeleteConfirmDialog(
         text = { Text("确定要删除播放源 \"$sourceName\" 吗？") },
         confirmButton = {
             // 2.8 与主页「退出应用」弹窗按钮样式统一：无背景文本按钮，红字醒目
-            TextButton(onClick = onConfirm) {
+            TextButton(
+                onClick = onConfirm,
+                modifier = Modifier.lxSelectorFocus(shape = RoundedCornerShape(8.dp))
+            ) {
                 Text("删除", color = LXPrimary)
             }
         },
@@ -773,7 +776,9 @@ fun DeleteConfirmDialog(
             // 取消：与「后台播放」一致的无背景文本按钮
             TextButton(
                 onClick = onDismiss,
-                modifier = Modifier.focusRequester(cancelRequester)
+                modifier = Modifier
+                    .focusRequester(cancelRequester)
+                    .lxSelectorFocus(shape = RoundedCornerShape(8.dp))
             ) {
                 Text("取消", color = LXTextPrimary)
             }
