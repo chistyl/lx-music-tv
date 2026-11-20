@@ -1,5 +1,5 @@
 name: Android TV build
-# Rebuild after slightly reducing the selected navigation tile height and icon size.
+# Rebuild after reducing the selected navigation tile height and width.
 
 on:
   push:
@@ -16,6 +16,7 @@ on:
       - fix/lx-tv-theme-nav-black-bg-run139
       - fix/lx-tv-nav-proportions-run146
       - fix/lx-tv-nav-compact-selected-icons-run151
+      - fix/lx-tv-nav-tile-compact-run153
   workflow_dispatch:
 
 permissions:
