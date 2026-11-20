@@ -849,19 +849,6 @@ def patch_full_settings_focus() -> None:
     )
     path.write_text(source, encoding="utf-8")
 
-    # Settings' direct TextInputs bypass the shared Input component.
-    path = ROOT / "src/screens/Home/Views/Setting/settings/Basic/Source.tsx"
-    source = path.read_text(encoding="utf-8")
-    source = source.replace("import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'", "import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'", 1)
-    source = replace_once(source, "  const [catalogUrl, setCatalogUrl] = useState(savedCatalogUrl)", "  const [catalogUrl, setCatalogUrl] = useState(savedCatalogUrl)\n  const [catalogFocused, setCatalogFocused] = useState(false)", "source catalog input focus state")
-    source = replace_once(
-        source,
-        '<TextInput value={catalogUrl} onChangeText={setCatalogUrl} placeholder="https://example.com/sources.json" accessibilityLabel="源清单地址" autoCapitalize="none" />',
-        '<TextInput focusable value={catalogUrl} onFocus={() => setCatalogFocused(true)} onBlur={() => setCatalogFocused(false)} onChangeText={setCatalogUrl} placeholder="https://example.com/sources.json" accessibilityLabel="源清单地址" autoCapitalize="none" style={{ borderWidth: catalogFocused ? 2 : 0, borderColor: "#35A979", borderRadius: 8, paddingHorizontal: 10, paddingVertical: 8 }} />',
-        "source catalog input focus target",
-    )
-    path.write_text(source, encoding="utf-8")
-
     path = ROOT / "src/screens/Home/Views/Setting/settings/Basic/SourceQuickAdd.tsx"
     source = path.read_text(encoding="utf-8")
     source = replace_once(source, "  const [url, setUrl] = useState('')", "  const [url, setUrl] = useState('')\n  const [urlFocused, setUrlFocused] = useState(false)", "quick add input focus state")
