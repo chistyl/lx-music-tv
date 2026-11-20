@@ -54,7 +54,8 @@ def patch_player_controls() -> None:
 
 const styles = createStyle({""", "insert playback mode control")
     source = replace_once(source, "      <PlayNextBtn />\n    </>", "      <PlayNextBtn />\n      <PlayModeBtn />\n    </>", "render playback mode control")
-    source = replace_once(source, "    width: 46,\n    height: 46,", "    width: 46,\n    height: 46,", "player control target")
+    source = replace_once(source, "const BTN_SIZE = 24", "const BTN_SIZE = 19", "reduce player control icon size")
+    source = replace_once(source, "    width: 46,\n    height: 46,", "    width: 40,\n    height: 40,", "reduce player control touch container")
     source = replace_once(source, "const styles = createStyle({\n  cotrolBtn: {", "const styles = createStyle({\n  focusedControl: { borderWidth: 2, borderColor: '#FFFFFF', borderRadius: 30 },\n  cotrolBtn: {", "player focus style")
     path.write_text(source, encoding="utf-8")
 
@@ -376,7 +377,7 @@ const MenuItem = ({ id, icon, onPress }: {
       style={[styles.menuItem, active ? styles.activeItem : undefined, focused ? [styles.focusedItem, { borderColor: theme['c-primary-font-active'] }] : undefined]}
     >
       <Icon name={icon} size={20} color={active || focused ? theme['c-primary-font-active'] : theme['c-font-label']} />
-      <Text size={14} color={active || focused ? '#16866A' : theme['c-font-label']}>{t(id)}</Text>
+      <Text size={14} color={active || focused ? theme['c-primary-font-active'] : theme['c-font-label']}>{t(id)}</Text>
     </TouchableOpacity>
   )
 }
