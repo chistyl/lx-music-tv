@@ -193,3 +193,17 @@ for old, label in [
     s = s.replace(old, "", 1)
 (ROOT / p).write_text(s)
 print("Applied: remove quick-add custom source panel")
+
+
+# Remove the "Other" category from both settings navigation layouts.
+edit("src/screens/Home/Views/Setting/Main.tsx",
+     "import Other from './settings/Other'\\n", "", "remove horizontal Other settings import")
+edit("src/screens/Home/Views/Setting/Main.tsx",
+     "  'other',\\n", "", "remove Other settings navigation item")
+edit("src/screens/Home/Views/Setting/Main.tsx",
+     "      case 'other': return <Other />\\n", "", "remove horizontal Other settings screen")
+edit("src/screens/Home/Views/Setting/Vertical/Main.tsx",
+     "import Other from '../settings/Other'\\n", "", "remove vertical Other settings import")
+edit("src/screens/Home/Views/Setting/Vertical/Main.tsx",
+     "    case 'other': return <Other />\\n", "", "remove vertical Other settings screen")
+print("Applied: remove Other settings category")
