@@ -237,14 +237,10 @@ fun MainScreen(
 
     // 全站主题由 MainActivity 根部的 LXMusicTheme 统一提供，此处不再嵌套 LXMusicTheme
     //（嵌套的默认 darkTheme=false 会把 currentLXTheme 强制写回浅色，导致深色模式返回后失效）
-    Row(
+    Column(
         modifier = Modifier
             .fillMaxSize()
-            // 2.5 浅色主题：主区浅灰白 #F5F5F7（仿 EchoMusic）
             .background(LXSurfaceMain)
-            // 2.8 记录用户「上键」时间（区分「用户方向键主动聚焦 logo」与「系统默认分配」）：
-            // 聚焦 logo 的唯一方向键路径是「上键」（从选中 tab 按上），进详情/切页用的是右/下/确定键；
-            // 故仅上键会触发用户主动聚焦 logo 的判定，系统分配落 logo 时距上次上键必然 > 300ms
             .onPreviewKeyEvent { keyEvent ->
                 if (keyEvent.type == KeyEventType.KeyDown && keyEvent.key == Key.DirectionUp) {
                     lastKeyPressTime = SystemClock.uptimeMillis()
@@ -252,35 +248,31 @@ fun MainScreen(
                 false
             }
     ) {
-            // 左侧导航栏
-            NavigationSidebar(
-                selectedTab = selectedTab,
-                onTabSelected = onTabSelected,
-                navRequesters = navRequesters,
-                contentEnterRequester = contentEnterRequester,
-                // Logo 下方展示当前默认音乐平台
-                platform = defaultPlatform,
-                // 2.8 Logo 点击 → 下拉菜单选择平台（选中即切换默认音乐平台）
-                onPlatformSelect = onDefaultPlatformChange,
-                // 2.8 Logo 焦点状态上报：记录聚焦时刻，兜底判断「系统分配 vs 用户按键」
-                onLogoFocusChanged = { focused ->
-                    logoFocused = focused
-                    if (focused) logoFocusTime = SystemClock.uptimeMillis()
-                },
-                // 侧栏焦点状态上报（返回键逻辑用）
-                onNavBarFocusChanged = onNavBarFocusChanged,
-                currentSong = currentSong,
+        TopNavigationBar(
+            selectedTab = selectedTab,
+            onTabSelected = onTabSelected,
+            navRequesters = navRequesters,
+            contentEnterRequester = contentEnterRequester,
+            platform = defaultPlatform,
+            onPlatformSelect = onDefaultPlatformChange,
+            onNavBarFocusChanged = onNavBarFocusChanged,
+            modifier = Modifier.fillMaxWidth()
+        )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
+        ) {
+            NowPlayingPanel(
+                song = currentSong,
                 isPlaying = isPlaying,
-                onNavigateToPlayer = onNavigateToPlayer,
+                onOpenPlayer = onNavigateToPlayer,
                 onPlayPause = onPlayPause,
                 modifier = Modifier
-                    // 2.6 窄图标栏：宽度只够放 1 个图标（选中时底部才显示文字），参考 blbl/BBLL
-                    .width(72.dp)
+                    .width(248.dp)
                     .fillMaxHeight()
             )
-
-            // 主内容区域
-            MainContent(
+                        MainContent(
                 selectedTab = selectedTab,
                 navRequesters = navRequesters,
                 contentEnterRequester = contentEnterRequester,
@@ -353,13 +345,10 @@ fun MainScreen(
                 // 2.9 启动默认页面
                 defaultStartupTab = defaultStartupTab,
                 onDefaultStartupTabChange = onDefaultStartupTabChange,
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxHeight()
+                modifier = Modifier.fillMaxSize()
             )
         }
     }
-
 /**
  * 左侧导航栏
  */
@@ -3312,4 +3301,196 @@ data class NavItem(
     val title: String,
     val icon: ImageVector,
     val description: String
+/**
+ * TV 頂部導覽列：品牌入口與主要分頁水平排列
+ */
+@Composable
+fun TopNavigationBar(
+    selectedTab: Int,
+    onTabSelected: (Int) -> Unit,
+    navRequesters: List<FocusRequester>,
+    contentEnterRequester: FocusRequester,
+    platform: MusicPlatform,
+    onPlatformSelect: (MusicPlatform) -> Unit,
+    onNavBarFocusChanged: (Boolean) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val items = listOf(
+        NavItem("搜尋", Icons.Default.Search, "搜尋音樂"),
+        NavItem("歌單", Icons.Default.LibraryMusic, "歌單廣場"),
+        NavItem("排行", Icons.Default.Leaderboard, "音樂排行榜"),
+        NavItem("收藏", Icons.Default.Favorite, "我的收藏"),
+        NavItem("本地", Icons.Default.Folder, "本地快取歌曲"),
+        NavItem("設定", Icons.Default.Settings, "應用設定")
+    )
+    var brandMenuExpanded by remember { mutableStateOf(false) }
+    Row(
+        modifier = modifier
+            .height(76.dp)
+            .background(if (androidx.compose.foundation.isSystemInDarkTheme()) Color(0xFF171D1B) else Color(0xFFFFFFFF))
+            .focusGroup()
+            .onFocusChanged { onNavBarFocusChanged(it.hasFocus) }
+            .padding(horizontal = 28.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(14.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .clip(RoundedCornerShape(14.dp))
+                .clickable { brandMenuExpanded = true }
+                .padding(horizontal = 10.dp, vertical = 6.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Image(
+                painter = painterResource(R.drawable.ic_logo),
+                contentDescription = "LX Music",
+                modifier = Modifier.size(38.dp)
+            )
+            Column(modifier = Modifier.padding(start = 9.dp)) {
+                Text("LX Music", color = if (androidx.compose.foundation.isSystemInDarkTheme()) Color.White else Color(0xFF182521), fontSize = 17.sp, fontWeight = FontWeight.Bold)
+                Text(platformShortName(platform), color = Color(0xFF159B78), fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
+            }
+        }
+        DropdownMenu(
+            expanded = brandMenuExpanded,
+            onDismissRequest = { brandMenuExpanded = false },
+            containerColor = LXSurfaceVariant
+        ) {
+            MusicPlatform.values().filter { it != MusicPlatform.LOCAL }.forEach { p ->
+                DropdownMenuItem(
+                    text = { Text(platformShortName(p)) },
+                    onClick = {
+                        brandMenuExpanded = false
+                        if (p != platform) onPlatformSelect(p)
+                    }
+                )
+            }
+        }
+        Spacer(modifier = Modifier.width(12.dp))
+        items.forEachIndexed { index, item ->
+            var focused by remember { mutableStateOf(false) }
+            val selected = selectedTab == index
+            val dark = androidx.compose.foundation.isSystemInDarkTheme()
+            Row(
+                modifier = Modifier
+                    .height(48.dp)
+                    .clip(RoundedCornerShape(13.dp))
+                    .background(
+                        when {
+                            focused -> Color(0xFFBDEEDC)
+                            selected -> Color(0xFFE4F7EF)
+                            else -> Color.Transparent
+                        }
+                    )
+                    .then(if (index < navRequesters.size) Modifier.focusRequester(navRequesters[index]) else Modifier)
+                    .onFocusChanged { focused = it.isFocused }
+                    .onPreviewKeyEvent { event ->
+                        if (event.type == KeyEventType.KeyDown && event.key == Key.DirectionDown) {
+                            contentEnterRequester.requestFocus()
+                            true
+                        } else false
+                    }
+                    .clickable { onTabSelected(index) }
+                    .padding(horizontal = 15.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Icon(
+                    imageVector = item.icon,
+                    contentDescription = item.description,
+                    tint = if (selected || focused) Color(0xFF138866) else if (dark) Color(0xFFD3DDD8) else Color(0xFF68756F),
+                    modifier = Modifier.size(20.dp)
+                )
+                Text(
+                    text = item.title,
+                    color = if (selected || focused) Color(0xFF117B5D) else if (dark) Color(0xFFE4EAE6) else Color(0xFF34423B),
+                    fontSize = 14.sp,
+                    fontWeight = if (selected || focused) FontWeight.Bold else FontWeight.Medium
+                )
+            }
+        }
+        Spacer(modifier = Modifier.weight(1f))
+        Text("MUSIC", color = Color(0xFF159B78), fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
+    }
+}
+
+/**
+ * 左側播放資訊面板：封面、曲名、歌手與播放控制
+ */
+@Composable
+fun NowPlayingPanel(
+    song: Song?,
+    isPlaying: Boolean,
+    onOpenPlayer: () -> Unit,
+    onPlayPause: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val dark = androidx.compose.foundation.isSystemInDarkTheme()
+    Column(
+        modifier = modifier
+            .background(if (dark) Color(0xFF1B2421) else Color(0xFFF0F7F3))
+            .padding(horizontal = 20.dp, vertical = 22.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text("NOW PLAYING", color = Color(0xFF159B78), fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.5.sp)
+        Spacer(modifier = Modifier.height(22.dp))
+        if (song != null) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .aspectRatio(1f)
+                    .clip(RoundedCornerShape(18.dp))
+                    .background(if (dark) Color(0xFF2A3731) else Color(0xFFDCEBE2))
+                    .clickable { onOpenPlayer() },
+                contentAlignment = Alignment.Center
+            ) {
+                if (!song.picUrl.isNullOrBlank()) {
+                    RemoteImage(
+                        url = song.picUrl,
+                        contentDescription = song.name,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    Icon(Icons.Default.MusicNote, contentDescription = null, tint = Color(0xFF159B78), modifier = Modifier.size(56.dp))
+                }
+            }
+            Spacer(modifier = Modifier.height(18.dp))
+            Text(song.name, color = if (dark) Color.White else Color(0xFF1C2923), fontSize = 17.sp, fontWeight = FontWeight.Bold, maxLines = 2, overflow = TextOverflow.Ellipsis, textAlign = TextAlign.Center)
+            Text(song.artist, color = if (dark) Color(0xFFB0BDB6) else Color(0xFF68766E), fontSize = 13.sp, maxLines = 1, overflow = TextOverflow.Ellipsis, textAlign = TextAlign.Center, modifier = Modifier.padding(top = 7.dp))
+            Spacer(modifier = Modifier.height(20.dp))
+            Box(
+                modifier = Modifier
+                    .size(54.dp)
+                    .clip(CircleShape)
+                    .background(Color(0xFF159B78))
+                    .clickable { onPlayPause() },
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
+                    contentDescription = if (isPlaying) "暫停" else "播放",
+                    tint = Color.White,
+                    modifier = Modifier.size(28.dp)
+                )
+            }
+            Spacer(modifier = Modifier.height(12.dp))
+            Text("開啟播放器", color = Color(0xFF159B78), fontSize = 12.sp, modifier = Modifier.clickable { onOpenPlayer() })
+        } else {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .aspectRatio(1f)
+                    .clip(RoundedCornerShape(18.dp))
+                    .background(if (dark) Color(0xFF2A3731) else Color(0xFFDCEBE2)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(Icons.Default.MusicNote, contentDescription = null, tint = Color(0xFF159B78), modifier = Modifier.size(56.dp))
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+            Text("尚未播放歌曲", color = if (dark) Color.White else Color(0xFF34423B), fontSize = 14.sp, fontWeight = FontWeight.Medium)
+        }
+    }
+}
+
 )
