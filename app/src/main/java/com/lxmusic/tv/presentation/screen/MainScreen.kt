@@ -779,12 +779,16 @@ fun NavigationItem(
     // 从导航栏按右键：精确进入右侧内容第一项（而非空间最近项，避免落到第 N 项）
     onEnterContent: () -> Unit = {}
 ) {
-    // 选中态：品牌红图标+文字（2.6 窄栏：默认只显示图标，选中时图标底部才显示文字）；未选中深色
-    val contentColor = if (isSelected) LXPrimary else LXTextPrimary
+    // 选中态使用当前主题主色作为完整色块；未选中项目维持原文字颜色。
+    val contentColor = if (isSelected) Color.White else LXTextPrimary
 
-    // 聚焦态：背景轻微变深（仿 EchoMusic 左侧菜单：焦点选中才加背景色 + 边框色）
+    // 焦点样式与选中样式分离：选中项固定显示主题色块，其他项目仅在获得焦点时显示焦点底色。
     var isFocused by remember { mutableStateOf(false) }
-    val bgColor = if (isFocused) LXFocusFill else Color.Transparent
+    val bgColor = when {
+        isSelected -> LXPrimary
+        isFocused -> LXFocusFill
+        else -> Color.Transparent
+    }
 
     Row(
         modifier = modifier
