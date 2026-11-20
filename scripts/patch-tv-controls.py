@@ -16,12 +16,12 @@ def patch_player_controls() -> None:
     source = path.read_text(encoding="utf-8")
     source = source.replace(
         "import { TouchableOpacity } from 'react-native'",
-        "import { TouchableOpacity } from 'react-native'\\nimport { useSettingValue } from '@/store/setting/hook'\\nimport { updateSetting } from '@/core/common'\\nimport { MUSIC_TOGGLE_MODE_LIST } from '@/config/constant'",
+        "import { TouchableOpacity } from 'react-native'\nimport { useSettingValue } from '@/store/setting/hook'\nimport { updateSetting } from '@/core/common'\nimport { MUSIC_TOGGLE_MODE_LIST } from '@/config/constant'",
         1,
     )
     for name in ("PlayPrevBtn", "PlayNextBtn", "TogglePlayBtn"):
         start = source.index(f"const {name} = () => {{")
-        end = source.find("\\n}\\n", start) + 3
+        end = source.find("\n}\n", start) + 3
         block = source[start:end]
         block = block.replace("style={styles.cotrolBtn}", "focusable style={styles.cotrolBtn}", 1)
         source = source[:start] + block + source[end:]
@@ -53,9 +53,9 @@ def patch_player_controls() -> None:
 }
 
 const styles = createStyle({""", "insert playback mode control")
-    source = replace_once(source, "      <PlayNextBtn />\\n    </>", "      <PlayNextBtn />\\n      <PlayModeBtn />\\n    </>", "render playback mode control")
+    source = replace_once(source, "      <PlayNextBtn />\n    </>", "      <PlayNextBtn />\n      <PlayModeBtn />\n    </>", "render playback mode control")
     source = replace_once(source, "const BTN_SIZE = 24", "const BTN_SIZE = 19", "reduce player control icon size")
-    source = replace_once(source, "    width: 46,\\n    height: 46,", "    width: 40,\\n    height: 40,", "reduce player control touch container")
+    source = replace_once(source, "    width: 46,\n    height: 46,", "    width: 40,\n    height: 40,", "reduce player control touch container")
     path.write_text(source, encoding="utf-8")
 
 
