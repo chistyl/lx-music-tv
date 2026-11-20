@@ -56,7 +56,7 @@ const styles = createStyle({""", "insert playback mode control")
     source = replace_once(source, "      <PlayNextBtn />\n    </>", "      <PlayNextBtn />\n      <PlayModeBtn />\n    </>", "render playback mode control")
     source = replace_once(source, "const BTN_SIZE = 24", "const BTN_SIZE = 19", "reduce player control icon size")
     source = replace_once(source, "    width: 46,\n    height: 46,", "    width: 40,\n    height: 40,", "reduce player control touch container")
-    source = replace_once(source, "const styles = createStyle({\n  cotrolBtn: {", "const styles = createStyle({\n  focusedControl: { borderWidth: 2, borderColor: '#FFFFFF', borderRadius: 30 },\n  cotrolBtn: {", "player focus style")
+    source = replace_once(source, "const styles = createStyle({\n  cotrolBtn: {", "const styles = createStyle({\n  focusedControl: { borderWidth: 3, borderColor: '#FFFFFF', borderRadius: 30, backgroundColor: 'rgba(255,255,255,0.16)', shadowColor: '#FFFFFF', shadowOpacity: 0.65, shadowRadius: 8, shadowOffset: { width: 0, height: 0 }, elevation: 6 },\n  cotrolBtn: {", "player focus style")
     path.write_text(source, encoding="utf-8")
 
 def patch_player_bar() -> None:
