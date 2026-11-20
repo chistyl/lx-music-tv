@@ -20,11 +20,6 @@ source = replace_once(
     "style={[styles.menuItem, active ? styles.activeItem : undefined]}",
     "keep navigation focus visuals unchanged",
 )
-source = source.replace(
-    "color={active || focused ? theme['c-primary-font-active'] : theme['c-font-label']}",
-    "color={active ? theme['c-primary-font-active'] : theme['c-font-label']}",
-    2,
-)
 source = replace_once(
     source,
     "  menuList: {\n    flex: 1,",
@@ -46,8 +41,8 @@ source = replace_once(
 )
 source = replace_once(
     source,
-    "<Icon name={icon} size={20} color={active ? theme['c-000'] : focused ? theme['c-primary-font-active'] : theme['c-font-label']} />",
-    "<Icon name={icon} size={18} color={active ? theme['c-000'] : focused ? theme['c-primary-font-active'] : theme['c-font-label']} />",
+    "<Icon name={icon} size={20} color={active ? theme['c-primary-font-active'] : theme['c-font-label']} />",
+    "<Icon name={icon} size={18} color={active ? theme['c-primary-font-active'] : theme['c-font-label']} />",
     "slightly reduce top navigation icon size",
 )
 aside.write_text(source, encoding="utf-8")
