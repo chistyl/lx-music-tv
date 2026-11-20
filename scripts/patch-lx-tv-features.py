@@ -178,3 +178,18 @@ edit("src/components/common/Text.tsx",
      "import { memo, type ComponentProps } from 'react'\n",
      "clean shared text imports")
 # AnimatedColorText is used by the built-in lyric renderer; leave lyric text untouched.
+
+
+# Remove the entire quick-add-custom-source panel shown in Basic > Source settings.
+# Keep the existing source list, manual source editor, and source-selection behavior intact.
+p = "src/screens/Home/Views/Setting/settings/Basic/Source.tsx"
+s = (ROOT / p).read_text()
+for old, label in [
+    ("import SourceQuickAdd from './SourceQuickAdd'\\n", "quick-add component import"),
+    ("      <SourceQuickAdd />\\n", "quick-add component render"),
+]:
+    if old not in s:
+        raise SystemExit(f"Expected quick-add block not found: {label} ({p})")
+    s = s.replace(old, "", 1)
+(ROOT / p).write_text(s)
+print("Applied: remove quick-add custom source panel")
