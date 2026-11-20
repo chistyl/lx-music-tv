@@ -388,7 +388,8 @@ private fun LeftPlayerPanel(
 ) {
     Column(
         modifier = modifier
-            .background(LXSurfaceSidebar)
+            // 左側媒體播放器整區固定使用指定純色
+            .background(Color(0xFF141414))
             .padding(horizontal = 20.dp, vertical = 18.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
@@ -502,14 +503,9 @@ fun NavigationSidebar(
             .focusGroup()
             // 上报侧栏是否持有焦点（子节点聚焦时祖先 onFocusChanged 也会报告 hasFocus=true）
             .onFocusChanged { focusState -> onNavBarFocusChanged(focusState.hasFocus) }
-            .background(LXSurfaceSidebar)
+            // 頂部水平主選單固定使用指定純色，避免主題漸層覆蓋造成底色偏灰
+            .background(Color(0xFF141414))
     ) {
-        // 侧栏氛围渐变叠加层（与主区 LXAccentGradientBrush 略不同：基底更白、渐变更轻柔）
-        Box(
-            modifier = Modifier
-                .matchParentSize()
-                .background(LXSidebarGradientBrush)
-        )
         Row(
             modifier = Modifier
                 .fillMaxSize()
@@ -779,10 +775,10 @@ fun NavigationItem(
     // 从导航栏按右键：精确进入右侧内容第一项（而非空间最近项，避免落到第 N 项）
     onEnterContent: () -> Unit = {}
 ) {
-    // 选中态使用当前主题主色作为完整色块；未选中项目维持原文字颜色。
+    // 頂層選單：目前選取項目固定顯示主題色完整色塊；焦點狀態不得覆蓋選取色塊。
     val contentColor = if (isSelected) Color.White else LXTextPrimary
 
-    // 焦点样式与选中样式分离：选中项固定显示主题色块，其他项目仅在获得焦点时显示焦点底色。
+    // 選取色塊與焦點效果分離，確保選取項目在失焦時仍保留主題色背景。
     var isFocused by remember { mutableStateOf(false) }
     val bgColor = when {
         isSelected -> LXPrimary
