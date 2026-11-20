@@ -114,3 +114,5 @@ source = source.replace("height: 72,", "height: 78,")
 aside.write_text(source, encoding="utf-8")
 
 print("Run154: home navigation remains top-mounted; content now uses a wide main area with the existing player panel on the right. Existing navigation and player components are retained.")
+
+# Layout changes are intentionally limited to the existing home and player components.
