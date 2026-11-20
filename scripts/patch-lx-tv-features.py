@@ -185,8 +185,8 @@ edit("src/components/common/Text.tsx",
 p = "src/screens/Home/Views/Setting/settings/Basic/Source.tsx"
 s = (ROOT / p).read_text()
 for old, label in [
-    ("import SourceQuickAdd from './SourceQuickAdd'\\n", "quick-add component import"),
-    ("      <SourceQuickAdd />\\n", "quick-add component render"),
+    ("import SourceQuickAdd from './SourceQuickAdd'\n", "quick-add component import"),
+    ("      <SourceQuickAdd />\n", "quick-add component render"),
 ]:
     if old not in s:
         raise SystemExit(f"Expected quick-add block not found: {label} ({p})")
