@@ -192,6 +192,7 @@ fun MainScreen(
     // 2.9 共 6 个 tab（0歌单/1排行/2收藏/3本地/4搜索/5设置）
     val navRequesters = remember { List(6) { FocusRequester() } }
     val contentEnterRequester = remember { FocusRequester() }
+    val playerEnterRequester = remember { FocusRequester() }
     // rememberSaveable：从子路由（播放源管理/界面设置等）返回时 main 重新组合，
     // 若用普通 remember 会重置导致 LaunchedEffect 再次抢焦点到「歌单」tab
     var navInitialFocusRequested by rememberSaveable { mutableStateOf(false) }
@@ -258,7 +259,7 @@ fun MainScreen(
                 selectedTab = selectedTab,
                 onTabSelected = onTabSelected,
                 navRequesters = navRequesters,
-                contentEnterRequester = contentEnterRequester,
+                contentEnterRequester = playerEnterRequester,
                 // Logo 下方展示当前默认音乐平台
                 platform = defaultPlatform,
                 // 2.8 Logo 点击 → 下拉菜单选择平台（选中即切换默认音乐平台）
@@ -292,6 +293,9 @@ fun MainScreen(
                 isPlaying = isPlaying,
                 onOpenPlayer = onNavigateToPlayer,
                 onPlayPause = onPlayPause,
+                playerEnterRequester = playerEnterRequester,
+                onEnterContent = { contentEnterRequester.requestFocus() },
+                onExitToNav = { navRequesters[selectedTab].requestFocus() },
                 modifier = Modifier
                     .width(320.dp)
                     .fillMaxHeight()
@@ -388,12 +392,25 @@ private fun LeftPlayerPanel(
     isPlaying: Boolean,
     onOpenPlayer: () -> Unit,
     onPlayPause: () -> Unit,
+    playerEnterRequester: FocusRequester,
+    onEnterContent: () -> Unit,
+    onExitToNav: () -> Unit,
     onPrevious: () -> Unit = {},
     onNext: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Column(
         modifier = modifier
+            .focusGroup()
+            .onPreviewKeyEvent { event ->
+                if (event.type == KeyEventType.KeyDown && event.key == Key.DirectionRight) {
+                    onEnterContent()
+                    true
+                } else if (event.type == KeyEventType.KeyDown && event.key == Key.DirectionLeft) {
+                    onExitToNav()
+                    true
+                } else false
+            }
             .background(Color(0xFF111519))
             .padding(horizontal = 24.dp, vertical = 20.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -419,6 +436,7 @@ private fun LeftPlayerPanel(
                         shape = CircleShape
                     )
                     .background(LXSurfaceVariant)
+                    .focusRequester(playerEnterRequester)
                     .clickable { onOpenPlayer() },
                 contentAlignment = Alignment.Center
             ) {
@@ -496,7 +514,12 @@ private fun LeftPlayerPanel(
                 }
             }
         } else {
-            Text("尚未播放歌曲", color = LXTextSecondary, fontSize = 16.sp)
+            Text(
+                "尚未播放歌曲",
+                color = LXTextSecondary,
+                fontSize = 16.sp,
+                modifier = Modifier.focusRequester(playerEnterRequester).focusable()
+            )
         }
     }
 }
