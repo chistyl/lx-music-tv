@@ -210,6 +210,7 @@ fun SearchResultScreen(
                             onLoadMore = onLoadMorePlaylistSongs,
                             hasMore = playlistSongsHasMore,
                             loadingMore = playlistSongsLoadingMore,
+                            onExitToNav = { backFocusRequester.requestFocus() },
                             modifier = Modifier.fillMaxSize()
                         )
                     }
@@ -235,6 +236,7 @@ fun SearchResultScreen(
                             isFavorite = isPlaylistFavorite,
                             onToggleFavorite = onTogglePlaylistFavorite,
                             onPlaylistClick = onPlaylistClick,
+                            onExitToNav = { backFocusRequester.requestFocus() },
                             modifier = Modifier.fillMaxSize()
                         )
                     }
@@ -249,6 +251,7 @@ fun SearchResultScreen(
                             onToggleFavorite = onToggleSongFavorite,
                             onSongClick = onSongClick,
                             onPlaySongStay = onPlaySongStay,
+                            onExitToNav = { backFocusRequester.requestFocus() },
                             modifier = Modifier.fillMaxSize()
                         )
                     }
