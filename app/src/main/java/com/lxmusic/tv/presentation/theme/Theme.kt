@@ -202,8 +202,9 @@ data class LXThemeColors(
                 1.0f to Color.Transparent
             ),
             shadowCard = Color(0x40000000),
-            focusBorder = Color(0xB3FFFFFF),        // 深色底上的浅色焦点边框
-            focusFill = Color(0xFFFFFFFF).copy(alpha = 0.10f),
+            // TV 焦點與選取狀態沿用使用者選擇的主題強調色，避免固定白框或固定綠色。
+            focusBorder = cfg.primary,
+            focusFill = cfg.primary.copy(alpha = 0.16f),
         )
     }
 }
