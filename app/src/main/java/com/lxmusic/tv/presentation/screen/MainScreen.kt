@@ -1820,19 +1820,19 @@ fun BrowseSongRow(
         shape = RoundedCornerShape(10.dp)
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(10.dp),
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
                 text = "${index + 1}",
-                fontSize = 14.sp,
+                fontSize = 15.sp,
                 color = LXOnCardDarkSecondary,
-                modifier = Modifier.width(36.dp)
+                modifier = Modifier.width(40.dp)
             )
             // 封面
             Box(
                 modifier = Modifier
-                    .size(44.dp)
+                    .size(52.dp)
                     .clip(RoundedCornerShape(6.dp))
             ) {
                 if (!song.picUrl.isNullOrBlank()) {
@@ -1875,8 +1875,8 @@ fun BrowseSongRow(
             Column(modifier = Modifier.weight(1f)) {
 Text(
                 text = song.name,
-                fontSize = 15.sp,
-                fontWeight = FontWeight.Medium,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.SemiBold,
                 // 点6：深色卡片上的白色歌名
                 color = LXOnCardDark,
                 maxLines = 1,
@@ -1884,7 +1884,7 @@ Text(
             )
                 Text(
                     text = song.singer,
-                    fontSize = 13.sp,
+                    fontSize = 15.sp,
                     // 点6：深色卡片上的次文字（白70%）
                     color = LXOnCardDarkSecondary,
                     maxLines = 1,
@@ -1895,7 +1895,7 @@ Text(
             song.duration?.let { duration ->
                 Text(
                     text = formatDuration(duration),
-                    fontSize = 14.sp,
+                    fontSize = 15.sp,
                     color = LXOnCardDarkSecondary
                 )
             }
@@ -1905,7 +1905,7 @@ Text(
             // ① 播放本首，停留在当前页（不进入播放页）
             Box(
                 modifier = Modifier
-                    .size(40.dp)
+                    .size(44.dp)
                     // 统一圆形聚焦（填充+焦点环一次性绘制，无空带、边框粗细统一）
                     .lxCircleButtonFocus()
                     .then(if (focusRequester != null) Modifier.focusRequester(focusRequester) else Modifier)
