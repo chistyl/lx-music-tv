@@ -420,7 +420,7 @@ fun SourceItem(
                     .size(44.dp)
                     .clip(RoundedCornerShape(8.dp))
                     // 2.5 浅色主题：深卡片上的次级图标底（白色半透明叠加）
-                    .background(Color(0x22FFFFFF)),
+                    .background(LXSurfaceVariant),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
