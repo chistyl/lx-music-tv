@@ -2,6 +2,8 @@ package com.lxmusic.tv.presentation.screen
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -19,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
@@ -179,7 +182,12 @@ fun SourceManagementScreen(
 
             // 播放源列表（启用的源按启用顺序排最前 = 优先级从高到低，未启用的排后）
             if (sources.isEmpty()) {
-                item { EmptyState(modifier = Modifier.fillMaxWidth().height(320.dp)) }
+                item {
+                    EmptyState(
+                        modifier = Modifier.fillMaxWidth().height(320.dp),
+                        onReturnFocus = { backFocusRequester.requestFocus() }
+                    )
+                }
             } else {
                 // 说明：优先级 = 启用顺序
                 item {
@@ -670,9 +678,33 @@ fun PlatformConfigDialog(
  * 空状态
  */
 @Composable
-fun EmptyState(modifier: Modifier = Modifier) {
+fun EmptyState(
+    modifier: Modifier = Modifier,
+    onReturnFocus: (() -> Unit)? = null
+) {
+    var isFocused by remember { mutableStateOf(false) }
     Column(
-        modifier = modifier.fillMaxWidth().padding(32.dp),
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(32.dp)
+            .onFocusChanged { isFocused = it.isFocused }
+            .border(
+                width = 3.dp,
+                color = if (isFocused) LXPrimary else Color.Transparent,
+                shape = RoundedCornerShape(16.dp)
+            )
+            .focusable()
+            .onPreviewKeyEvent { event ->
+                if (event.type == KeyEventType.KeyDown &&
+                    event.key == Key.DirectionLeft &&
+                    onReturnFocus != null
+                ) {
+                    onReturnFocus()
+                    true
+                } else {
+                    false
+                }
+            },
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
