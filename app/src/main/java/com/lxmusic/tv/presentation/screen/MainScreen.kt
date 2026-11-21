@@ -306,6 +306,7 @@ fun MainScreen(
                 selectedTab = selectedTab,
                 navRequesters = navRequesters,
                 contentEnterRequester = contentEnterRequester,
+                playerEnterRequester = playerEnterRequester,
                 // 重复点击 tab 的刷新信号
                 tabRefreshTick = tabRefreshTick,
                 // 从子路由返回的信号（设置页恢复焦点用）
@@ -907,6 +908,7 @@ fun MainContent(
     selectedTab: Int,
     navRequesters: List<FocusRequester>,
     contentEnterRequester: FocusRequester,
+    playerEnterRequester: FocusRequester,
     // 重复点击当前 tab 的刷新信号（歌单/排行页监听）
     tabRefreshTick: Int = 0,
     // 从子路由返回的信号（设置页恢复焦点用）
@@ -1016,7 +1018,7 @@ fun MainContent(
                 // 导航栏右键进入搜索页 → 聚焦内容首项
                 contentEnterRequester = contentEnterRequester,
                 // 2.9 搜索页按左键精准返回侧栏选中的搜索 Tab
-                onExitToNav = { navRequesters[selectedTab].requestFocus() },
+                onExitToNav = { playerEnterRequester.requestFocus() },
                 modifier = Modifier.fillMaxSize()
             )
             1 -> PlaylistScreen(
@@ -1040,7 +1042,7 @@ fun MainContent(
                 onToggleSongFavorite = onToggleSongFavorite,
                 onTogglePlaylistFavorite = onTogglePlaylistFavorite,
                 contentEnterRequester = contentEnterRequester,
-                onExitToNav = { navRequesters[selectedTab].requestFocus() },
+                onExitToNav = { playerEnterRequester.requestFocus() },
                 modifier = Modifier.fillMaxSize()
             )
             2 -> RankingScreen(
@@ -1063,7 +1065,7 @@ fun MainContent(
                 favoriteSongIds = favoriteSongIds,
                 onToggleSongFavorite = onToggleSongFavorite,
                 contentEnterRequester = contentEnterRequester,
-                onExitToNav = { navRequesters[selectedTab].requestFocus() },
+                onExitToNav = { playerEnterRequester.requestFocus() },
                 modifier = Modifier.fillMaxSize()
             )
             3 -> FavoritesScreen(
@@ -1088,7 +1090,7 @@ fun MainContent(
                 onBackFromFavoritePlaylistSongs = onBackFromFavoritePlaylistSongs,
                 onBack = { /* 收藏页为主页 tab，无需返回 */ },
                 contentEnterRequester = contentEnterRequester,
-                onExitToNav = { navRequesters[selectedTab].requestFocus() },
+                onExitToNav = { playerEnterRequester.requestFocus() },
                 modifier = Modifier.fillMaxSize()
             )
             // 2.9 本地：已缓存的离线歌曲（断网可直接播放，卡片带全屏整列表播放与删除按钮 + 二次确认）
@@ -1100,7 +1102,7 @@ fun MainContent(
                 onDeleteSong = onDeleteCachedSong,
                 // 导航栏右键进入 → 聚焦列表首项
                 contentEnterRequester = contentEnterRequester,
-                onExitToNav = { navRequesters[selectedTab].requestFocus() },
+                onExitToNav = { playerEnterRequester.requestFocus() },
                 modifier = Modifier.fillMaxSize()
             )
             5 -> SettingsScreen(
@@ -1123,7 +1125,7 @@ fun MainContent(
                 // 2.8 异常日志：HTTP 未开启时询问是否启用
                 onEnableServer = onEnableServer,
                 contentEnterRequester = contentEnterRequester,
-                onExitToNav = { navRequesters[selectedTab].requestFocus() },
+                onExitToNav = { playerEnterRequester.requestFocus() },
                 // 重复点击 tab 刷新信号：滚动回顶部
                 refreshTick = tabRefreshTick,
                 // 从子路由返回：恢复焦点到点击的卡片
