@@ -615,7 +615,7 @@ fun PlatformConfigDialog(
                                 .clickable {
                                     selected = if (isChecked) selected - key else selected + key
                                 },
-                            color = if (isChecked) LXPrimary.copy(alpha = 0.12f) else Color.Transparent,
+                            color = Color.Transparent,
                             shape = RoundedCornerShape(8.dp)
                         ) {
                             Row(
@@ -625,19 +625,9 @@ fun PlatformConfigDialog(
                                 Text(
                                     text = name,
                                     fontSize = 16.sp,
-                                    fontWeight = if (isChecked) FontWeight.Bold else FontWeight.Normal,
+                                    fontWeight = FontWeight.Normal,
                                     color = LXTextPrimary
                                 )
-                                // 选中项右侧勾选
-                                if (isChecked) {
-                                    Spacer(modifier = Modifier.weight(1f))
-                                    Icon(
-                                        imageVector = Icons.Default.Check,
-                                        contentDescription = null,
-                                        tint = LXPrimary,
-                                        modifier = Modifier.size(18.dp)
-                                    )
-                                }
                             }
                         }
                     }
@@ -676,17 +666,10 @@ fun EmptyState(
     modifier: Modifier = Modifier,
     onReturnFocus: (() -> Unit)? = null
 ) {
-    var isFocused by remember { mutableStateOf(false) }
     Column(
         modifier = modifier
             .fillMaxWidth()
             .padding(32.dp)
-            .onFocusChanged { isFocused = it.isFocused }
-            .border(
-                width = 3.dp,
-                color = if (isFocused) LXPrimary else Color.Transparent,
-                shape = RoundedCornerShape(16.dp)
-            )
             .focusable()
             .onPreviewKeyEvent { event ->
                 if (event.type == KeyEventType.KeyDown &&
