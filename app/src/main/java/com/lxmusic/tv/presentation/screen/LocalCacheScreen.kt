@@ -61,16 +61,9 @@ fun LocalCacheScreen(
     // 将全部本地缓存歌曲转换为 Song 领域模型，作为整列表播放队列复用
     val allSongs = remember(songs) { songs.map { it.toSong() } }
     // 空清單／掃描中也必須有可聚焦的入口，否則側欄按右鍵時沒有目標可進入。
-    var emptyStateFocused by remember { mutableStateOf(false) }
     val emptyStateFocusModifier = Modifier
         .fillMaxSize()
         .then(if (contentEnterRequester != null) Modifier.focusRequester(contentEnterRequester) else Modifier)
-        .onFocusChanged { emptyStateFocused = it.isFocused }
-        .border(
-            width = if (emptyStateFocused) 3.dp else 0.dp,
-            color = if (emptyStateFocused) LXPrimary else Color.Transparent,
-            shape = RoundedCornerShape(16.dp)
-        )
         .focusable()
         .onPreviewKeyEvent { event ->
             if (event.type == KeyEventType.KeyDown && event.key == Key.DirectionLeft && onExitToNav != null) {
