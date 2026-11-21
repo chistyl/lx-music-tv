@@ -300,14 +300,7 @@ fun SearchScreen(
                                 .weight(0.7f)
                                 .height(58.dp)
                                 .clip(RoundedCornerShape(12.dp))
-                                .background(
-                                    if (searchBoxFocused) LXPrimary.copy(alpha = 0.35f) else LXSurfaceVariant
-                                )
-                                .border(
-                                    width = if (searchBoxFocused) 3.dp else 0.dp,
-                                    color = if (searchBoxFocused) LXPrimary else Color.Transparent,
-                                    shape = RoundedCornerShape(12.dp)
-                                )
+                                .background(LXSurfaceVariant)
                                 .padding(horizontal = 16.dp),
                             contentAlignment = Alignment.CenterStart
                         ) {
@@ -318,7 +311,7 @@ fun SearchScreen(
                                 Icon(
                                     imageVector = Icons.Default.Search,
                                     contentDescription = "搜索",
-                                    tint = if (searchBoxFocused) Color.White else LXTextPrimary,
+                                    tint = LXTextPrimary,
                                     modifier = Modifier.size(20.dp)
                                 )
                                 Spacer(modifier = Modifier.width(10.dp))
@@ -433,9 +426,9 @@ fun SearchScreen(
                                         if (editText.hint != hintText) {
                                             editText.hint = hintText
                                         }
-                                        val textColor = if (searchBoxFocused) android.graphics.Color.WHITE else textColorArgb
+                                        val textColor = textColorArgb
                                         editText.setTextColor(textColor)
-                                        val hintColor = if (searchBoxFocused) 0xB3FFFFFF.toInt() else hintColorArgb
+                                        val hintColor = hintColorArgb
                                         editText.setHintTextColor(hintColor)
 
                                         val textInView = editText.text?.toString().orEmpty()
@@ -461,14 +454,7 @@ fun SearchScreen(
                                 .focusRequester(qrBtnRequester)
                                 .onFocusChanged { qrBtnFocused = it.isFocused }
                                 .clip(RoundedCornerShape(12.dp))
-                                .background(
-                                    if (qrBtnFocused) LXPrimary.copy(alpha = 0.35f) else LXSurfaceVariant
-                                )
-                                .border(
-                                    width = if (qrBtnFocused) 3.dp else 0.dp,
-                                    color = if (qrBtnFocused) LXPrimary else Color.Transparent,
-                                    shape = RoundedCornerShape(12.dp)
-                                )
+                                .background(LXSurfaceVariant)
                                 // 2.9 显式按键分流：左键精确回搜索框，下键精确去类型选择器
                                 .onPreviewKeyEvent { event ->
                                     if (event.type == KeyEventType.KeyDown) {
@@ -496,7 +482,7 @@ fun SearchScreen(
                             Icon(
                                 imageVector = Icons.Default.QrCode,
                                 contentDescription = "扫码推送搜索文字",
-                                tint = if (qrBtnFocused) Color.White else LXTextPrimary,
+                                tint = LXTextPrimary,
                                 modifier = Modifier.size(30.dp)
                             )
                         }
@@ -1139,16 +1125,9 @@ fun PlaylistSongsView(
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
-        var placeholderFocused by remember { mutableStateOf(false) }
         val placeholderFocusModifier = Modifier
             .fillMaxWidth()
             .weight(1f)
-            .onFocusChanged { placeholderFocused = it.isFocused }
-            .border(
-                width = 3.dp,
-                color = if (placeholderFocused) LXPrimary else Color.Transparent,
-                shape = RoundedCornerShape(16.dp)
-            )
             .focusable()
             .onPreviewKeyEvent { event ->
                 if (event.type == KeyEventType.KeyDown &&
@@ -1601,8 +1580,8 @@ fun PlatformChip(
     modifier: Modifier = Modifier
 ) {
     // 2.5 浅色主题：选中红底白字，未选中浅灰底深字
-    val backgroundColor = if (isSelected) LXPrimary else LXSurfaceVariant
-    val textColor = if (isSelected) Color.White else LXTextPrimary
+    val backgroundColor = LXSurfaceVariant
+    val textColor = LXTextPrimary
 
     Surface(
         modifier = modifier
@@ -1620,7 +1599,7 @@ fun PlatformChip(
             Text(
                 text = displayName,
                 fontSize = 16.sp,
-                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                fontWeight = FontWeight.Normal,
                 color = textColor
             )
         }
