@@ -209,7 +209,19 @@ fun Modifier.lxFocusBorder(
                     color = borderColor.copy(alpha = haloStrength),
                     style = Stroke(width = 5.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round)
                 )
-                drawPath(path = focusPath, color = borderColor.copy(alpha = 0.07f), style = Fill)
+                // 雙主題高辨識焦點：先建立深淺雙色對比底環，再疊加原主題焦點色。
+                // 深色背景由淺色環辨識，淺色背景由深色環辨識；不修改任何主題／品牌配色。
+                drawPath(
+                    path = focusPath,
+                    color = Color.Black.copy(alpha = 0.88f),
+                    style = Stroke(width = 6.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round)
+                )
+                drawPath(
+                    path = focusPath,
+                    color = Color.White.copy(alpha = 0.96f),
+                    style = Stroke(width = 3.5.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round)
+                )
+                drawPath(path = focusPath, color = borderColor.copy(alpha = 0.12f), style = Fill)
                 drawPath(
                     path = focusPath,
                     color = borderColor,
