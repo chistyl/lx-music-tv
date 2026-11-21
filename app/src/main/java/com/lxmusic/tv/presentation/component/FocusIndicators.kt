@@ -155,11 +155,14 @@ fun Modifier.lxFocusBorder(
                 val outline = shape.createOutline(size, layoutDirection, this)
                 // ★ 修复2：传【正数】向内收缩 stroke/2，描边外边缘恰好贴合 shape 外边缘
                 val insetOutline = outline.insetBy(stroke / 2f)
+                // Generic path 無法以 RoundRect/Rect 幾何方式內縮；配合外層 clip(shape)，
+                // 將描邊加倍，裁切掉外半圈後，保留完整 stroke 寬度且外緣貼齊原始形狀。
+                val visibleStroke = if (outline is Outline.Generic) stroke * 2f else stroke
                 drawPath(
                     path = outlineToPath(insetOutline),
                     color = borderColor,
                     style = Stroke(
-                        width = stroke,
+                        width = visibleStroke,
                         cap = StrokeCap.Round,
                         join = StrokeJoin.Round
                     )
@@ -271,11 +274,13 @@ fun Modifier.lxSelectorFocus(
                 val stroke = focusedWidth.toPx()
                 val outline = shape.createOutline(size, layoutDirection, this)
                 val insetOutline = outline.insetBy(stroke / 2f)
+                // Generic path 由 clip(shape) 裁掉描邊外半圈，維持與原始形狀相同的外輪廓。
+                val visibleStroke = if (outline is Outline.Generic) stroke * 2f else stroke
                 drawPath(
                     path = outlineToPath(insetOutline),
                     color = borderColor,
                     style = Stroke(
-                        width = stroke,
+                        width = visibleStroke,
                         cap = StrokeCap.Round,
                         join = StrokeJoin.Round
                     )
