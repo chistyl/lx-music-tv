@@ -1141,6 +1141,29 @@ fun PlaylistSongsView(
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
+        var placeholderFocused by remember { mutableStateOf(false) }
+        val placeholderFocusModifier = Modifier
+            .fillMaxWidth()
+            .weight(1f)
+            .onFocusChanged { placeholderFocused = it.isFocused }
+            .border(
+                width = 3.dp,
+                color = if (placeholderFocused) FocusBorder else Color.Transparent,
+                shape = RoundedCornerShape(16.dp)
+            )
+            .focusable()
+            .onPreviewKeyEvent { event ->
+                if (event.type == KeyEventType.KeyDown &&
+                    event.key == Key.DirectionLeft &&
+                    onExitToNav != null
+                ) {
+                    onExitToNav()
+                    true
+                } else {
+                    false
+                }
+            }
+
         // 注：不再在列表内单独放「返回歌单列表」按钮——返回由 SearchResultScreen 顶部
         // 唯一的「返回」箭头（歌单歌曲层级会退一级回到歌单结果列表）统一处理，避免双层返回。
 
@@ -1148,7 +1171,7 @@ fun PlaylistSongsView(
             // 加载中：转圈动画，不闪现失败/空（网易云等平台偶发 0.5~1s 才返回）
             isLoading -> {
                 Box(
-                    modifier = Modifier.fillMaxWidth().weight(1f),
+                    modifier = placeholderFocusModifier,
                     contentAlignment = Alignment.Center
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
