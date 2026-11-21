@@ -275,8 +275,6 @@ fun MainScreen(
                 isPlaying = isPlaying,
                 onNavigateToPlayer = onNavigateToPlayer,
                 onPlayPause = onPlayPause,
-                onPrevious = onPrevious,
-                onNext = onNext,
                 modifier = Modifier
                     .width(96.dp)
                     .fillMaxHeight()
