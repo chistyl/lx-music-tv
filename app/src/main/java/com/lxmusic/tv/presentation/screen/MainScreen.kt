@@ -1686,14 +1686,14 @@ fun BrowseCard(
         colors = CardDefaults.cardColors(containerColor = LXCardDark),
         shape = RoundedCornerShape(12.dp)
     ) {
-        Column(modifier = Modifier.padding(10.dp)) {
+        Column(modifier = Modifier.padding(12.dp)) {
             // 封面：固定高度（不再强制 1:1 正方形），缩小卡片垂直占用，
             // 保证电视上网格能完整显示多行卡片（2.6 实测 135dp 最合适，歌单/排行共用本卡片）
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(135.dp)
-                    .clip(RoundedCornerShape(8.dp))
+                    .height(150.dp)
+                    .clip(RoundedCornerShape(10.dp))
             ) {
                 if (!item.coverUrl.isNullOrBlank()) {
                     RemoteImage(
@@ -1733,10 +1733,10 @@ fun BrowseCard(
                     }
                 }
             }
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(12.dp))
             Text(
                 text = item.name,
-                fontSize = 13.sp,
+                fontSize = 16.sp,
                 fontWeight = FontWeight.Medium,
                 // 2.5 浅色主题：LXCardDark 卡片上的深色歌单名（与设置页卡片文字一致）
                 color = LXOnCardDark,
@@ -1747,7 +1747,7 @@ fun BrowseCard(
                 Spacer(modifier = Modifier.height(3.dp))
                 Text(
                     text = "${item.songCount} 首",
-                    fontSize = 11.sp,
+                    fontSize = 13.sp,
                     color = LXOnCardDarkSecondary
                 )
             }
