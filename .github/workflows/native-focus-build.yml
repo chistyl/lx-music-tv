@@ -27,11 +27,10 @@ jobs:
           SDKMANAGER="$(find "$ANDROID_HOME/cmdline-tools" -type f -name sdkmanager | sort | tail -n 1)"
           test -n "$SDKMANAGER"
           yes | "$SDKMANAGER" --licenses || true
-          # Use the latest stable Android SDK platform available to hosted runners.
           "$SDKMANAGER" --install "platform-tools" "platforms;android-36" "build-tools;36.0.0"
 
       - name: Build native Android TV APK
-        run: ./gradlew --no-daemon --stacktrace assembleDebug
+        run: bash ./gradlew --no-daemon --stacktrace assembleDebug
 
       - name: Package complete source
         run: |
