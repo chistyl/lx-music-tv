@@ -3561,33 +3561,34 @@ fun SettingsItem(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .heightIn(min = 92.dp)
+                .padding(horizontal = 20.dp, vertical = 18.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
                 imageVector = icon,
                 contentDescription = title,
                 tint = LXPrimary,
-                modifier = Modifier.size(32.dp)
+                modifier = Modifier.size(36.dp)
             )
 
-            Spacer(modifier = Modifier.width(16.dp))
+            Spacer(modifier = Modifier.width(18.dp))
 
             Column(
                 modifier = Modifier.weight(1f)
             ) {
                 Text(
                     text = title,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Medium,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.SemiBold,
                     // 点6：深色卡片上的白色标题
                     color = LXOnCardDark
                 )
 
                 Text(
                     text = subtitle,
-                    fontSize = 14.sp,
-                    // 点6：深色卡片上的次文字（白70%）
+                    fontSize = 15.sp,
+                    // TV 設定卡片提高次要文字字級，方便遠距離閱讀
                     color = LXOnCardDarkSecondary
                 )
             }
@@ -3596,7 +3597,7 @@ fun SettingsItem(
                 imageVector = Icons.Default.ChevronRight,
                 contentDescription = "进入",
                 tint = LXOnCardDarkSecondary,
-                modifier = Modifier.size(24.dp)
+                modifier = Modifier.size(26.dp)
             )
         }
     }
