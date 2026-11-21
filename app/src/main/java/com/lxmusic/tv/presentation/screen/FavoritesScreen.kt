@@ -101,8 +101,8 @@ fun FavoritesScreen(
 
     // 2.8 进入收藏歌单详情：**详情打开即**聚焦顶部「歌曲」Tab（contentEnterRequester 挂在 Tab 首项），
     // 不等歌曲加载完成——消除「加载中焦点空白 → 按键从侧栏乱跳」的问题；用户按「下」进入歌曲列表
-    LaunchedEffect(favoritePlaylistSongs != null) {
-        if (favoritePlaylistSongs != null) {
+    LaunchedEffect(favoritePlaylistSongs != null || favoritePlaylistLoading) {
+        if (favoritePlaylistSongs != null || favoritePlaylistLoading) {
             contentEnterRequester.requestFocus()
         }
     }
