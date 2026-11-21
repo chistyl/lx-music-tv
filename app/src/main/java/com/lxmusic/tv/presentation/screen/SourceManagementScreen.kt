@@ -40,7 +40,6 @@ import com.lxmusic.tv.presentation.component.lxBackButtonFocus
 import com.lxmusic.tv.presentation.component.lxFocusBorder
 import com.lxmusic.tv.presentation.component.lxSelectorFocus
 import com.lxmusic.tv.presentation.component.requestInitialFocus
-import com.lxmusic.tv.presentation.theme.LXAccentGradientBrush
 import com.lxmusic.tv.presentation.theme.LXBorder
 import com.lxmusic.tv.presentation.theme.LXCardDark
 import com.lxmusic.tv.presentation.theme.LXOnCardDark
@@ -104,11 +103,6 @@ fun SourceManagementScreen(
             .background(LXSurfaceMain)
     ) {
             // 顶部氛围渐变叠加层（固定不随列表滚动，仿主页主区）
-            Box(
-                modifier = Modifier
-                    .matchParentSize()
-                    .background(LXAccentGradientBrush)
-            )
             // 整页 LazyColumn：手机上内容多时可整体滚动，避免控件挤在一起
             LazyColumn(
                 modifier = Modifier
@@ -299,7 +293,7 @@ fun ServerStatusCard(
                         .fillMaxWidth()
                     .clip(RoundedCornerShape(8.dp))
                     // 2.5 浅色主题：深卡片上的次级面板（白色半透明叠加）
-                    .background(Color(0x22FFFFFF))
+                    .background(LXSurfaceVariant)
                     .clickable { }
                         .padding(12.dp),
                     verticalAlignment = Alignment.CenterVertically
