@@ -437,7 +437,7 @@ private fun DeleteCacheConfirmDialog(
         },
         confirmButton = {
             TextButton(
-                modifier = Modifier.focusRequester(deleteFocusRequester),
+                modifier = Modifier,
                 onClick = onConfirm
             ) {
                 Text(
