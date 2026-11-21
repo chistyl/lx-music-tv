@@ -812,35 +812,9 @@ private fun PlayerProgressBar(
             }
 
             // thumb：未聚焦小白点 / 聚焦 白色描边圆 + 中心红点(15dp) + 红色光晕（仿菠萝）
-            val thumbR = if (isFocused) thumbDiameterDp.toPx() / 2f else 5.dp.toPx()
+            val thumbR = 5.dp.toPx()
             val cx = (size.width * p).coerceIn(thumbR, size.width - thumbR)
-            if (isFocused) {
-                // 红色光晕（半透明 LXPrimary 大圆，最外层）
-                drawCircle(
-                    color = LXPrimary.copy(alpha = 0.28f),
-                    radius = thumbR * 1.7f,
-                    center = Offset(cx, trackY)
-                )
-                // 白色描边圆环
-                drawCircle(
-                    color = Color.White,
-                    radius = thumbR,
-                    center = Offset(cx, trackY),
-                    style = Stroke(width = 2.5.dp.toPx())
-                )
-                // 中心红点（主题色，直径 15dp）
-                drawCircle(
-                    color = LXPrimary,
-                    radius = 15.dp.toPx() / 2f,
-                    center = Offset(cx, trackY)
-                )
-            } else {
-                drawCircle(
-                    color = Color.White,
-                    radius = thumbR,
-                    center = Offset(cx, trackY)
-                )
-            }
+            drawCircle(color = Color.White, radius = thumbR, center = Offset(cx, trackY))
         }
 
         Spacer(modifier = Modifier.height(6.dp))
@@ -902,26 +876,6 @@ private fun ControlCircleButton(
             ),
         contentAlignment = Alignment.Center
     ) {
-        if (isFocused) {
-            // 聚焦态：半透明黑色实心圆 + 最外层 15 像素黑色半透明圆环 FocusBorder（Canvas 按像素绘制，默认抗锯齿）
-            Canvas(modifier = Modifier.matchParentSize()) {
-                // 注意：this.size 是 Canvas 的 DrawScope.size（几何 Size），
-                // 不能写成 size（会被函数的 size: Dp 参数遮蔽，导致 minDimension 解析失败）
-                val r = this.size.minDimension / 2f
-                val ring = 15f
-                val half = ring / 2f
-                // 半透明黑色实心圆：半径扩到整圆 r，使中间填充与外环(FocusBorder)边缘贴合，
-                // 消除中间色与边框之间的空带（点：圆形按钮边框与中间色的小间隔）
-                drawCircle(color = Color.Black.copy(alpha = 0.35f), radius = r)
-                // 外环：居中于 r - half，strokes 宽度 15px → 跨度 [r-15, r]，完整落在 Box 内。
-                // 颜色统一为黑色半透明 FocusBorder（仿播放页播放列表暗色面板，与全站焦点边框一致）
-                drawCircle(
-                    color = FocusBorder,
-                    radius = r - half,
-                    style = Stroke(width = ring)
-                )
-            }
-        }
         Box(modifier = Modifier.size(iconSize), contentAlignment = Alignment.Center) {
             content(isFocused)
         }
