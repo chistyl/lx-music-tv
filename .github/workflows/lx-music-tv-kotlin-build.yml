@@ -30,8 +30,12 @@ jobs:
         with:
           packages: 'platform-tools'
 
-      - name: Install Android platform
-        run: sdkmanager "platforms;android-37"
+      - name: Install Android 17 platform
+        run: |
+          sdkmanager "platforms;android-37.0"
+          # The SDK repository publishes API 37 under android-37.0,
+          # while this project's compileSdk=37 expects the android-37 path.
+          ln -s "$ANDROID_HOME/platforms/android-37.0" "$ANDROID_HOME/platforms/android-37"
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
