@@ -288,7 +288,7 @@ fun SearchResultScreen(
                     // 无结果
                     else -> {
                         Box(
-                            modifier = Modifier.fillMaxSize(),
+                            modifier = placeholderFocusModifier,
                             contentAlignment = Alignment.Center
                         ) {
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
