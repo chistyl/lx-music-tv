@@ -192,7 +192,10 @@ fun PlayerScreen(
     }
 
     // 列表抽屉打开时，拦截系统返回键 = 关闭抽屉（避免直接退出播放页）
-    BackHandler(enabled = showPlaylist) { showPlaylist = false }
+    BackHandler(enabled = showPlaylist) {
+        showPlaylist = false
+        mainFocusRequester.requestFocus()
+    }
 
     // 控制栏弹出时，返回键先收起控制栏（不退出播放页）
     // 注：注册在播放模式弹窗 handler 之前（后注册的 BackHandler 优先触发），
@@ -362,7 +365,10 @@ fun PlayerScreen(
                         // 选歌后焦点交还主区（控制栏保持隐藏）
                         mainFocusRequester.requestFocus()
                     },
-                    onDismiss = { showPlaylist = false }
+                    onDismiss = {
+                        showPlaylist = false
+                        mainFocusRequester.requestFocus()
+                    }
                 )
             }
 
