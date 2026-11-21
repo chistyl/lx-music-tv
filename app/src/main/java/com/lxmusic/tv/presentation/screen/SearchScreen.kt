@@ -456,6 +456,7 @@ fun SearchScreen(
                                 .size(58.dp)
                                 .focusRequester(qrBtnRequester)
                                 .onFocusChanged { qrBtnFocused = it.isFocused }
+                                .lxSelectorFocus(shape = RoundedCornerShape(12.dp))
                                 .clip(RoundedCornerShape(12.dp))
                                 .background(LXSurfaceVariant)
                                 // 2.9 显式按键分流：左键精确回搜索框，下键精确去类型选择器
