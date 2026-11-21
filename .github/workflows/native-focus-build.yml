@@ -1,0 +1,58 @@
+name: LX Music TV native focus build
+
+on:
+  push:
+    branches:
+      - fix/lx-tv-focus-outline-shape-run261
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  native-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android SDK packages
+        run: |
+          yes | sdkmanager --licenses
+          sdkmanager "platform-tools" "platforms;android-37" "build-tools;37.0.0"
+
+      - name: Build native Android TV APK
+        run: ./gradlew --no-daemon --stacktrace assembleDebug
+
+      - name: Package complete source
+        run: |
+          mkdir -p dist
+          zip -qr dist/lx-music-tv-source.zip . \
+            -x './.git/*' './**/.git/*' './**/node_modules/*' \
+               './**/build/*' './**/.gradle/*' './dist/*' \
+               './upstream/**'
+
+      - name: Upload native APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: lx-music-tv-native-focus-apk
+          path: app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Upload complete source ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: lx-music-tv-native-focus-source
+          path: dist/lx-music-tv-source.zip
+          if-no-files-found: error
+          retention-days: 30
