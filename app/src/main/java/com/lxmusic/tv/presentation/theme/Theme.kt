@@ -4,9 +4,18 @@ import android.content.Context
 import android.util.Log
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.*
+import androidx.compose.material.ripple.RippleAlpha
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 
 // 僅關閉滑鼠 Hover 的 Ripple 狀態層；保留 Focus、Press 與 Drag 原有回饋。
+@OptIn(ExperimentalMaterial3Api::class)
 private val noHoverRippleConfiguration = RippleConfiguration(
     rippleAlpha = RippleAlpha(
         draggedAlpha = RippleDefaults.RippleAlpha.draggedAlpha,
@@ -15,13 +24,6 @@ private val noHoverRippleConfiguration = RippleConfiguration(
         pressedAlpha = RippleDefaults.RippleAlpha.pressedAlpha
     )
 )
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 
 /**
  * LX Music TV 主题（2.5 重构；默认深色 + 赤焰红，主题色可切换）
