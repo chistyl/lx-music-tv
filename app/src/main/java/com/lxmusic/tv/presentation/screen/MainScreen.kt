@@ -1723,13 +1723,12 @@ fun BrowseCard(
         colors = CardDefaults.cardColors(containerColor = LXCardDark),
         shape = RoundedCornerShape(12.dp)
     ) {
-        Column(modifier = Modifier.padding(10.dp)) {
-            // 封面：固定高度（不再强制 1:1 正方形），缩小卡片垂直占用，
-            // 保证电视上网格能完整显示多行卡片（2.6 实测 135dp 最合适，歌单/排行共用本卡片）
+        Column(modifier = Modifier.padding(12.dp)) {
+            // TV 卡片加大封面與文字層級，保持五列網格和既有資料／焦點流程不變。
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(135.dp)
+                    .height(150.dp)
                     .clip(RoundedCornerShape(8.dp))
             ) {
                 if (!item.coverUrl.isNullOrBlank()) {
@@ -1773,9 +1772,9 @@ fun BrowseCard(
             Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = item.name,
-                fontSize = 13.sp,
+                fontSize = 15.sp,
                 fontWeight = FontWeight.Medium,
-                // 2.5 浅色主题：LXCardDark 卡片上的深色歌单名（与设置页卡片文字一致）
+                // TV 卡片標題提高字級，確保遠距離觀看清晰。（与设置页卡片文字一致）
                 color = LXOnCardDark,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis
@@ -1784,7 +1783,7 @@ fun BrowseCard(
                 Spacer(modifier = Modifier.height(3.dp))
                 Text(
                     text = "${item.songCount} 首",
-                    fontSize = 11.sp,
+                    fontSize = 12.sp,
                     color = LXOnCardDarkSecondary
                 )
             }
@@ -1857,7 +1856,7 @@ fun BrowseSongRow(
         shape = RoundedCornerShape(10.dp)
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(10.dp),
+            modifier = Modifier.fillMaxWidth().padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
@@ -1869,7 +1868,7 @@ fun BrowseSongRow(
             // 封面
             Box(
                 modifier = Modifier
-                    .size(44.dp)
+                    .size(48.dp)
                     .clip(RoundedCornerShape(6.dp))
             ) {
                 if (!song.picUrl.isNullOrBlank()) {
@@ -1912,17 +1911,17 @@ fun BrowseSongRow(
             Column(modifier = Modifier.weight(1f)) {
 Text(
                 text = song.name,
-                fontSize = 15.sp,
+                fontSize = 16.sp,
                 fontWeight = FontWeight.Medium,
-                // 点6：深色卡片上的白色歌名
+                // TV 歌曲列提高歌名層級，保留原有資料與播放操作。
                 color = LXOnCardDark,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
                 Text(
                     text = song.singer,
-                    fontSize = 13.sp,
-                    // 点6：深色卡片上的次文字（白70%）
+                    fontSize = 14.sp,
+                    // 歌手資訊同步放大，維持次要視覺層級。
                     color = LXOnCardDarkSecondary,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
@@ -1942,8 +1941,8 @@ Text(
             // ① 播放本首，停留在当前页（不进入播放页）
             Box(
                 modifier = Modifier
-                    .size(40.dp)
-                    // 统一圆形聚焦（填充+焦点环一次性绘制，无空带、边框粗细统一）
+                    .size(44.dp)
+                    // TV 遙控器操作區加大，焦點環仍沿用既有統一樣式。
                     .lxCircleButtonFocus()
                     .then(if (focusRequester != null) Modifier.focusRequester(focusRequester) else Modifier)
                     .then(
@@ -1972,8 +1971,8 @@ Text(
             // ② 播放本首并进入播放页（整列表已作为播放队列）
             Box(
                 modifier = Modifier
-                    .size(40.dp)
-                    // 统一圆形聚焦（填充+焦点环一次性绘制，无空带、边框粗细统一）
+                    .size(44.dp)
+                    // TV 遙控器操作區加大，焦點環仍沿用既有統一樣式。
                     .lxCircleButtonFocus()
                     .clickable { onPlayOpen() },
                 contentAlignment = Alignment.Center
