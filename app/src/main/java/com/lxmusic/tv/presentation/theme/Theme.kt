@@ -178,25 +178,25 @@ data class LXThemeColors(
             secondary = cfg.secondary,
             primaryContainer = cfg.primaryContainerDark,
             onPrimaryContainer = cfg.onPrimaryContainerDark,
-            surfaceSidebar = Color(0xFF1A1A22),
-            surfaceMain = Color(0xFF14141A),
-            surfaceCard = Color(0xFF20202A),
-            surfaceDialog = Color(0xFF20202A),
-            surfaceVariant = Color(0xFF2A2A36),
-            background = Color(0xFF14141A),
-            surface = Color(0xFF20202A),
+            surfaceSidebar = Color(0xFF081321),
+            surfaceMain = Color(0xFF050D18),
+            surfaceCard = Color(0xFF0D1B2A),
+            surfaceDialog = Color(0xFF102238),
+            surfaceVariant = Color(0xFF152A40),
+            background = Color(0xFF050D18),
+            surface = Color(0xFF0D1B2A),
             onPrimary = Color.White,
-            onBackground = Color(0xFFECECF1),
-            onSurface = Color(0xFFECECF1),
-            onSurfaceVariant = Color(0xFFA6A6B2),
-            textPrimary = Color(0xFFECECF1),
-            textSecondary = Color(0xFFA6A6B2),
-            textDisabled = Color(0xFF6A6A78),
-            border = Color(0xFF2E2E3A),
-            divider = Color(0xFF26262F),
-            cardDark = Color(0x20ECECF1),          // 深色模式下卡片用 #1A1A1A 配 0x50≈31% alpha（用户最终决定）
-            onCardDark = Color(0xFFECECF1),
-            onCardDarkSecondary = Color(0xFFA6A6B2),
+            onBackground = Color(0xFFEAF4FF),
+            onSurface = Color(0xFFEAF4FF),
+            onSurfaceVariant = Color(0xFFA9C0D6),
+            textPrimary = Color(0xFFEAF4FF),
+            textSecondary = Color(0xFFA9C0D6),
+            textDisabled = Color(0xFF60788F),
+            border = Color(0xFF1D3852),
+            divider = Color(0xFF183047),
+            cardDark = Color(0xFF102238),          // 深色模式下卡片用 #1A1A1A 配 0x50≈31% alpha（用户最终决定）
+            onCardDark = Color(0xFFEAF4FF),
+            onCardDarkSecondary = Color(0xFFA9C0D6),
             accentGradient = Brush.verticalGradient(
                 0.0f to cfg.primary.copy(alpha = 0.28f),
                 0.6f to cfg.primary.copy(alpha = 0.1f),
@@ -208,8 +208,8 @@ data class LXThemeColors(
                 1.0f to Color.Transparent
             ),
             shadowCard = Color(0x40000000),
-            focusBorder = cfg.primary,             // 焦點色跟隨目前主題色
-            focusFill = cfg.primary.copy(alpha = 0.18f),
+            focusBorder = Color(0xFF62C5FF),       // TV 焦點使用冰藍色，與黑藍底形成清楚對比
+            focusFill = Color(0xFF62C5FF).copy(alpha = 0.16f),
         )
     }
 }
