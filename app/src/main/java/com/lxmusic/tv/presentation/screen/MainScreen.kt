@@ -1676,7 +1676,7 @@ fun BrowsePage(
                                             onPlayStay = { onPlaySongStay(song) },
                                             onPlayOpen = { onSongClick(song) },
                                             onExitToNav = onExitToNav,
-                                            focusRequester = if (index == firstVisibleSongIndex) contentEnterRequester else null,
+                                            focusRequester = null,
                                             onSongFocused = { idx -> focusedSongIndex = idx },
                                             modifier = Modifier.fillMaxWidth()
                                         )
