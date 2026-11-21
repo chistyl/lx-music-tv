@@ -1088,11 +1088,17 @@ private fun PlaylistDrawer(
     // 抽屜打開時：列表定位到正在播放的那首歌（而非第一首），焦點也直接落在它上面
     val listState = rememberLazyListState(initialFirstVisibleItemIndex = focusIndex)
     val currentSongFocus = remember { FocusRequester() }
-    LaunchedEffect(Unit) {
+    val emptyPlaylistFocus = remember { FocusRequester() }
+    LaunchedEffect(playlist.isEmpty()) {
         delay(120)
-        // 双保险：滚动到当前歌曲（initialFirstVisibleItemIndex 首次组合已生效，此处对长列表再兜底一次）
-        listState.scrollToItem(focusIndex)
-        currentSongFocus.requestFocus()
+        if (playlist.isEmpty()) {
+            // 空播放列表沒有歌曲列可承接焦點，改將焦點放在空狀態，避免對未掛載的 FocusRequester 呼叫 requestFocus。
+            emptyPlaylistFocus.requestFocus()
+        } else {
+            // 双保险：滚动到当前歌曲（initialFirstVisibleItemIndex 首次组合已生效，此处对长列表再兜底一次）
+            listState.scrollToItem(focusIndex)
+            currentSongFocus.requestFocus()
+        }
     }
 
     Box(
@@ -1141,7 +1147,13 @@ private fun PlaylistDrawer(
             Spacer(modifier = Modifier.height(18.dp))
 
             if (playlist.isEmpty()) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .focusRequester(emptyPlaylistFocus)
+                        .focusable(),
+                    contentAlignment = Alignment.Center
+                ) {
                     Text(text = "播放列表为空", fontSize = 16.sp, color = Color.Gray)
                 }
             } else {
