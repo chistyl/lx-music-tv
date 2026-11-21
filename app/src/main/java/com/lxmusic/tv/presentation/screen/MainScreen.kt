@@ -1560,8 +1560,8 @@ fun BrowsePage(
                         .fillMaxSize()
                 ) {
                     LazyVerticalGrid(
-                        // 5 列（2.6）：比 4 列时卡片更小，电视上能完整显示更多行
-                        columns = GridCells.Fixed(5),
+                        // 排行榜依照 TV 版版型保留雙欄分類；歌單廣場維持原本五欄密度。
+                        columns = GridCells.Fixed(if (isPlaylistMode) 5 else 2),
                         verticalArrangement = Arrangement.spacedBy(14.dp),
                         horizontalArrangement = Arrangement.spacedBy(14.dp),
                         state = gridState,
@@ -1586,7 +1586,7 @@ fun BrowsePage(
                                 // 列表首项承载「右键进入」焦点请求器；首列卡片拦截左键返回选中 tab
                                 contentEnterRequester = if (index == firstVisibleCardIndex) contentEnterRequester else null,
                                 onExitToNav = onExitToNav,
-                                interceptLeftExit = index % 5 == 0,
+                                interceptLeftExit = index % (if (isPlaylistMode) 5 else 2) == 0,
                                 onCardFocused = { idx -> focusedCardIndex = idx },
                                 modifier = Modifier
                                     .fillMaxWidth()
