@@ -31,7 +31,6 @@ import com.lxmusic.tv.data.model.Song
 import com.lxmusic.tv.presentation.component.lxBackButtonFocus
 import com.lxmusic.tv.presentation.component.lxFocusBorder
 import com.lxmusic.tv.presentation.component.requestInitialFocus
-import com.lxmusic.tv.presentation.theme.LXAccentGradientBrush
 import com.lxmusic.tv.presentation.theme.LXSurfaceMain
 import com.lxmusic.tv.presentation.theme.LXSurfaceCard
 import com.lxmusic.tv.presentation.theme.LXTextPrimary
@@ -122,7 +121,6 @@ fun SearchResultScreen(
             .fillMaxSize()
             // 2.5 浅色主题：实色基底 + 顶部氛围渐变（仿 EchoMusic）
             .background(LXSurfaceMain)
-            .background(LXAccentGradientBrush)
             .padding(24.dp)
     ) {
             // ===== 顶部导航栏 =====
