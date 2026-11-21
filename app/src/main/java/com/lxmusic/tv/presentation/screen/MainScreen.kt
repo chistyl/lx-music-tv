@@ -929,66 +929,6 @@ fun MainContent(
                 .matchParentSize()
                 .background(LXAccentGradientBrush)
         )
-        if (selectedTab == 1 || selectedTab == 2) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(64.dp)
-                    .padding(horizontal = 24.dp, vertical = 6.dp)
-                    .focusGroup(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                listOf(
-                    MusicPlatform.KW,
-                    MusicPlatform.KG,
-                    MusicPlatform.TX,
-                    MusicPlatform.WY,
-                    MusicPlatform.MG
-                ).forEach { platformOption ->
-                    val isSelected = platformOption == defaultPlatform
-                    Surface(
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxHeight()
-                            .lxSelectorFocus(
-                                focusedColor = FocusBorder,
-                                focusedWidth = 3.dp,
-                                glow = false,
-                                animated = false,
-                                shape = RoundedCornerShape(10.dp)
-                            )
-                            .clickable {
-                                if (!isSelected) onDefaultPlatformChange(platformOption)
-                            },
-                        color = if (isSelected) LXPrimary.copy(alpha = 0.22f) else LXSurfaceVariant,
-                        shape = RoundedCornerShape(10.dp)
-                    ) {
-                        Box(
-                            modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = when (platformOption) {
-                                    MusicPlatform.KW -> "酷我音樂"
-                                    MusicPlatform.KG -> "酷狗音樂"
-                                    MusicPlatform.TX -> "QQ音樂"
-                                    MusicPlatform.WY -> "網易雲"
-                                    MusicPlatform.MG -> "咪咕音樂"
-                                    else -> platformOption.name
-                                },
-                                color = if (isSelected) LXPrimary else LXTextPrimary,
-                                fontSize = 18.sp,
-                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                        }
-                    }
-                }
-            }
-        }
-
         when (selectedTab) {
             0 -> SearchScreen(
                 // 2.6 搜索页内嵌为 tab（保留左侧导航栏），不再跳转独立页面；2.9 调整至 Logo 下方（索引 0）
@@ -1132,6 +1072,7 @@ fun MainContent(
 @Composable
 fun PlaylistScreen(
     platform: MusicPlatform,
+    onDefaultPlatformChange: (MusicPlatform) -> Unit = {},
     items: List<BrowseItem>,
     songs: List<Song>,
     loading: Boolean,
@@ -1173,6 +1114,7 @@ fun PlaylistScreen(
 
     BrowsePage(
         platform = platform,
+        onDefaultPlatformChange = onDefaultPlatformChange,
         items = items,
         songs = songs,
         loading = loading,
@@ -1207,6 +1149,7 @@ fun PlaylistScreen(
 @Composable
 fun RankingScreen(
     platform: MusicPlatform,
+    onDefaultPlatformChange: (MusicPlatform) -> Unit = {},
     items: List<BrowseItem>,
     songs: List<Song>,
     loading: Boolean,
@@ -1249,6 +1192,7 @@ fun RankingScreen(
 
     BrowsePage(
         platform = platform,
+        onDefaultPlatformChange = onDefaultPlatformChange,
         items = items,
         songs = songs,
         loading = loading,
@@ -1282,6 +1226,7 @@ fun RankingScreen(
 @Composable
 fun BrowsePage(
     platform: MusicPlatform,
+    onDefaultPlatformChange: (MusicPlatform) -> Unit = {},
     items: List<BrowseItem>,
     songs: List<Song>,
     loading: Boolean,
@@ -1422,6 +1367,62 @@ fun BrowsePage(
             .padding(24.dp)
             .fillMaxSize()
     ) {
+        // TV 平台切換列：只在歌單／排行榜一級頁顯示，詳情頁維持原有空間與焦點流程。
+        if (selected == null && !directSongs) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(62.dp)
+                    .padding(bottom = 10.dp)
+                    .focusGroup(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                listOf(
+                    MusicPlatform.KW,
+                    MusicPlatform.KG,
+                    MusicPlatform.TX,
+                    MusicPlatform.WY,
+                    MusicPlatform.MG
+                ).forEach { option ->
+                    val active = option == platform
+                    Surface(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight()
+                            .lxSelectorFocus(
+                                focusedColor = FocusBorder,
+                                focusedWidth = 3.dp,
+                                glow = false,
+                                animated = false,
+                                shape = RoundedCornerShape(10.dp)
+                            )
+                            .clickable { if (!active) onDefaultPlatformChange(option) },
+                        color = if (active) LXPrimary.copy(alpha = 0.22f) else LXSurfaceVariant,
+                        shape = RoundedCornerShape(10.dp)
+                    ) {
+                        Box(Modifier.fillMaxSize().padding(horizontal = 8.dp), contentAlignment = Alignment.Center) {
+                            Text(
+                                text = when (option) {
+                                    MusicPlatform.KW -> "酷我音樂"
+                                    MusicPlatform.KG -> "酷狗音樂"
+                                    MusicPlatform.TX -> "QQ音樂"
+                                    MusicPlatform.WY -> "網易雲"
+                                    MusicPlatform.MG -> "咪咕音樂"
+                                    else -> option.name
+                                },
+                                color = if (active) LXPrimary else LXTextPrimary,
+                                fontSize = 18.sp,
+                                fontWeight = if (active) FontWeight.Bold else FontWeight.Medium,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
         // 2.6 去除顶部标题栏：一级页（歌单/榜单列表）无标题，内容直接铺满；
         // 二级页（歌单详情歌曲列表）保留「返回 + 歌单名 + 收藏」，仅左对齐（右上角悬浮球已在主页隐藏，无需预留）
         if (selected != null) {
