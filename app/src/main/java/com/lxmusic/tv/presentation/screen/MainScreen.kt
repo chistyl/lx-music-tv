@@ -1437,15 +1437,18 @@ fun BrowsePage(
             .padding(24.dp)
             .fillMaxSize()
     ) {
-        // TV 平台切換列：只在歌單／排行榜一級頁顯示，詳情頁維持原有空間與焦點流程。
+        // 歌單／排行榜來源切換：置於頁面最上方；進入內容時先聚焦目前來源，方便遙控器左右切換。
         if (selected == null && !directSongs) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(62.dp)
+                    .height(60.dp)
                     .padding(bottom = 10.dp)
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(Color(0xFF171D21))
+                    .padding(5.dp)
                     .focusGroup(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 listOf(
@@ -1454,28 +1457,40 @@ fun BrowsePage(
                     MusicPlatform.TX,
                     MusicPlatform.WY,
                     MusicPlatform.MG
-                ).forEach { option ->
+                ).forEachIndexed { index, option ->
                     val active = option == platform
                     Surface(
                         modifier = Modifier
                             .weight(1f)
                             .fillMaxHeight()
+                            .then(if (active) Modifier.focusRequester(contentEnterRequester) else Modifier)
+                            .then(
+                                if (index == 0) Modifier.onPreviewKeyEvent { event ->
+                                    if (event.type == KeyEventType.KeyDown && event.key == Key.DirectionLeft) {
+                                        onExitToNav()
+                                        true
+                                    } else false
+                                } else Modifier
+                            )
                             .lxSelectorFocus(
-                                focusedColor = FocusBorder,
+                                focusedColor = Color(0xFFE8F0EC),
                                 focusedWidth = 3.dp,
                                 glow = false,
                                 animated = false,
                                 shape = RoundedCornerShape(10.dp)
                             )
                             .clickable { if (!active) onDefaultPlatformChange(option) },
-                        color = if (active) LXPrimary.copy(alpha = 0.22f) else LXSurfaceVariant,
+                        color = if (active) LXPrimary.copy(alpha = 0.24f) else Color.Transparent,
                         shape = RoundedCornerShape(10.dp)
                     ) {
-                        Box(Modifier.fillMaxSize().padding(horizontal = 8.dp), contentAlignment = Alignment.Center) {
+                        Box(
+                            Modifier.fillMaxSize().padding(horizontal = 5.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
                             Text(
                                 text = option.displayName,
-                                color = if (active) LXPrimary else LXTextPrimary,
-                                fontSize = 18.sp,
+                                color = if (active) Color.White else Color(0xFFB9C2C8),
+                                fontSize = 17.sp,
                                 fontWeight = if (active) FontWeight.Bold else FontWeight.Medium,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis
@@ -1642,7 +1657,8 @@ fun BrowsePage(
                                     onItemClick(item)
                                 },
                                 // 列表首项承载「右键进入」焦点请求器；首列卡片拦截左键返回选中 tab
-                                contentEnterRequester = if (index == firstVisibleCardIndex) contentEnterRequester else null,
+                                // 一級頁由頂部來源列承接進入焦點；排行榜分類雙欄詳情仍由首張分類卡承接。
+                                contentEnterRequester = if ((selected != null || directSongs) && index == firstVisibleCardIndex) contentEnterRequester else null,
                                 onExitToNav = onExitToNav,
                                 interceptLeftExit = index % (if (isPlaylistMode) 5 else 2) == 0,
                                 onCardFocused = { idx -> focusedCardIndex = idx },
