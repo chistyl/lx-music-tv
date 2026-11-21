@@ -21,6 +21,7 @@ import com.lxmusic.tv.presentation.theme.FocusBorder
 import com.lxmusic.tv.presentation.theme.LXSurfaceVariant
 import com.lxmusic.tv.presentation.theme.LXTextPrimary
 import com.lxmusic.tv.presentation.theme.LXPrimary
+import com.lxmusic.tv.presentation.component.lxSelectorFocus
 
 /**
  * TV 内置小键盘
@@ -133,7 +134,8 @@ fun KeyboardKey(
     Box(
         modifier = modifier
             .height(34.dp)
-            .clip(RoundedCornerShape(6.dp))
+            .lxSelectorFocus(shape = RoundedCornerShape(8.dp))
+            .clip(RoundedCornerShape(8.dp))
             .background(bgColor)
             // 聚焦不放大，避免超出按键边框范围（焦点靠亮红边框 + 底色变化体现）
             .clickable { onClick() },
