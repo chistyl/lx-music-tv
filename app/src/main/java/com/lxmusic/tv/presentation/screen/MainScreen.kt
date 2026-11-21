@@ -400,13 +400,11 @@ private fun LeftPlayerPanel(
                     .aspectRatio(1f)
                     .clip(CircleShape)
                     .background(LXSurfaceVariant)
-                    // 左側播放器封面焦點框固定為正圓形
-                    .lxFocusBorder(
-                        shape = CircleShape,
-                        glow = false,
-                        animated = false,
-                        unfocusedColor = Color.Transparent,
-                        unfocusedWidth = 0.dp
+                    // 左側播放器實際封面：使用圓形焦點繪製器，聚焦時顯示完整圓環
+                    .lxCircleButtonFocus(
+                        fillColor = LXPrimary.copy(alpha = 0.40f),
+                        strokeColor = FocusBorder,
+                        strokeWidth = 3.dp
                     )
                     .clickable { onOpenPlayer() },
                 contentAlignment = Alignment.Center
