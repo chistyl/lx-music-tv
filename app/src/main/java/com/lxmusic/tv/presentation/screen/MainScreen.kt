@@ -293,6 +293,8 @@ fun MainScreen(
                 isPlaying = isPlaying,
                 onOpenPlayer = onNavigateToPlayer,
                 onPlayPause = onPlayPause,
+                onPrevious = onPrevious,
+                onNext = onNext,
                 playerEnterRequester = playerEnterRequester,
                 onEnterContent = { contentEnterRequester.requestFocus() },
                 onExitToNav = { navRequesters[selectedTab].requestFocus() },
