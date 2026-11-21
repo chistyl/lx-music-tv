@@ -46,7 +46,9 @@ jobs:
           test -n "$SDKMANAGER"
           echo "Using SDK manager: $SDKMANAGER"
           yes | "$SDKMANAGER" --licenses
-          "$SDKMANAGER" --channel=3 --install "platform-tools" "platforms;android-37" "build-tools;37.0.0"
+          "$SDKMANAGER" --channel=3 --install "platform-tools" "platforms;android-37.0" "build-tools;37.0.0"
+          # SDK Manager currently installs API 37 under android-37.0, while AGP resolves android-37.
+          ln -sfn android-37.0 "$ANDROID_HOME/platforms/android-37"
 
       - name: Compile and assemble native Android TV app
         run: ./gradlew --no-daemon --stacktrace :app:assembleDebug
