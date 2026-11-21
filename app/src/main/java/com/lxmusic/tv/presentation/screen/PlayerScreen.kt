@@ -833,35 +833,9 @@ private fun PlayerProgressBar(
             }
 
             // thumb：未聚焦小白点 / 聚焦 白色描边圆 + 中心红点(15dp) + 红色光晕（仿菠萝）
-            val thumbR = if (isFocused) thumbDiameterDp.toPx() / 2f else 5.dp.toPx()
+            val thumbR = 5.dp.toPx()
             val cx = (size.width * p).coerceIn(thumbR, size.width - thumbR)
-            if (isFocused) {
-                // 红色光晕（半透明 LXPrimary 大圆，最外层）
-                drawCircle(
-                    color = LXPrimary.copy(alpha = 0.28f),
-                    radius = thumbR * 1.7f,
-                    center = Offset(cx, trackY)
-                )
-                // 白色描边圆环
-                drawCircle(
-                    color = Color.White,
-                    radius = thumbR,
-                    center = Offset(cx, trackY),
-                    style = Stroke(width = 2.5.dp.toPx())
-                )
-                // 中心红点（主题色，直径 15dp）
-                drawCircle(
-                    color = LXPrimary,
-                    radius = 15.dp.toPx() / 2f,
-                    center = Offset(cx, trackY)
-                )
-            } else {
-                drawCircle(
-                    color = Color.White,
-                    radius = thumbR,
-                    center = Offset(cx, trackY)
-                )
-            }
+
         }
 
         Spacer(modifier = Modifier.height(6.dp))
@@ -923,28 +897,8 @@ private fun ControlCircleButton(
             ),
         contentAlignment = Alignment.Center
     ) {
-        if (isFocused) {
-            // 聚焦态：半透明黑色实心圆 + 最外层 15 像素黑色半透明圆环 FocusBorder（Canvas 按像素绘制，默认抗锯齿）
-            Canvas(modifier = Modifier.matchParentSize()) {
-                // 注意：this.size 是 Canvas 的 DrawScope.size（几何 Size），
-                // 不能写成 size（会被函数的 size: Dp 参数遮蔽，导致 minDimension 解析失败）
-                val r = this.size.minDimension / 2f
-                val ring = 15f
-                val half = ring / 2f
-                // 半透明黑色实心圆：半径扩到整圆 r，使中间填充与外环(FocusBorder)边缘贴合，
-                // 消除中间色与边框之间的空带（点：圆形按钮边框与中间色的小间隔）
-                drawCircle(color = Color.Black.copy(alpha = 0.35f), radius = r)
-                // 外环：居中于 r - half，strokes 宽度 15px → 跨度 [r-15, r]，完整落在 Box 内。
-                // 颜色统一为黑色半透明 FocusBorder（仿播放页播放列表暗色面板，与全站焦点边框一致）
-                drawCircle(
-                    color = FocusBorder,
-                    radius = r - half,
-                    style = Stroke(width = ring)
-                )
-            }
-        }
         Box(modifier = Modifier.size(iconSize), contentAlignment = Alignment.Center) {
-            content(isFocused)
+            content(false)
         }
     }
 }
@@ -1050,28 +1004,22 @@ private fun PlayModeItem(
                 indication = null,
                 onClick = onClick
             )
-            .background(
-                when {
-                    isFocused -> LXFocusFill
-                    selected -> LXPrimary.copy(alpha = 0.18f)
-                    else -> Color.Transparent
-                }
-            )
+            .background(Color.Transparent)
             .padding(horizontal = 18.dp, vertical = 13.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
             imageVector = icon,
             contentDescription = null,
-            tint = if (selected) LXPrimary else LXTextPrimary,
+            tint = LXTextPrimary
             modifier = Modifier.size(22.dp)
         )
         Spacer(Modifier.width(14.dp))
         Text(
             text = label,
             fontSize = 16.sp,
-            color = if (selected) LXPrimary else Color.White,
-            fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal
+            color = Color.White,
+            fontWeight = FontWeight.Normal
         )
         Spacer(Modifier.weight(1f))
         if (selected) {
@@ -1212,14 +1160,7 @@ private fun DrawerSongRow(
             .fillMaxWidth()
             .height(64.dp)  // 仿菠萝 item_drawer_song.xml：行高 64dp
             .clip(RoundedCornerShape(8.dp))
-            .background(
-                when {
-                    // 遥控焦点选中：主题色浅透底（与设置页选中卡片一致，非纯色）
-                    isFocused -> LXPrimary.copy(alpha = 0.40f)
-                    // 未选中：比全局 LXCardDark 更实的半透明黑（播放页恒暗色；卡片太透会看不清与背景的区分）
-                    else -> Color(0xA51A1A1A)
-                }
-            )
+            .background(Color(0xA51A1A1A))
             .then(if (focusRequester != null) Modifier.focusRequester(focusRequester) else Modifier)
             // clickable 自带 focusable，与 interactionSource 共享状态（去掉手动 focusable，修复"点 2 次"）
             .clickable(
@@ -1301,30 +1242,12 @@ private fun DrawerSongRow(
             Text(
                 text = song.singer,
                 fontSize = 12.sp,
-                color = when {
-                    // 焦点选中：白色 85%（主题色底上可读）
-                    isFocused -> Color.White.copy(alpha = 0.85f)
-                    // 普通 & 正在播放：白色 70%
-                    else -> Color(0xB3FFFFFF)
-                },
+                color = Color(0xB3FFFFFF),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
         }
 
-        // 右：chevron 箭头（聚焦时显示，红色提示可点击）
-        AnimatedVisibility(
-            visible = isFocused,
-            enter = fadeIn(),
-            exit = fadeOut()
-        ) {
-            Icon(
-                imageVector = Icons.Default.ChevronRight,
-                contentDescription = null,
-                tint = LXPrimary,
-                modifier = Modifier.size(20.dp)
-            )
-        }
     }
 }
 
