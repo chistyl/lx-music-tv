@@ -203,18 +203,8 @@ private fun LocalCacheSongRow(
     val brandColor = platformBrandColor(platform)
 
     Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .then(
-                if (onExitToNav != null) {
-                    Modifier.onPreviewKeyEvent { keyEvent ->
-                        if (keyEvent.type == KeyEventType.KeyDown && keyEvent.key == Key.DirectionLeft) {
-                            onExitToNav()
-                            true
-                        } else false
-                    }
-                } else Modifier
-            ),
+        // 左鍵返回導覽列僅由第一個播放按鈕處理；其他操作按鈕保留列內左右移動。
+        modifier = modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = LXCardDark),
         shape = RoundedCornerShape(10.dp)
     ) {
