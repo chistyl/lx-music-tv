@@ -1185,7 +1185,7 @@ fun PlaylistSongsView(
             // 加载失败（超时/异常）：仅超时/异常才提示，正常空歌单不在此列
             errorMessage != null -> {
                 Box(
-                    modifier = Modifier.fillMaxWidth().weight(1f),
+                    modifier = placeholderFocusModifier,
                     contentAlignment = Alignment.Center
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -1204,7 +1204,7 @@ fun PlaylistSongsView(
             // 真正空歌单
             songs.isEmpty() -> {
                 Box(
-                    modifier = Modifier.fillMaxWidth().weight(1f),
+                    modifier = placeholderFocusModifier,
                     contentAlignment = Alignment.Center
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
