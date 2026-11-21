@@ -164,7 +164,8 @@ fun Modifier.lxFocusBorder(
     focusedScale: Float = 1.0f,
     glow: Boolean = true,
     animated: Boolean = true,
-    shape: Shape = RoundedCornerShape(10.dp)
+    shape: Shape = RoundedCornerShape(10.dp),
+    trackDescendantFocus: Boolean = false
 ): Modifier {
     var isFocused by remember { mutableStateOf(false) }
 
@@ -189,7 +190,7 @@ fun Modifier.lxFocusBorder(
 
     return this
         // 先觀察焦點；光暈在外層繪製，避免被元件自身的圓角裁切
-        .onFocusChanged { isFocused = it.isFocused }
+        .onFocusChanged { isFocused = if (trackDescendantFocus) it.hasFocus else it.isFocused }
         .drawWithContent {
             drawContent()
             if (borderWidth > 0.dp) {
