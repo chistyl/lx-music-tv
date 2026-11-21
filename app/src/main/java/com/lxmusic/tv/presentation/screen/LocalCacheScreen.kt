@@ -206,12 +206,12 @@ private fun LocalCacheSongRow(
         // 左鍵返回導覽列僅由第一個播放按鈕處理；其他操作按鈕保留列內左右移動。
         modifier = modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = LXCardDark),
-        shape = RoundedCornerShape(10.dp)
+        shape = RoundedCornerShape(14.dp)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(10.dp),
+                .padding(horizontal = 14.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             // 序号
@@ -226,7 +226,7 @@ private fun LocalCacheSongRow(
             Box(
                 modifier = Modifier
                     .size(44.dp)
-                    .clip(RoundedCornerShape(6.dp))
+                    .clip(RoundedCornerShape(10.dp))
             ) {
                 if (!songItem.picUrl.isNullOrBlank()) {
                     RemoteImage(
