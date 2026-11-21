@@ -858,6 +858,7 @@ fun SearchResults(
     onLoadMore: (() -> Unit)? = null,
     hasMore: Boolean = false,
     loadingMore: Boolean = false,
+    onExitToNav: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     // 焦点驱动续拉：TV 上滚动不触发重组，用「焦点所在行号」判断是否接近列表末尾（与首页 BrowsePage 一致）
@@ -881,6 +882,7 @@ fun SearchResults(
                 onToggleFavorite = onToggleFavorite?.let { { it(song) } },
                 onPlayStay = { onPlaySongStay(song) },
                 onPlayOpen = { onSongClick(song) },
+                onExitToNav = onExitToNav,
                 onSongFocused = { idx -> focusedIndex = idx }
             )
         }
@@ -960,6 +962,7 @@ fun PlaylistResults(
     isFavorite: (String) -> Boolean = { false },
     onToggleFavorite: ((Playlist) -> Unit)? = null,
     onPlaylistClick: (Playlist) -> Unit,
+    onExitToNav: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     LazyVerticalGrid(
@@ -972,7 +975,8 @@ fun PlaylistResults(
                 playlist = playlist,
                 isFavorite = isFavorite(playlist.id),
                 onToggleFavorite = onToggleFavorite?.let { { it(playlist) } },
-                onClick = { onPlaylistClick(playlist) }
+                onClick = { onPlaylistClick(playlist) },
+                onExitToNav = onExitToNav
             )
         }
     }
@@ -987,6 +991,7 @@ fun PlaylistItem(
     isFavorite: Boolean = false,
     onToggleFavorite: (() -> Unit)? = null,
     onClick: () -> Unit,
+    onExitToNav: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     val brandColor = platformBrandColor(playlist.platform)
@@ -1080,6 +1085,16 @@ fun PlaylistItem(
                     .size(40.dp)
                     // 统一圆形聚焦（填充+焦点环一次性绘制，无空带、边框粗细统一）
                     .lxCircleButtonFocus()
+                    .then(
+                        if (onExitToNav != null) {
+                            Modifier.onPreviewKeyEvent { keyEvent ->
+                                if (keyEvent.type == KeyEventType.KeyDown && keyEvent.key == Key.DirectionLeft) {
+                                    onExitToNav()
+                                    true
+                                } else false
+                            }
+                        } else Modifier
+                    )
                     .clickable { onClick() },
                 contentAlignment = Alignment.Center
             ) {
@@ -1122,6 +1137,7 @@ fun PlaylistSongsView(
     onLoadMore: (() -> Unit)? = null,
     hasMore: Boolean = false,
     loadingMore: Boolean = false,
+    onExitToNav: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
@@ -1193,6 +1209,7 @@ fun PlaylistSongsView(
                     onLoadMore = onLoadMore,
                     hasMore = hasMore,
                     loadingMore = loadingMore,
+                    onExitToNav = onExitToNav,
                     modifier = Modifier.weight(1f)
                 )
             }
