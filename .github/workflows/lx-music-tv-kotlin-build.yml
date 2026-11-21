@@ -48,3 +48,5 @@ jobs:
           path: app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
           retention-days: 30
+
+# Rebuild after the Run 238 hover ripple compile fix.
