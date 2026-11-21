@@ -239,10 +239,10 @@ fun MainScreen(
 
     // 全站主题由 MainActivity 根部的 LXMusicTheme 统一提供，此处不再嵌套 LXMusicTheme
     //（嵌套的默认 darkTheme=false 会把 currentLXTheme 强制写回浅色，导致深色模式返回后失效）
-    Column(
+    Row(
         modifier = Modifier
             .fillMaxSize()
-            .background(LXSurfaceMain)
+            .background(Color(0xFF090B0D))
             // 2.8 记录用户「上键」时间（区分「用户方向键主动聚焦 logo」与「系统默认分配」）：
             // 聚焦 logo 的唯一方向键路径是「上键」（从选中 tab 按上），进详情/切页用的是右/下/确定键；
             // 故仅上键会触发用户主动聚焦 logo 的判定，系统分配落 logo 时距上次上键必然 > 300ms
@@ -277,15 +277,15 @@ fun MainScreen(
                 onPrevious = onPrevious,
                 onNext = onNext,
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(84.dp)
+                    .width(88.dp)
+                    .fillMaxHeight()
             )
 
-            // 下方内容：左侧播放器 + 原有功能内容区
+            // 右側工作區：固定播放器 + 主要內容
             Row(
                 modifier = Modifier
                     .weight(1f)
-                    .fillMaxWidth()
+                    .fillMaxHeight()
             ) {
             LeftPlayerPanel(
                 song = currentSong,
@@ -293,8 +293,8 @@ fun MainScreen(
                 onOpenPlayer = onNavigateToPlayer,
                 onPlayPause = onPlayPause,
                 modifier = Modifier
+                    .width(320.dp)
                     .fillMaxHeight()
-                    .fillMaxWidth(0.37f)
             )
 
             // 主内容区域
@@ -394,7 +394,7 @@ private fun LeftPlayerPanel(
 ) {
     Column(
         modifier = modifier
-            .background(LXSurfaceSidebar)
+            .background(Color(0xFF111519))
             .padding(horizontal = 24.dp, vertical = 20.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
@@ -545,20 +545,20 @@ fun NavigationSidebar(
             .focusGroup()
             // 上报侧栏是否持有焦点（子节点聚焦时祖先 onFocusChanged 也会报告 hasFocus=true）
             .onFocusChanged { focusState -> onNavBarFocusChanged(focusState.hasFocus) }
-            .background(LXSurfaceSidebar)
+            .background(Color(0xFF0D1013))
     ) {
         // 侧栏氛围渐变叠加层（与主区 LXAccentGradientBrush 略不同：基底更白、渐变更轻柔）
         Box(
             modifier = Modifier
                 .matchParentSize()
-                .background(LXSidebarGradientBrush)
+                .background(Color(0xFF0D1013))
         )
-        Row(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 18.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(14.dp)
+                .padding(horizontal = 6.dp, vertical = 12.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
         // Logo区域（窄栏：小图标 + 底部显示当前音乐平台名；2.8 可点击弹出下拉菜单切换平台）
         // 焦点样式与下方 tab 项（NavigationItem）完全一致：聚焦 LXFocusFill 背景 + 同款边框，
@@ -570,8 +570,8 @@ fun NavigationSidebar(
         Box {
             Column(
                 modifier = Modifier
-                    .width(150.dp)
-                    .fillMaxHeight()
+                    .fillMaxWidth()
+                    .height(64.dp)
                     .clip(RoundedCornerShape(10.dp))
                     .background(logoBgColor)
                     .onFocusChanged {
@@ -611,7 +611,7 @@ fun NavigationSidebar(
             DropdownMenu(
                 expanded = logoMenuExpanded,
                 onDismissRequest = { logoMenuExpanded = false },
-                modifier = Modifier.width(150.dp),
+                modifier = Modifier.width(168.dp),
                 containerColor = LXSurfaceVariant
             ) {
                 // 可选平台（排除本地音乐），仅显示平台短名（如 酷狗/QQ）
@@ -672,7 +672,7 @@ fun NavigationSidebar(
                 focusRequester = navRequesters.getOrNull(index),
                 // 从导航栏按右键：精确进入右侧内容第一项（而非空间最近项，避免落到第 N 项）
                 onEnterContent = { contentEnterRequester.requestFocus() },
-                modifier = Modifier.weight(1f).fillMaxHeight()
+                modifier = Modifier.weight(1f).fillMaxWidth()
             )
         }
     }
@@ -829,7 +829,7 @@ fun NavigationItem(
     var isFocused by remember { mutableStateOf(false) }
     val bgColor = if (isFocused) LXFocusFill else Color.Transparent
 
-    Row(
+    Column(
         modifier = modifier
             .clip(RoundedCornerShape(10.dp))
             .background(bgColor)
@@ -852,9 +852,9 @@ fun NavigationItem(
                 unfocusedWidth = 0.dp
             )
             .clickable { onClick() }
-            .padding(horizontal = 12.dp, vertical = 6.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Center
+            .padding(horizontal = 6.dp, vertical = 10.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
         Icon(
             imageVector = item.icon,
@@ -970,7 +970,7 @@ fun MainContent(
         Box(
             modifier = Modifier
                 .matchParentSize()
-                .background(LXAccentGradientBrush)
+                .background(Color(0xFF111519))
         )
         when (selectedTab) {
             0 -> SearchScreen(
