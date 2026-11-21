@@ -215,17 +215,9 @@ private fun ThemeColorCard(
                 Text(
                     text = color.label,
                     fontSize = 14.sp,
-                    fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
-                    color = if (selected) color.swatch else LXOnCardDark
+                    fontWeight = FontWeight.Normal,
+                    color = LXOnCardDark
                 )
-            if (selected) {
-                Spacer(modifier = Modifier.height(2.dp))
-                Text(
-                    text = "已选择",
-                    fontSize = 11.sp,
-                    color = LXOnCardDarkSecondary
-                )
-            }
         }
     }
 }
