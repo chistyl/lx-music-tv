@@ -1076,14 +1076,16 @@ private fun PlaylistDrawer(
 ) {
     // 正在播放的歌曲在列表中的位置（不在列表/未播放则 -1，兜底第一项）
     val currentIndex = playlist.indexOfFirst { it.id == currentSongId }
+    // 找不到目前播放歌曲時，預設以第一首歌曲作為初始焦點目標。
+    val focusIndex = currentIndex.coerceAtLeast(0)
 
-    // 抽屉打开时：列表定位到正在播放的那首歌（而非第一首），焦点也直接落在它上面
-    val listState = rememberLazyListState(initialFirstVisibleItemIndex = currentIndex.coerceAtLeast(0))
+    // 抽屜打開時：列表定位到正在播放的那首歌（而非第一首），焦點也直接落在它上面
+    val listState = rememberLazyListState(initialFirstVisibleItemIndex = focusIndex)
     val currentSongFocus = remember { FocusRequester() }
     LaunchedEffect(Unit) {
         delay(120)
         // 双保险：滚动到当前歌曲（initialFirstVisibleItemIndex 首次组合已生效，此处对长列表再兜底一次）
-        listState.scrollToItem(currentIndex.coerceAtLeast(0))
+        listState.scrollToItem(focusIndex)
         currentSongFocus.requestFocus()
     }
 
@@ -1148,7 +1150,7 @@ private fun PlaylistDrawer(
                             song = song,
                             index = index,
                             isCurrent = isCurrent,
-                            focusRequester = if (index == currentIndex) currentSongFocus else null,
+                            focusRequester = if (index == focusIndex) currentSongFocus else null,
                             onClick = { onSongSelect(song) }
                         )
                     }
