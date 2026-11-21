@@ -126,25 +126,15 @@ fun KeyboardKey(
     modifier: Modifier = Modifier,
     highlighted: Boolean = false
 ) {
-    var isFocused by remember { mutableStateOf(false) }
-    // 2.5 浅色主题：字母/数字键浅灰底深字；聚焦浅红底白字；搜索键红底白字
-    val bgColor = when {
-        highlighted -> LXPrimary
-        isFocused -> LXPrimary.copy(alpha = 0.35f)
-        else -> LXSurfaceVariant
-    }
-    val textColor = if (isFocused || highlighted) Color.White else LXTextPrimary
-    // 焦点边框：仅聚焦时显示统一 FocusBorder（深色）；未聚焦不画边框（去掉高亮「搜索」键的白色边框）
-    val borderColor = if (isFocused) FocusBorder else Color.Transparent
+    // 焦點視覺停用；保留 highlighted 原有的非焦點狀態標示。
+    val bgColor = if (highlighted) LXPrimary else LXSurfaceVariant
+    val textColor = if (highlighted) Color.White else LXTextPrimary
 
     Box(
         modifier = modifier
             .height(34.dp)
-            // onFocusChanged 必须先于被观察的 focusable（clickable 提供焦点节点）
-            .onFocusChanged { isFocused = it.isFocused }
             .clip(RoundedCornerShape(6.dp))
             .background(bgColor)
-            .border(if (isFocused) 3.dp else 0.dp, borderColor, RoundedCornerShape(6.dp))
             // 聚焦不放大，避免超出按键边框范围（焦点靠亮红边框 + 底色变化体现）
             .clickable { onClick() },
         contentAlignment = Alignment.Center
@@ -152,7 +142,7 @@ fun KeyboardKey(
         Text(
             text = text,
             fontSize = 14.sp,
-            fontWeight = if (isFocused || highlighted) FontWeight.Bold else FontWeight.Medium,
+            fontWeight = if (highlighted) FontWeight.Bold else FontWeight.Medium,
             color = textColor
         )
     }
