@@ -67,6 +67,12 @@ import com.lxmusic.tv.presentation.component.requestInitialFocus
 import com.lxmusic.tv.presentation.theme.FocusBorder
 import com.lxmusic.tv.presentation.theme.LXCardDark
 import com.lxmusic.tv.presentation.theme.LXPrimary
+import com.lxmusic.tv.presentation.theme.LXFocusFill
+import com.lxmusic.tv.presentation.theme.LXBorder
+import com.lxmusic.tv.presentation.theme.LXSurfaceMain
+import com.lxmusic.tv.presentation.theme.LXSurfaceCard
+import com.lxmusic.tv.presentation.theme.LXSurfaceVariant
+import com.lxmusic.tv.presentation.theme.LXTextPrimary
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.max
@@ -213,7 +219,7 @@ fun PlayerScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0xFF000000))
+            .background(LXSurfaceMain)
         .onPreviewKeyEvent { ev ->
             // 仅处理按下/抬起，忽略其余类型事件
             if (ev.type != KeyEventType.KeyDown && ev.type != KeyEventType.KeyUp) {
@@ -414,9 +420,9 @@ private fun GlassBackground(currentSong: Song?) {
                 .background(
                     Brush.verticalGradient(
                         listOf(
-                            Color(0xE61A1A2E),
-                            Color(0xCC1A1A2E),
-                            Color(0xF21A1A2E)
+                            LXSurfaceMain.copy(alpha = 0.90f),
+                            LXSurfaceMain.copy(alpha = 0.78f),
+                            LXSurfaceMain.copy(alpha = 0.96f)
                         )
                     )
                 )
@@ -982,8 +988,8 @@ private fun PlayModePopup(
         Column(
             modifier = Modifier
                 .padding(end = 56.dp, bottom = 104.dp)
-                .background(Color(0xE61A1A2E), shape = RoundedCornerShape(14.dp))
-                .border(1.dp, Color.White.copy(alpha = 0.12f), RoundedCornerShape(14.dp))
+                .background(LXSurfaceCard, shape = RoundedCornerShape(16.dp))
+                .border(1.dp, LXBorder, RoundedCornerShape(16.dp))
                 .padding(vertical = 8.dp)
                 // 弹窗内方向键完全接管：上/下在三项间移动，左/右消费（不逃逸）
                 .onPreviewKeyEvent { ev ->
@@ -1046,7 +1052,7 @@ private fun PlayModeItem(
             )
             .background(
                 when {
-                    isFocused -> Color.White.copy(alpha = 0.14f)
+                    isFocused -> LXFocusFill
                     selected -> LXPrimary.copy(alpha = 0.18f)
                     else -> Color.Transparent
                 }
@@ -1057,7 +1063,7 @@ private fun PlayModeItem(
         Icon(
             imageVector = icon,
             contentDescription = null,
-            tint = if (selected) LXPrimary else Color.White,
+            tint = if (selected) LXPrimary else LXTextPrimary,
             modifier = Modifier.size(22.dp)
         )
         Spacer(Modifier.width(14.dp))
@@ -1133,7 +1139,7 @@ private fun PlaylistDrawer(
                 .fillMaxHeight()
                 .fillMaxWidth(0.42f)
                 // 面板几乎全透明（菠萝抽屉无背景色），列表行自身背景/文字保证可读
-                .background(Color(0x34000000))
+                .background(LXSurfaceCard.copy(alpha = 0.96f))
                 .padding(horizontal = 32.dp, vertical = 28.dp)
                 .clickable(enabled = false, indication = null, interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }, onClick = {})
         ) {
@@ -1394,7 +1400,7 @@ private fun GlassAlbumCover(
                     listOf(
                         brandColor.copy(alpha = 0.75f),
                         brandColor.copy(alpha = 0.45f),
-                        Color(0xFF1A1A2E)
+                        LXSurfaceVariant
                     )
                 )
             ),
