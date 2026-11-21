@@ -154,8 +154,7 @@ private fun ThemeModeCard(
             // 焦点边框（仿全站 lxSelectorFocus）；选中态用浅红底 + 勾选图标区分
             .lxSelectorFocus(shape = RoundedCornerShape(12.dp), glow = false, animated = false)
             .clickable { onSelect(mode) },
-        // 通用卡片样式：未选中用半透明深色卡片 LXCardDark（与全站列表卡片一致），选中用浅红底
-        color = if (selected) LXPrimary.copy(alpha = 0.12f) else LXCardDark,
+        color = LXCardDark,
         shape = RoundedCornerShape(12.dp)
     ) {
         Column(
@@ -169,17 +168,8 @@ private fun ThemeModeCard(
                     text = label,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
-                    color = if (selected) LXPrimary else LXOnCardDark
+                    color = LXOnCardDark
                 )
-                if (selected) {
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Icon(
-                        imageVector = Icons.Default.Check,
-                        contentDescription = null,
-                        tint = LXPrimary,
-                        modifier = Modifier.size(18.dp)
-                    )
-                }
             }
             Spacer(modifier = Modifier.height(6.dp))
                 Text(
@@ -204,8 +194,7 @@ private fun ThemeColorCard(
             .height(110.dp)
             .lxSelectorFocus(shape = RoundedCornerShape(12.dp), glow = false, animated = false)
             .clickable { onSelect(color) },
-        // 通用卡片样式：未选中用半透明深色卡片 LXCardDark（与全站列表卡片一致），选中用浅红底
-        color = if (selected) color.swatch.copy(alpha = 0.12f) else LXCardDark,
+        color = LXCardDark,
         shape = RoundedCornerShape(12.dp)
     ) {
         Column(
@@ -221,16 +210,6 @@ private fun ThemeColorCard(
                     .size(36.dp)
                     .background(color.swatch, CircleShape)
             ) {
-                if (selected) {
-                    Icon(
-                        imageVector = Icons.Default.Check,
-                        contentDescription = null,
-                        tint = Color.White,
-                        modifier = Modifier
-                            .size(22.dp)
-                            .align(Alignment.Center)
-                    )
-                }
             }
             Spacer(modifier = Modifier.height(10.dp))
                 Text(
