@@ -171,7 +171,7 @@ private fun ThemeModeCard(
         modifier = modifier
             .height(116.dp)
             // 焦点边框（仿全站 lxSelectorFocus）；选中态用浅红底 + 勾选图标区分
-            .lxSelectorFocus(shape = RoundedCornerShape(12.dp), glow = false, animated = false)
+            .lxSelectorFocus(shape = RoundedCornerShape(12.dp), glow = true, animated = true)
             .clickable { onSelect(mode) },
         // 通用卡片样式：未选中用半透明深色卡片 LXCardDark（与全站列表卡片一致），选中用浅红底
         color = if (selected) LXPrimary.copy(alpha = 0.12f) else LXCardDark,
@@ -221,7 +221,7 @@ private fun ThemeColorCard(
     Surface(
         modifier = modifier
             .height(132.dp)
-            .lxSelectorFocus(shape = RoundedCornerShape(12.dp), glow = false, animated = false)
+            .lxSelectorFocus(shape = RoundedCornerShape(12.dp), glow = true, animated = true)
             .clickable { onSelect(color) },
         // 通用卡片样式：未选中用半透明深色卡片 LXCardDark（与全站列表卡片一致），选中用浅红底
         color = if (selected) color.swatch.copy(alpha = 0.12f) else LXCardDark,
