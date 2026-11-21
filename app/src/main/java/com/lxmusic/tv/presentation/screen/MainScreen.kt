@@ -656,21 +656,19 @@ fun DiscCoverButton(
     rotation: Float = 0f,
     content: @Composable () -> Unit
 ) {
-    var focused by remember { mutableStateOf(false) }
     Box(
         modifier = modifier
             .size(50.dp)
-            // 播放旋转 / 暂停归 0（黑胶整盘旋转；graphicsLayer 默认以中心为旋转轴）
+            // 播放旋轉 / 暫停歸 0（黑膠整盤旋轉；graphicsLayer 默认以中心为旋转轴）
             .graphicsLayer { rotationZ = rotation }
-            .onFocusChanged { focused = it.isFocused }
-            .clip(CircleShape)
-            // 深色圆环（黑胶边缘，固定深色不随主题）；聚焦时主题色发光
-            .background(if (focused) LXPrimary.copy(alpha = 0.40f) else Color(0xFF3A3A40))
-            // 遙控器聚焦時補上清楚可見的圓形焦點描邊；保留原本主題色填充與黑膠外觀
-            .then(
-                if (focused) Modifier.border(width = 2.dp, color = FocusBorder, shape = CircleShape)
-                else Modifier
+            // 使用專案統一的圓形焦點繪製器：同一 draw 層繪製聚焦填色與圓環
+            .lxCircleButtonFocus(
+                fillColor = LXPrimary.copy(alpha = 0.40f),
+                strokeColor = FocusBorder,
+                strokeWidth = 3.dp
             )
+            // 未聚焦時保留黑膠深色外環
+            .background(Color(0xFF3A3A40))
             .clickable { onClick() }
     ) {
         Box(
