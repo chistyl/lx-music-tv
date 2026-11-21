@@ -47,7 +47,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.widget.addTextChangedListener
 import com.lxmusic.tv.presentation.component.lxBackButtonFocus
 import com.lxmusic.tv.presentation.component.lxCircleButtonFocus
-import com.lxmusic.tv.presentation.component.lxLXPrimary
+import com.lxmusic.tv.presentation.component.lxFocusBorder
 import com.lxmusic.tv.data.model.MusicPlatform
 import com.lxmusic.tv.data.model.PlatformNameConfig
 import com.lxmusic.tv.data.model.Playlist
@@ -666,7 +666,8 @@ fun SearchScreen(
                                             modifier = Modifier
                                                 .fillMaxWidth()
                                                 // focusRequester 必须在 clickable（提供焦点节点）之前
-                                                .lxLXPrimary(
+                                                .lxFocusBorder(
+                    focusedColor = LXPrimary,
                                                     shape = RoundedCornerShape(8.dp),
                                                     unfocusedColor = Color.Transparent,
                                                     unfocusedWidth = 0.dp
@@ -1642,7 +1643,8 @@ fun SearchHistoryItem(
             // focusRequester 必须在 clickable（提供焦点节点）之前
             .then(if (focusRequester != null) Modifier.focusRequester(focusRequester) else Modifier)
             // 通用卡片样式：未聚焦无边框，仅焦点选中显示 LXPrimary（与设置项一致）
-            .lxLXPrimary(
+            .lxFocusBorder(
+                    focusedColor = LXPrimary,
                 shape = RoundedCornerShape(12.dp),
                 unfocusedColor = Color.Transparent,
                 unfocusedWidth = 0.dp
@@ -1690,7 +1692,8 @@ fun SuggestionItem(
             // focusRequester 必须在 clickable（提供焦点节点）之前
             .then(if (focusRequester != null) Modifier.focusRequester(focusRequester) else Modifier)
             // 通用卡片样式：未聚焦无边框，仅焦点选中显示 LXPrimary（与设置项一致）；shape 与容器 8.dp 对齐，杜绝圆角异常
-            .lxLXPrimary(
+            .lxFocusBorder(
+                    focusedColor = LXPrimary,
                 shape = RoundedCornerShape(12.dp),
                 unfocusedColor = Color.Transparent,
                 unfocusedWidth = 0.dp
@@ -1738,7 +1741,8 @@ fun HotSearchItem(
             // focusRequester 必须在 clickable（提供焦点节点）之前
             .then(if (focusRequester != null) Modifier.focusRequester(focusRequester) else Modifier)
             // 通用卡片样式：未聚焦无边框，仅焦点选中显示 LXPrimary（与设置项一致）；shape 与容器 8.dp 对齐，杜绝圆角异常
-            .lxLXPrimary(
+            .lxFocusBorder(
+                    focusedColor = LXPrimary,
                 shape = RoundedCornerShape(12.dp),
                 unfocusedColor = Color.Transparent,
                 unfocusedWidth = 0.dp
