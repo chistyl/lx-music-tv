@@ -547,6 +547,17 @@ fun PlatformConfigDialog(
         MusicPlatform.MG.key to MusicPlatform.MG.displayName
     )
     var selected by remember { mutableStateOf(selectedPlatforms) }
+    // 開啟平台配置視窗時，先將焦點放在第一個平台，確保 TV 遙控器可立即操作。
+    val firstPlatformRequester = remember { FocusRequester() }
+    var initialFocusRequested by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        requestInitialFocus(
+            focusRequester = firstPlatformRequester,
+            attempted = { initialFocusRequested },
+            markAttempted = { initialFocusRequested = true }
+        )
+    }
 
     Dialog(onDismissRequest = onDismiss) {
         Card(
@@ -589,7 +600,7 @@ fun PlatformConfigDialog(
                         .weight(1f)
                         .verticalScroll(rememberScrollState())
                 ) {
-                    platforms.forEach { (key, name) ->
+                    platforms.forEachIndexed { index, (key, name) ->
                         val isChecked = selected.contains(key)
                         // 2.8 样式对齐默认音乐平台弹窗（PlatformSelectDialog）：选中=浅红填充+加粗+右侧勾选，
                         // 未选中=透明；lxSelectorFocus 焦点样式（无发光无动画，避免密集列表切换鬼畜）
@@ -597,6 +608,7 @@ fun PlatformConfigDialog(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(vertical = 3.dp)
+                                .then(if (index == 0) Modifier.focusRequester(firstPlatformRequester) else Modifier)
                                 .lxSelectorFocus(shape = RoundedCornerShape(8.dp), glow = false, animated = false)
                                 .clickable {
                                     selected = if (isChecked) selected - key else selected + key
