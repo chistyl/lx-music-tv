@@ -696,13 +696,11 @@ fun DiscCoverButton(
     rotation: Float = 0f,
     content: @Composable () -> Unit
 ) {
-    var focused by remember { mutableStateOf(false) }
     Box(
         modifier = modifier
             .size(50.dp)
             // 播放旋转 / 暂停归 0（黑胶整盘旋转；graphicsLayer 默认以中心为旋转轴）
             .graphicsLayer { rotationZ = rotation }
-            .onFocusChanged { focused = it.isFocused }
             .clip(CircleShape)
             // 深色圆环（黑胶边缘，固定深色不随主题）；聚焦时主题色发光
             .background(Color(0xFF3A3A40))
@@ -3163,9 +3161,9 @@ fun CacheActionButton(
     enabled: Boolean = true,
     modifier: Modifier = Modifier
 ) {
-    val bgColor = if (highlighted) LXPrimary else LXSurfaceVariant
-    val textColor = if (highlighted) Color.White else LXTextPrimary
-    val hintColor = if (highlighted) Color.White.copy(alpha = 0.8f) else LXTextSecondary
+    val bgColor = LXSurfaceVariant
+    val textColor = LXTextPrimary
+    val hintColor = LXTextSecondary
 
     Box(
         modifier = modifier
