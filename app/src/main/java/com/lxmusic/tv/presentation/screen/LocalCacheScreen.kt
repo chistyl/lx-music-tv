@@ -404,13 +404,14 @@ private fun DeleteCacheConfirmDialog(
     onConfirm: () -> Unit,
     onDismiss: () -> Unit
 ) {
-    val deleteFocusRequester = remember { FocusRequester() }
+    // 預設焦點放在取消，避免 TV 遙控器開啟視窗時誤刪離線音訊。
+    val cancelFocusRequester = remember { FocusRequester() }
     var initialFocusRequested by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         if (!initialFocusRequested) {
             initialFocusRequested = true
-            deleteFocusRequester.requestFocus()
+            cancelFocusRequester.requestFocus()
         }
     }
 
@@ -448,7 +449,10 @@ private fun DeleteCacheConfirmDialog(
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) {
+            TextButton(
+                modifier = Modifier.focusRequester(cancelFocusRequester),
+                onClick = onDismiss
+            ) {
                 Text(
                     text = "取消",
                     color = LXTextPrimary,
