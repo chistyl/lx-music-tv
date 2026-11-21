@@ -1445,178 +1445,80 @@ fun BrowsePage(
                     Text(text = "加载中...", fontSize = 15.sp, color = Color.Gray)
                 }
             }
-        } else if (selected == null && !directSongs) {
-            // 列表视图（榜单名 / 歌单列表）
-            if (items.isEmpty()) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Icon(
-                            imageVector = Icons.Default.Inbox,
-                            contentDescription = null,
-                            tint = Color.Gray,
-                            modifier = Modifier.size(56.dp)
-                        )
-                        Spacer(modifier = Modifier.height(12.dp))
-                        Text(
-                            text = "该平台暂不支持或暂无数据",
-                            fontSize = 16.sp,
-                            color = Color.Gray
-                        )
-                        Spacer(modifier = Modifier.height(6.dp))
-                        Text(
-                            text = "可在设置中切换默认音乐平台",
-                            fontSize = 13.sp,
-                            color = Color.Gray.copy(alpha = 0.7f)
-                        )
-                    }
+        } else if (directSongs) {
+            LazyColumn(state = songListState, verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxSize()) {
+                itemsIndexed(songs) { index, song ->
+                    BrowseSongRow(index = index, song = song, isFavorite = favoriteSongIds.contains(song.id),
+                        onToggleFavorite = { onToggleSongFavorite(song) }, onPlayStay = { onPlaySongStay(song) },
+                        onPlayOpen = { onSongClick(song) }, onExitToNav = onExitToNav,
+                        focusRequester = if (index == firstVisibleSongIndex) contentEnterRequester else null,
+                        onSongFocused = { idx -> focusedSongIndex = idx }, modifier = Modifier.fillMaxWidth())
                 }
-            } else {
-                // 网格外套一个非焦点容器（不调用 focusable，避免成为焦点停靠点）；
-                // 网格不再自动抢焦：初始/切 tab 时焦点停在左侧导航栏，遥控器右键由 Compose 默认
-                // 空间遍历自然进入网格第一项，符合「按右再进入内容」的使用习惯
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                ) {
-                    LazyVerticalGrid(
-                        // 5 列（2.6）：比 4 列时卡片更小，电视上能完整显示更多行
-                        columns = GridCells.Fixed(5),
-                        verticalArrangement = Arrangement.spacedBy(14.dp),
-                        horizontalArrangement = Arrangement.spacedBy(14.dp),
-                        state = gridState,
-                        // 快速方向键滚动的掉帧问题已由 RemoteImage 的并发解码信号量(Semaphore=2)
-                        // 与更小的解码尺寸(maxDimension=512/256)解决，故此处不依赖 beyondBoundsItemCount
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        // 稳定 key（id）：列表滚动/数据更新时避免 item 状态错乱与多余重组
-                        itemsIndexed(items, key = { _, item -> item.id }) { index, item ->
-                            // 2.8 返回列表时聚焦回原卡片：每张卡片登记 FocusRequester
-                            val cardRequester = remember(item.id) { FocusRequester() }
-                            SideEffect { cardFocusRequesters[index] = cardRequester }
-                            BrowseCard(
-                                item = item,
-                                index = index,
-                                onClick = {
-                                    // 2.8 记录进入详情前的位置（返回时聚焦回这张卡片）
+            }
+        } else {
+            // TV 常駐雙欄：左側分類／榜單，右側歌曲清單；選擇後不再切換成全頁第二層畫面。
+            Row(modifier = Modifier.fillMaxSize(), horizontalArrangement = Arrangement.spacedBy(18.dp)) {
+                Column(Modifier.weight(0.34f).fillMaxHeight()) {
+                    Text(if (isPlaylistMode) "歌單分類" else "排行榜", color = LXTextPrimary, fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 12.dp))
+                    if (items.isEmpty()) {
+                        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            Text("該平台暫不支持或暫無資料", color = LXTextSecondary, fontSize = 14.sp)
+                        }
+                    } else {
+                        LazyVerticalGrid(columns = GridCells.Fixed(2), verticalArrangement = Arrangement.spacedBy(10.dp),
+                            horizontalArrangement = Arrangement.spacedBy(10.dp), state = gridState, modifier = Modifier.fillMaxSize()) {
+                            itemsIndexed(items, key = { _, item -> item.id }) { index, item ->
+                                val cardRequester = remember(item.id) { FocusRequester() }
+                                SideEffect { cardFocusRequesters[index] = cardRequester }
+                                BrowseCard(item = item, index = index, onClick = {
                                     hasOpenedDetail = true
                                     lastOpenedCardIndex = index
                                     onItemClick(item)
-                                },
-                                // 列表首项承载「右键进入」焦点请求器；首列卡片拦截左键返回选中 tab
-                                contentEnterRequester = if (index == firstVisibleCardIndex) contentEnterRequester else null,
-                                onExitToNav = onExitToNav,
-                                interceptLeftExit = index % 5 == 0,
-                                onCardFocused = { idx -> focusedCardIndex = idx },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .focusRequester(cardRequester)
-                            )
-                        }
-                        // 底部加载更多提示（稳定 key：防止 loading 项插入/移除导致 grid slot 错位、焦点项被重建）
-                        if (loading) {
-                            item(key = "browse_loading_more", span = { GridItemSpan(maxLineSpan) }) {
-                                Box(
-                                    modifier = Modifier.fillMaxWidth().padding(16.dp),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    CircularProgressIndicator(
-                                        modifier = Modifier.size(28.dp),
-                                        color = LXPrimary,
-                                        strokeWidth = 2.dp
-                                    )
+                                }, contentEnterRequester = if (selected == null && index == firstVisibleCardIndex) contentEnterRequester else null,
+                                    onExitToNav = onExitToNav, interceptLeftExit = index % 2 == 0,
+                                    onCardFocused = { idx -> focusedCardIndex = idx },
+                                    modifier = Modifier.fillMaxWidth().focusRequester(cardRequester))
+                            }
+                            if (loading && selected == null) {
+                                item(key = "browse_loading_more", span = { GridItemSpan(maxLineSpan) }) {
+                                    Box(Modifier.fillMaxWidth().padding(12.dp), contentAlignment = Alignment.Center) {
+                                        CircularProgressIndicator(Modifier.size(24.dp), color = LXPrimary, strokeWidth = 2.dp)
+                                    }
                                 }
                             }
                         }
                     }
                 }
-            }
-        } else {
-            // 歌曲列表视图
-            when {
-                // 歌单/榜单歌曲加载中：立即显示转圈（与搜索歌单详情一致），避免闪现旧数据或空状态
-                loading && songs.isEmpty() -> {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Column(Modifier.weight(0.66f).fillMaxHeight()) {
+                    Row(Modifier.fillMaxWidth().padding(bottom = 12.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Text(selected?.name ?: if (isPlaylistMode) "選擇歌單" else "選擇排行榜",
+                            color = LXTextPrimary, fontSize = 18.sp, fontWeight = FontWeight.Bold,
+                            modifier = Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        if (selected != null && songs.isNotEmpty()) PlayAllButton(songs = songs, onClick = { onPlayAll(songs) })
+                    }
+                    when {
+                        selected == null -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            Text(if (isPlaylistMode) "請從左側選擇歌單" else "請從左側選擇排行榜", color = LXTextSecondary, fontSize = 15.sp)
+                        }
+                        loading && songs.isEmpty() -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                             CircularProgressIndicator(color = LXPrimary)
-                            Spacer(modifier = Modifier.height(16.dp))
-                            Text(text = "加载中...", fontSize = 15.sp, color = Color.Gray)
                         }
-                    }
-                }
-
-                songs.isEmpty() -> {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Icon(
-                                imageVector = Icons.Default.MusicOff,
-                                contentDescription = null,
-                                tint = Color.Gray,
-                                modifier = Modifier.size(56.dp)
-                            )
-                            Spacer(modifier = Modifier.height(12.dp))
-                            Text(
-                                // 超时/异常失败（browseSongsError）与平台不支持/空歌单区分展示
-                                text = browseSongsError ?: "暂不支持获取歌曲列表",
-                                fontSize = 16.sp,
-                                color = Color.Gray
-                            )
-                            Spacer(modifier = Modifier.height(6.dp))
-                            Text(
-                                text = if (browseSongsError != null) "可返回重试" else "可在设置中切换默认音乐平台",
-                                fontSize = 13.sp,
-                                color = Color.Gray.copy(alpha = 0.7f)
-                            )
+                        songs.isEmpty() -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            Text(browseSongsError ?: "暫無歌曲資料", color = LXTextSecondary, fontSize = 15.sp)
                         }
-                    }
-                }
-
-                else -> {
-                LazyColumn(
-                    // 仍绑定 songListState：用于 scrollToItem 重置与首行焦点挂载；分页已由焦点行号驱动，滚动本身不再用于触发续拉
-                    state = songListState,
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    itemsIndexed(songs) { index, song ->
-                        BrowseSongRow(
-                            index = index,
-                            song = song,
-                            isFavorite = favoriteSongIds.contains(song.id),
-                            onToggleFavorite = { onToggleSongFavorite(song) },
-                            // ① 仅播放本首、停留在当前页（不进入播放页）
-                            onPlayStay = { onPlaySongStay(song) },
-                            // ② 播放本首并进入播放页（整列表作为播放队列）
-                            onPlayOpen = { onSongClick(song) },
-                            // 歌曲列表为单列，首个按钮左键即返回选中 tab（由按钮①处理）
-                            onExitToNav = onExitToNav,
-                            // 首个歌曲行承载「右键进入」焦点请求器
-                            focusRequester = if (index == firstVisibleSongIndex) contentEnterRequester else null,
-                            onSongFocused = { idx -> focusedSongIndex = idx },
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                    }
-                    // 加载更多时的底部提示（仅 songs 非空、即「加载更多」阶段出现；
-                    // 初始加载走上方全屏转圈分支，不会同时显示）
-                    if (loading) {
-                        item(key = "song_loading_more") {
-                            Box(
-                                modifier = Modifier.fillMaxWidth().padding(16.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                CircularProgressIndicator(
-                                    modifier = Modifier.size(28.dp),
-                                    color = LXPrimary,
-                                    strokeWidth = 2.dp
-                                )
+                        else -> LazyColumn(state = songListState, verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxSize()) {
+                            itemsIndexed(songs) { index, song ->
+                                BrowseSongRow(index = index, song = song, isFavorite = favoriteSongIds.contains(song.id),
+                                    onToggleFavorite = { onToggleSongFavorite(song) }, onPlayStay = { onPlaySongStay(song) },
+                                    onPlayOpen = { onSongClick(song) }, onExitToNav = onExitToNav,
+                                    focusRequester = if (selected != null && index == firstVisibleSongIndex) contentEnterRequester else null,
+                                    onSongFocused = { idx -> focusedSongIndex = idx }, modifier = Modifier.fillMaxWidth())
+                            }
+                            if (loading) item(key = "song_loading_more") {
+                                Box(Modifier.fillMaxWidth().padding(16.dp), contentAlignment = Alignment.Center) {
+                                    CircularProgressIndicator(Modifier.size(24.dp), color = LXPrimary, strokeWidth = 2.dp)
+                                }
                             }
                         }
                     }
@@ -1626,10 +1528,8 @@ fun BrowsePage(
     }
 }
 
-}
-
 /**
- * 歌单/榜单卡片（网格）
+ * 歌单/榜单卡片 * 歌单/榜单卡片（网格）
  */
 @Composable
 fun BrowseCard(
