@@ -389,19 +389,27 @@ private fun LeftPlayerPanel(
     Column(
         modifier = modifier
             .background(LXSurfaceSidebar)
-            .padding(horizontal = 20.dp, vertical = 18.dp),
+            .padding(horizontal = 24.dp, vertical = 20.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
         if (song != null) {
+            Text(
+                text = "NOW PLAYING",
+                color = LXPrimary,
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 2.sp,
+                modifier = Modifier.padding(bottom = 18.dp)
+            )
             Box(
                 modifier = Modifier
-                    .fillMaxWidth(0.82f)
+                    .fillMaxWidth(0.78f)
                     .aspectRatio(1f)
                     .clip(CircleShape)
                     .border(
-                        width = 1.5.dp,
-                        color = LXPrimary.copy(alpha = 0.85f),
+                        width = 2.dp,
+                        color = LXPrimary.copy(alpha = 0.9f),
                         shape = CircleShape
                     )
                     .background(LXSurfaceVariant)
@@ -424,28 +432,32 @@ private fun LeftPlayerPanel(
                     )
                 }
             }
-            Spacer(Modifier.height(20.dp))
+            Spacer(Modifier.height(24.dp))
             Text(
                 text = song.name,
                 color = LXTextPrimary,
-                fontSize = 21.sp,
-                fontWeight = FontWeight.Medium,
+                fontSize = 20.sp,
+                fontWeight = FontWeight.SemiBold,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
+                textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth().clickable { onOpenPlayer() }
             )
             Text(
                 text = song.singer,
                 color = LXTextSecondary,
-                fontSize = 15.sp,
+                fontSize = 14.sp,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.fillMaxWidth().padding(top = 5.dp)
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth().padding(top = 7.dp)
             )
-            Spacer(Modifier.height(22.dp))
+            Spacer(Modifier.height(24.dp))
             Box(
                 modifier = Modifier
-                    .size(64.dp)
+                    .size(58.dp)
+                    .clip(CircleShape)
+                    .background(LXPrimary.copy(alpha = 0.16f))
                     .lxCircleButtonFocus()
                     .clickable { onPlayPause() },
                 contentAlignment = Alignment.Center
@@ -454,7 +466,7 @@ private fun LeftPlayerPanel(
                     imageVector = if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
                     contentDescription = if (isPlaying) "暂停" else "播放",
                     tint = LXPrimary,
-                    modifier = Modifier.size(38.dp)
+                    modifier = Modifier.size(36.dp)
                 )
             }
         } else {
