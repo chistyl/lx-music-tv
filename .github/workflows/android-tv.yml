@@ -18,6 +18,7 @@ on:
       - fix/lx-tv-nav-compact-selected-icons-run151
       - fix/lx-tv-nav-tile-compact-run153
       - fix/lx-tv-remove-source-quick-add-run154
+      - fix/lx-tv-quickbase64-arm-abi-run239
   workflow_dispatch:
 
 permissions:
@@ -90,7 +91,7 @@ jobs:
         run: |
           for attempt in 1 2 3; do
             echo "Gradle build attempt ${attempt}/3"
-            if ./gradlew --no-daemon --refresh-dependencies -PreactNativeArchitectures=x86,x86_64 assembleDebug; then
+            if ./gradlew --no-daemon --refresh-dependencies -PreactNativeArchitectures=armeabi-v7a,arm64-v8a,x86,x86_64 assembleDebug; then
               exit 0
             fi
             if [ "$attempt" -lt 3 ]; then
@@ -106,6 +107,22 @@ jobs:
           zip -qr dist/lx-music-tv-source.zip . \
             -x './.git/*' './**/.git/*' './**/node_modules/*' \
                './**/build/*' './**/.gradle/*' './dist/*'
+
+      - name: Upload APK - armeabi-v7a
+        uses: actions/upload-artifact@v4
+        with:
+          name: lx-music-tv-apk-armeabi-v7a
+          path: upstream/lx-music-mobile-auto-source/android/app/build/outputs/apk/debug/*armeabi-v7a.apk
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Upload APK - arm64-v8a
+        uses: actions/upload-artifact@v4
+        with:
+          name: lx-music-tv-apk-arm64-v8a
+          path: upstream/lx-music-mobile-auto-source/android/app/build/outputs/apk/debug/*arm64-v8a.apk
+          if-no-files-found: error
+          retention-days: 30
 
       - name: Upload APK - x86
         uses: actions/upload-artifact@v4
