@@ -1,5 +1,6 @@
 name: Android TV build
 # Rebuild after reducing the selected navigation tile height and width.
+# Focus visuals removal validation build.
 
 on:
   push:
