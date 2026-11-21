@@ -313,10 +313,10 @@ fun FavoriteSongRow(
         modifier = modifier,
         // 点6：深色卡片（仿播放页播放列表暗色面板），播放中仅靠红色文字区分
         colors = CardDefaults.cardColors(containerColor = LXCardDark),
-        shape = RoundedCornerShape(8.dp)
+        shape = RoundedCornerShape(14.dp)
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(12.dp),
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             // 序号（仿播放页播放列表）：当前播放行红色、其余跟随主题（浅色深灰/深色白 70%，
@@ -334,7 +334,7 @@ fun FavoriteSongRow(
             Box(
                 modifier = Modifier
                     .size(44.dp)
-                    .clip(RoundedCornerShape(8.dp))
+                    .clip(RoundedCornerShape(10.dp))
                     .background(platformBrandColor(song.platform).copy(alpha = 0.25f)),
                 contentAlignment = Alignment.Center
             ) {
@@ -519,17 +519,17 @@ fun FavoritePlaylistRow(
         // 点6：深色卡片（仿播放页播放列表暗色面板）；卡片本身不再作为焦点目标，
         // 焦点落在卡片上的操作按钮（仿 PlaylistItem：选中按钮而非整行卡片）
         colors = CardDefaults.cardColors(containerColor = LXCardDark),
-        shape = RoundedCornerShape(8.dp)
+        shape = RoundedCornerShape(14.dp)
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(12.dp),
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             // 封面
             Box(
                 modifier = Modifier
                     .size(48.dp)
-                    .clip(RoundedCornerShape(8.dp))
+                    .clip(RoundedCornerShape(10.dp))
                     .background(brandColor.copy(alpha = 0.25f)),
                 contentAlignment = Alignment.Center
             ) {
