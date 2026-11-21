@@ -1466,22 +1466,65 @@ fun BrowsePage(
                             Text("該平台暫不支持或暫無資料", color = LXTextSecondary, fontSize = 14.sp)
                         }
                     } else {
-                        LazyVerticalGrid(columns = GridCells.Fixed(2), verticalArrangement = Arrangement.spacedBy(10.dp),
-                            horizontalArrangement = Arrangement.spacedBy(10.dp), state = gridState, modifier = Modifier.fillMaxSize()) {
+                        // 分類依直向文字清單呈現，避免封面網格擠壓電視上的瀏覽空間。
+                        LazyColumn(
+                            state = rememberLazyListState(),
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier.fillMaxSize()
+                        ) {
                             itemsIndexed(items, key = { _, item -> item.id }) { index, item ->
-                                val cardRequester = remember(item.id) { FocusRequester() }
-                                SideEffect { cardFocusRequesters[index] = cardRequester }
-                                BrowseCard(item = item, index = index, onClick = {
-                                    hasOpenedDetail = true
-                                    lastOpenedCardIndex = index
-                                    onItemClick(item)
-                                }, contentEnterRequester = if (selected == null && index == firstVisibleCardIndex) contentEnterRequester else null,
-                                    onExitToNav = onExitToNav, interceptLeftExit = index % 2 == 0,
-                                    onCardFocused = { idx -> focusedCardIndex = idx },
-                                    modifier = Modifier.fillMaxWidth().focusRequester(cardRequester))
+                                val categoryRequester = remember(item.id) { FocusRequester() }
+                                SideEffect { cardFocusRequesters[index] = categoryRequester }
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .heightIn(min = 54.dp)
+                                        .clip(RoundedCornerShape(10.dp))
+                                        .background(if (selected?.id == item.id) LXFocusFill else LXSurfaceCard)
+                                        .focusRequester(categoryRequester)
+                                        .onFocusChanged { if (it.isFocused) focusedCardIndex = index }
+                                        .onPreviewKeyEvent { event ->
+                                            if (event.type == KeyEventType.KeyDown && event.key == Key.DirectionLeft) {
+                                                onExitToNav()
+                                                true
+                                            } else false
+                                        }
+                                        .lxFocusBorder(
+                                            shape = RoundedCornerShape(10.dp),
+                                            glow = false,
+                                            animated = false,
+                                            unfocusedColor = Color.Transparent,
+                                            unfocusedWidth = 0.dp
+                                        )
+                                        .clickable {
+                                            hasOpenedDetail = true
+                                            lastOpenedCardIndex = index
+                                            onItemClick(item)
+                                        }
+                                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = item.name,
+                                        color = if (selected?.id == item.id) LXPrimary else LXTextPrimary,
+                                        fontSize = 16.sp,
+                                        fontWeight = if (selected?.id == item.id) FontWeight.Bold else FontWeight.Medium,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis,
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                    if (selected?.id == item.id) {
+                                        Icon(
+                                            imageVector = Icons.Default.ChevronRight,
+                                            contentDescription = null,
+                                            tint = LXPrimary,
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                    }
+                                }
                             }
                             if (loading && selected == null) {
-                                item(key = "browse_loading_more", span = { GridItemSpan(maxLineSpan) }) {
+                                item(key = "browse_loading_more") {
                                     Box(Modifier.fillMaxWidth().padding(12.dp), contentAlignment = Alignment.Center) {
                                         CircularProgressIndicator(Modifier.size(24.dp), color = LXPrimary, strokeWidth = 2.dp)
                                     }
