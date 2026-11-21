@@ -551,12 +551,10 @@ fun NavigationSidebar(
                         logoFocused = it.isFocused
                         onLogoFocusChanged(it.isFocused)
                     }
-                    .lxFocusBorder(
-                        shape = RoundedCornerShape(10.dp),
-                        glow = false,
-                        animated = false,
-                        unfocusedColor = Color.Transparent,
-                        unfocusedWidth = 0.dp
+                    .border(
+                        width = if (logoFocused) 2.dp else 0.dp,
+                        color = FocusBorder,
+                        shape = RoundedCornerShape(10.dp)
                     )
                     // Logo 可点击：弹出下拉平台菜单（clickable 自带 focusable，遥控器可聚焦）
                     .clickable { logoMenuExpanded = true },
