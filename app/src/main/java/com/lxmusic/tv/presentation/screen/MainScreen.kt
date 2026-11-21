@@ -1521,6 +1521,7 @@ fun BrowsePage(
         // 这样网格不会被卸载，焦点靠稳定 key 保留，避免「加载时焦点逃到左侧 tab、加载完又被拉回网格首项」的问题
         // 酷狗直接展示歌曲（directSongs）时，加载中转圈单独处理（下方分支）
         val showSongs = selected != null || directSongs
+        val splitRanking = !isPlaylistMode && selected != null && !directSongs
         if (loading && items.isEmpty() && !showSongs) {
             Box(
                 modifier = Modifier.fillMaxSize(),
@@ -1549,7 +1550,8 @@ fun BrowsePage(
                     Text(text = "加载中...", fontSize = 15.sp, color = Color.Gray)
                 }
             }
-        } else if (selected == null && !directSongs) {
+        } else if ((selected == null && !directSongs) || splitRanking) {
+            // 排行榜详情采用分类／歌曲双栏；歌单广场维持原有两级页面。
             // 列表视图（榜单名 / 歌单列表）
             if (items.isEmpty()) {
                 Box(
@@ -1581,10 +1583,15 @@ fun BrowsePage(
                 // 网格外套一个非焦点容器（不调用 focusable，避免成为焦点停靠点）；
                 // 网格不再自动抢焦：初始/切 tab 时焦点停在左侧导航栏，遥控器右键由 Compose 默认
                 // 空间遍历自然进入网格第一项，符合「按右再进入内容」的使用习惯
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
+                Row(
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
+                    Box(
+                        modifier = Modifier
+                            .weight(if (splitRanking) 0.40f else 1f)
+                            .fillMaxHeight()
+                    ) {
                     LazyVerticalGrid(
                         // 排行榜依照 TV 版版型保留雙欄分類；歌單廣場維持原本五欄密度。
                         columns = GridCells.Fixed(if (isPlaylistMode) 5 else 2),
@@ -1635,10 +1642,60 @@ fun BrowsePage(
                             }
                         }
                     }
+                    }
+                    if (splitRanking) {
+                        Box(
+                            modifier = Modifier
+                                .weight(0.60f)
+                                .fillMaxHeight()
+                        ) {
+                            when {
+                                loading && songs.isEmpty() -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                    CircularProgressIndicator(color = LXPrimary)
+                                }
+                                songs.isEmpty() -> Column(
+                                    modifier = Modifier.fillMaxSize(),
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.Center
+                                ) {
+                                    Icon(Icons.Default.MusicOff, contentDescription = null, tint = Color.Gray, modifier = Modifier.size(48.dp))
+                                    Spacer(Modifier.height(10.dp))
+                                    Text(browseSongsError ?: "選擇左側榜單以查看歌曲", color = LXTextSecondary, fontSize = 15.sp)
+                                }
+                                else -> LazyColumn(
+                                    state = songListState,
+                                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                                    modifier = Modifier.fillMaxSize()
+                                ) {
+                                    itemsIndexed(songs) { index, song ->
+                                        BrowseSongRow(
+                                            index = index,
+                                            song = song,
+                                            isFavorite = favoriteSongIds.contains(song.id),
+                                            onToggleFavorite = { onToggleSongFavorite(song) },
+                                            onPlayStay = { onPlaySongStay(song) },
+                                            onPlayOpen = { onSongClick(song) },
+                                            onExitToNav = onExitToNav,
+                                            focusRequester = if (index == firstVisibleSongIndex) contentEnterRequester else null,
+                                            onSongFocused = { idx -> focusedSongIndex = idx },
+                                            modifier = Modifier.fillMaxWidth()
+                                        )
+                                    }
+                                    if (loading) {
+                                        item(key = "split_song_loading_more") {
+                                            Box(Modifier.fillMaxWidth().padding(16.dp), contentAlignment = Alignment.Center) {
+                                                CircularProgressIndicator(Modifier.size(28.dp), color = LXPrimary, strokeWidth = 2.dp)
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
         } else {
-            // 歌曲列表视图
+            // 歌曲列表視圖
             when {
                 // 歌单/榜单歌曲加载中：立即显示转圈（与搜索歌单详情一致），避免闪现旧数据或空状态
                 loading && songs.isEmpty() -> {
