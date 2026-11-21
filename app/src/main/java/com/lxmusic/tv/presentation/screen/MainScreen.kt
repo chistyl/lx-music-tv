@@ -1702,7 +1702,12 @@ fun BrowseCard(
         // 根节点挂 onFocusChanged：本卡片获得焦点即上报其序号，用于「焦点接近网格末尾时触发加载更多」。
         modifier = modifier.onFocusChanged { if (it.hasFocus) onCardFocused(index) }
             // 网格卡片密集排列，滚动时焦点快速移动；关闭发光与过渡动画，避免逐卡跑阴影动画导致首页滚动掉帧
-            .lxFocusBorder(shape = RoundedCornerShape(12.dp), glow = false, animated = false)
+            .lxFocusBorder(
+                shape = RoundedCornerShape(12.dp),
+                focusedScale = 1.025f,
+                glow = false,
+                animated = false
+            )
             // 列表首项承载「从导航栏右键进入」的焦点请求器
             .then(if (contentEnterRequester != null) Modifier.focusRequester(contentEnterRequester) else Modifier)
             // 首列卡片拦截左键：精确返回当前选中 tab（而非空间最近项），避免焦点乱跳
