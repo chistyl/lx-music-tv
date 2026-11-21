@@ -1,6 +1,7 @@
 name: Android TV build
 # Rebuild after reducing the selected navigation tile height and width.
 # Rebuild after keeping browse categories and song rows side-by-side.
+# Rebuild after changing category navigation to a vertical text list.
 
 on:
   push:
