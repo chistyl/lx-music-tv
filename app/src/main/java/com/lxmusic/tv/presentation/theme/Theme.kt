@@ -421,6 +421,7 @@ private fun darkColorSchemeFor(
  * 本组件直接订阅模块级 currentThemeMode：界面设置页写入后必然触发本组件重组，
  * 保证 Material colorScheme 与自定义令牌同步切换（不依赖 MainActivity 传参链）。
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LXMusicTheme(
     darkTheme: Boolean = false,
