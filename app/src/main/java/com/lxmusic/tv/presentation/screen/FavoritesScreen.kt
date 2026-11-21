@@ -2,6 +2,7 @@ package com.lxmusic.tv.presentation.screen
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.*
@@ -152,8 +153,24 @@ fun FavoritesScreen(
                 )
             } else if (favoritePlaylistLoading) {
                 // 歌单歌曲加载中：立即显示转圈动画（网易云等平台接口较慢，避免点击后空白跳变）
+                var loadingStateFocused by remember { mutableStateOf(false) }
                 Box(
-                    modifier = Modifier.fillMaxWidth().weight(1f),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .onFocusChanged { loadingStateFocused = it.isFocused }
+                        .border(
+                            width = if (loadingStateFocused) 3.dp else 0.dp,
+                            color = if (loadingStateFocused) FocusBorder else Color.Transparent,
+                            shape = RoundedCornerShape(16.dp)
+                        )
+                        .focusable()
+                        .onPreviewKeyEvent { event ->
+                            if (event.type == KeyEventType.KeyDown && event.key == Key.DirectionLeft) {
+                                onExitToNav()
+                                true
+                            } else false
+                        },
                     contentAlignment = Alignment.Center
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -269,6 +286,7 @@ fun FavoriteSongsView(
         FavoriteEmptyState(
             text = "还没有收藏的歌曲",
             hint = "在搜索、歌单、排行或播放页面点击 ♥ 收藏歌曲",
+            onExitToNav = onExitToNav,
             modifier = modifier
         )
         return
@@ -466,6 +484,7 @@ fun FavoritePlaylistsView(
         FavoriteEmptyState(
             text = "还没有收藏的歌单",
             hint = "在歌单搜索或歌单广场页面点击 ♥ 收藏歌单",
+            onExitToNav = onExitToNav,
             modifier = modifier
         )
         return
@@ -655,6 +674,7 @@ fun FavoritePlaylistSongsView(
             FavoriteEmptyState(
                 text = "歌单暂无歌曲或加载失败",
                 hint = "可按返回键回到收藏列表",
+                onExitToNav = onExitToNav,
                 modifier = Modifier.weight(1f)
             )
         } else {
@@ -690,10 +710,26 @@ fun FavoritePlaylistSongsView(
 fun FavoriteEmptyState(
     text: String,
     hint: String,
+    onExitToNav: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
+    var focused by remember { mutableStateOf(false) }
     Box(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .onFocusChanged { focused = it.isFocused }
+            .border(
+                width = if (focused) 3.dp else 0.dp,
+                color = if (focused) FocusBorder else Color.Transparent,
+                shape = RoundedCornerShape(16.dp)
+            )
+            .focusable()
+            .onPreviewKeyEvent { event ->
+                if (event.type == KeyEventType.KeyDown && event.key == Key.DirectionLeft && onExitToNav != null) {
+                    onExitToNav()
+                    true
+                } else false
+            },
         contentAlignment = Alignment.Center
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
