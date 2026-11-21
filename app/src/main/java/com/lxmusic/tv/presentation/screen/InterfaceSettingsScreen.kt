@@ -169,7 +169,7 @@ private fun ThemeModeCard(
     }
     Surface(
         modifier = modifier
-            .height(96.dp)
+            .height(116.dp)
             // 焦点边框（仿全站 lxSelectorFocus）；选中态用浅红底 + 勾选图标区分
             .lxSelectorFocus(shape = RoundedCornerShape(12.dp), glow = false, animated = false)
             .clickable { onSelect(mode) },
@@ -186,7 +186,7 @@ private fun ThemeModeCard(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     text = label,
-                    fontSize = 18.sp,
+                    fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
                     color = if (selected) LXPrimary else LXOnCardDark
                 )
@@ -203,7 +203,7 @@ private fun ThemeModeCard(
             Spacer(modifier = Modifier.height(6.dp))
                 Text(
                     text = desc,
-                    fontSize = 13.sp,
+                    fontSize = 15.sp,
                     color = LXOnCardDarkSecondary
                 )
         }
@@ -220,7 +220,7 @@ private fun ThemeColorCard(
 ) {
     Surface(
         modifier = modifier
-            .height(110.dp)
+            .height(132.dp)
             .lxSelectorFocus(shape = RoundedCornerShape(12.dp), glow = false, animated = false)
             .clickable { onSelect(color) },
         // 通用卡片样式：未选中用半透明深色卡片 LXCardDark（与全站列表卡片一致），选中用浅红底
@@ -237,7 +237,7 @@ private fun ThemeColorCard(
             // 真实色块预览（主题色实际生效，选中态以该强调色高亮）
             Box(
                 modifier = Modifier
-                    .size(36.dp)
+                    .size(44.dp)
                     .background(color.swatch, CircleShape)
             ) {
                 if (selected) {
@@ -254,7 +254,7 @@ private fun ThemeColorCard(
             Spacer(modifier = Modifier.height(10.dp))
                 Text(
                     text = color.label,
-                    fontSize = 14.sp,
+                    fontSize = 16.sp,
                     fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
                     color = if (selected) color.swatch else LXOnCardDark
                 )
