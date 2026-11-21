@@ -577,14 +577,12 @@ fun NavigationSidebar(
         var logoFocused by remember { mutableStateOf(false) }
         // 2.8 下拉菜单展开状态（点击 logo 弹出，选中/失焦关闭）
         var logoMenuExpanded by remember { mutableStateOf(false) }
-        val logoBgColor = if (logoFocused) LXFocusFill else Color.Transparent
         Box {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(64.dp)
                     .clip(RoundedCornerShape(10.dp))
-                    .background(logoBgColor)
                     .onFocusChanged {
                         logoFocused = it.isFocused
                         onLogoFocusChanged(it.isFocused)
@@ -645,7 +643,7 @@ fun NavigationSidebar(
                                 .height(38.dp)
                                 .clip(RoundedCornerShape(6.dp))
                                 // 当前平台用颜色区分（主题色背景），无打勾图标
-                                .background(if (isSelected) LXPrimary.copy(alpha = 0.18f) else Color.Transparent)
+                                .background(Color.Transparent)
                                 .focusRequester(itemRequester)
                                 .lxFocusBorder(
                                     shape = RoundedCornerShape(6.dp),
@@ -664,8 +662,8 @@ fun NavigationSidebar(
                             Text(
                                 text = platformShortName(p),
                                 fontSize = 13.sp,
-                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                                color = if (isSelected) LXPrimary else LXTextPrimary
+                                fontWeight = FontWeight.Normal,
+                                color = LXTextPrimary
                             )
                         }
                     }
@@ -711,7 +709,7 @@ fun DiscCoverButton(
             .onFocusChanged { focused = it.isFocused }
             .clip(CircleShape)
             // 深色圆环（黑胶边缘，固定深色不随主题）；聚焦时主题色发光
-            .background(if (focused) LXPrimary.copy(alpha = 0.40f) else Color(0xFF3A3A40))
+            .background(Color(0xFF3A3A40))
             .clickable { onClick() }
     ) {
         Box(
@@ -834,15 +832,11 @@ fun NavigationItem(
     onEnterContent: () -> Unit = {}
 ) {
     // 选中态：品牌红图标+文字（2.6 窄栏：默认只显示图标，选中时图标底部才显示文字）；未选中深色
-    val contentColor = if (isSelected) LXPrimary else LXTextSecondary
+    val contentColor = LXTextSecondary
 
     // 選取與遙控器焦點分開呈現，並沿用使用者目前選擇的主題強調色。
     var isFocused by remember { mutableStateOf(false) }
-    val bgColor = when {
-        isFocused -> LXFocusFill
-        isSelected -> LXPrimary.copy(alpha = 0.12f)
-        else -> Color.Transparent
-    }
+    val bgColor = Color.Transparent
 
     Column(
         modifier = modifier
@@ -883,7 +877,7 @@ fun NavigationItem(
             text = item.title,
             color = contentColor,
             fontSize = 12.sp,
-            fontWeight = if (isSelected || isFocused) FontWeight.SemiBold else FontWeight.Medium,
+            fontWeight = FontWeight.Medium
             modifier = Modifier.padding(top = 5.dp),
             maxLines = 1
         )
@@ -1324,11 +1318,6 @@ fun BrowsePage(
         .fillMaxSize()
         .focusRequester(contentEnterRequester)
         .onFocusChanged { placeholderFocused = it.isFocused }
-        .border(
-            width = if (placeholderFocused) 3.dp else 0.dp,
-            color = if (placeholderFocused) LXPrimary else Color.Transparent,
-            shape = RoundedCornerShape(16.dp)
-        )
         .focusable()
         .onPreviewKeyEvent { event ->
             if (event.type == KeyEventType.KeyDown && event.key == Key.DirectionLeft) {
@@ -3185,22 +3174,15 @@ fun CacheActionButton(
     modifier: Modifier = Modifier
 ) {
     var isFocused by remember { mutableStateOf(false) }
-    val bgColor = when {
-        highlighted -> LXPrimary
-        isFocused -> LXPrimary.copy(alpha = 0.35f)
-        else -> LXSurfaceVariant
-    }
-    val textColor = if (isFocused || highlighted) Color.White else LXTextPrimary
-    val hintColor = if (isFocused || highlighted) Color.White.copy(alpha = 0.8f) else LXTextSecondary
-    val borderColor = if (isFocused) FocusBorder else Color.Transparent
+    val bgColor = if (highlighted) LXPrimary else LXSurfaceVariant
+    val textColor = if (highlighted) Color.White else LXTextPrimary
+    val hintColor = if (highlighted) Color.White.copy(alpha = 0.8f) else LXTextSecondary
 
     Box(
         modifier = modifier
             .height(56.dp)
-            .onFocusChanged { isFocused = it.isFocused }
             .clip(RoundedCornerShape(12.dp))
             .background(bgColor)
-            .border(if (isFocused) 3.dp else 0.dp, borderColor, RoundedCornerShape(12.dp))
             // 清除中禁用：不可点击 + 半透明置灰
             .alpha(if (enabled) 1f else 0.4f)
             .clickable(enabled = enabled) { onClick() },
@@ -3292,7 +3274,7 @@ fun QualitySelectDialog(
                         .lxSelectorFocus(shape = RoundedCornerShape(8.dp), glow = false, animated = false)
                         .clickable { onSelect(quality) },
                     // 灰白底上：选中=浅红填充，未选中=透明（沿用对话框底色）
-                    color = if (isSelected) LXPrimary.copy(alpha = 0.12f) else Color.Transparent,
+                    color = Color.Transparent,
                     shape = RoundedCornerShape(8.dp)
                 ) {
                         Row(
@@ -3306,15 +3288,6 @@ fun QualitySelectDialog(
                                 // 灰白底深色文字
                                 color = LXTextPrimary
                             )
-                            if (isSelected) {
-                                Spacer(modifier = Modifier.weight(1f))
-                                Icon(
-                                    imageVector = Icons.Default.Check,
-                                    contentDescription = null,
-                                    tint = LXPrimary,
-                                    modifier = Modifier.size(18.dp)
-                                )
-                            }
                         }
                     }
                 }
@@ -3385,7 +3358,7 @@ fun PlatformSelectDialog(
                         .lxSelectorFocus(shape = RoundedCornerShape(8.dp), glow = false, animated = false)
                         .clickable { onSelect(platform) },
                     // 灰白底上：选中=浅红填充，未选中=透明（沿用对话框底色）
-                    color = if (isSelected) LXPrimary.copy(alpha = 0.12f) else Color.Transparent,
+                    color = Color.Transparent,
                     shape = RoundedCornerShape(8.dp)
                 ) {
                         Row(
@@ -3399,15 +3372,6 @@ fun PlatformSelectDialog(
                                 // 灰白底深色文字
                                 color = LXTextPrimary
                             )
-                            if (isSelected) {
-                                Spacer(modifier = Modifier.weight(1f))
-                                Icon(
-                                    imageVector = Icons.Default.Check,
-                                    contentDescription = null,
-                                    tint = LXPrimary,
-                                    modifier = Modifier.size(18.dp)
-                                )
-                            }
                         }
                     }
                 }
@@ -3473,7 +3437,7 @@ fun StartupTabSelectDialog(
                             .then(if (index == selectedIndex) Modifier.focusRequester(selectedRequester) else Modifier)
                             .lxSelectorFocus(shape = RoundedCornerShape(8.dp), glow = false, animated = false)
                             .clickable { onSelect(tabIndex) },
-                        color = if (isSelected) LXPrimary.copy(alpha = 0.12f) else Color.Transparent,
+                        color = Color.Transparent,
                         shape = RoundedCornerShape(8.dp)
                     ) {
                         Row(
@@ -3486,15 +3450,6 @@ fun StartupTabSelectDialog(
                                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
                                 color = LXTextPrimary
                             )
-                            if (isSelected) {
-                                Spacer(modifier = Modifier.weight(1f))
-                                Icon(
-                                    imageVector = Icons.Default.Check,
-                                    contentDescription = null,
-                                    tint = LXPrimary,
-                                    modifier = Modifier.size(18.dp)
-                                )
-                            }
                         }
                     }
                 }
