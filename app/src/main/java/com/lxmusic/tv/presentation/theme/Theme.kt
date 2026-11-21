@@ -4,6 +4,17 @@ import android.content.Context
 import android.util.Log
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.*
+import androidx.compose.runtime.CompositionLocalProvider
+
+// 僅關閉滑鼠 Hover 的 Ripple 狀態層；保留 Focus、Press 與 Drag 原有回饋。
+private val noHoverRippleConfiguration = RippleConfiguration(
+    rippleAlpha = RippleAlpha(
+        draggedAlpha = RippleDefaults.RippleAlpha.draggedAlpha,
+        focusedAlpha = RippleDefaults.RippleAlpha.focusedAlpha,
+        hoveredAlpha = 0f,
+        pressedAlpha = RippleDefaults.RippleAlpha.pressedAlpha
+    )
+)
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
@@ -419,6 +430,7 @@ private fun darkColorSchemeFor(
  * 本组件直接订阅模块级 currentThemeMode：界面设置页写入后必然触发本组件重组，
  * 保证 Material colorScheme 与自定义令牌同步切换（不依赖 MainActivity 传参链）。
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LXMusicTheme(
     darkTheme: Boolean = false,
@@ -442,9 +454,13 @@ fun LXMusicTheme(
     MaterialTheme(
         colorScheme = colorScheme,
         typography = LXTypography,
-        shapes = LXShapes,
-        content = content
-    )
+        shapes = LXShapes
+    ) {
+        CompositionLocalProvider(
+            LocalRippleConfiguration provides noHoverRippleConfiguration,
+            content = content
+        )
+    }
 }
 
 /**
