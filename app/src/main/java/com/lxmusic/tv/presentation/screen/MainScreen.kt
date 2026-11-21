@@ -1827,10 +1827,11 @@ fun BrowseSongRow(
                 rowFocused = it.hasFocus
                 if (it.hasFocus) onSongFocused(index)
             }
-            .border(
-                width = if (rowFocused) 1.5.dp else 0.dp,
-                color = if (rowFocused) FocusBorder else Color.Transparent,
-                shape = RoundedCornerShape(10.dp)
+            .lxFocusBorder(
+                focusedWidth = 1.5.dp,
+                glow = false,
+                shape = RoundedCornerShape(10.dp),
+                trackDescendantFocus = true
             ),
         colors = CardDefaults.cardColors(containerColor = LXCardDark),
         shape = RoundedCornerShape(10.dp)
