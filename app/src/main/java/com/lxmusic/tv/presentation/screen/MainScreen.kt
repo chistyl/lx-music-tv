@@ -1315,6 +1315,24 @@ fun BrowsePage(
 ) {
     // 列表滚动状态（无限加载）
     val gridState = rememberLazyGridState()
+    var placeholderFocused by remember { mutableStateOf(false) }
+    // 没有可见卡片时，加载／空状态也要承接内容区焦点，左键可回到目前选中的导航项。
+    val placeholderFocusModifier = Modifier
+        .fillMaxSize()
+        .focusRequester(contentEnterRequester)
+        .onFocusChanged { placeholderFocused = it.isFocused }
+        .border(
+            width = if (placeholderFocused) 3.dp else 0.dp,
+            color = if (placeholderFocused) LXPrimary else Color.Transparent,
+            shape = RoundedCornerShape(16.dp)
+        )
+        .focusable()
+        .onPreviewKeyEvent { event ->
+            if (event.type == KeyEventType.KeyDown && event.key == Key.DirectionLeft) {
+                onExitToNav()
+                true
+            } else false
+        }
     // 歌曲列表滚动状态：LazyColumn 必须绑定自己的 LazyListState，
     // 用于 scrollToItem(0) 重置位置与 firstVisibleSongIndex 焦点挂载；分页改由「焦点行号」驱动（见下方 onFocusChanged），
     // 不再依赖滚动改 layoutInfo 被监听（v107~v109 证明该路径在 TV 焦点停在按钮上时不可靠）。
@@ -1551,7 +1569,7 @@ fun BrowsePage(
         val splitRanking = !isPlaylistMode && selected != null && !directSongs
         if (loading && items.isEmpty() && !showSongs) {
             Box(
-                modifier = Modifier.fillMaxSize(),
+                modifier = placeholderFocusModifier,
                 contentAlignment = Alignment.Center
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -1565,10 +1583,7 @@ fun BrowsePage(
             // 加载期间没有歌曲行，暂由加载容器承接「从导航栏右键进入内容」的焦点；
             // 数据到达后由下方 LaunchedEffect 将同一请求器交给第一首歌曲。
             Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .focusRequester(contentEnterRequester)
-                    .focusable(),
+                modifier = placeholderFocusModifier,
                 contentAlignment = Alignment.Center
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -1582,7 +1597,7 @@ fun BrowsePage(
             // 列表视图（榜单名 / 歌单列表）
             if (items.isEmpty()) {
                 Box(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = placeholderFocusModifier,
                     contentAlignment = Alignment.Center
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
