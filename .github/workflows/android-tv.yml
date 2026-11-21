@@ -51,7 +51,7 @@ jobs:
           ln -sfn android-37.0 "$ANDROID_HOME/platforms/android-37"
 
       - name: Compile and assemble native Android TV app
-        run: ./gradlew --no-daemon --stacktrace :app:assembleDebug
+        run: bash ./gradlew --no-daemon --stacktrace :app:assembleDebug
 
       - name: Package complete source tree
         run: |
