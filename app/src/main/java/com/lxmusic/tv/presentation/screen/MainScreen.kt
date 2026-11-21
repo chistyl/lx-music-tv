@@ -386,6 +386,9 @@ private fun LeftPlayerPanel(
     onPlayPause: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    var coverFocused by remember { mutableStateOf(false) }
+    var playFocused by remember { mutableStateOf(false) }
+
     Column(
         modifier = modifier
             .background(LXSurfaceSidebar)
@@ -399,12 +402,12 @@ private fun LeftPlayerPanel(
                     .fillMaxWidth(0.82f)
                     .aspectRatio(1f)
                     .clip(CircleShape)
-                    .background(LXSurfaceVariant)
-                    // 左側播放器實際封面：使用圓形焦點繪製器，聚焦時顯示完整圓環
-                    .lxCircleButtonFocus(
-                        fillColor = LXPrimary.copy(alpha = 0.40f),
-                        strokeColor = FocusBorder,
-                        strokeWidth = 3.dp
+                    .background(if (coverFocused) LXPrimary.copy(alpha = 0.18f) else LXSurfaceVariant)
+                    .onFocusChanged { coverFocused = it.isFocused }
+                    .border(
+                        width = if (coverFocused) 3.dp else 0.dp,
+                        color = FocusBorder,
+                        shape = CircleShape
                     )
                     .clickable { onOpenPlayer() },
                 contentAlignment = Alignment.Center
@@ -447,7 +450,14 @@ private fun LeftPlayerPanel(
             Box(
                 modifier = Modifier
                     .size(64.dp)
-                    .lxCircleButtonFocus()
+                    .clip(CircleShape)
+                    .background(if (playFocused) LXPrimary.copy(alpha = 0.18f) else Color.Transparent)
+                    .onFocusChanged { playFocused = it.isFocused }
+                    .border(
+                        width = if (playFocused) 3.dp else 0.dp,
+                        color = FocusBorder,
+                        shape = CircleShape
+                    )
                     .clickable { onPlayPause() },
                 contentAlignment = Alignment.Center
             ) {
@@ -810,12 +820,10 @@ fun NavigationItem(
             }
             .onFocusChanged { isFocused = it.isFocused }
             // 未选中且无焦点：无边框（纯图标）；仅焦点选中才显示背景+边框
-            .lxFocusBorder(
-                shape = RoundedCornerShape(10.dp),
-                glow = false,
-                animated = false,
-                unfocusedColor = Color.Transparent,
-                unfocusedWidth = 0.dp
+            .border(
+                width = if (isFocused) 2.dp else 0.dp,
+                color = FocusBorder,
+                shape = RoundedCornerShape(10.dp)
             )
             .clickable { onClick() }
             .padding(horizontal = 12.dp, vertical = 6.dp),
