@@ -2,6 +2,7 @@ package com.lxmusic.tv.presentation.component
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -21,6 +22,7 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.lxmusic.tv.presentation.theme.FocusBorder
@@ -142,10 +144,25 @@ fun Modifier.lxFocusBorder(
     } else {
         rememberUpdatedState(if (isFocused) focusedWidth else unfocusedWidth)
     }
+    // focusedScale 原先僅保留參數但未實際套用；讓呼叫端可選擇輕微焦點放大。
+    val scale by if (animated) {
+        animateFloatAsState(
+            targetValue = if (isFocused) focusedScale else 1f,
+            animationSpec = tween(durationMillis = 180),
+            label = "focus_border_scale"
+        )
+    } else {
+        rememberUpdatedState(if (isFocused) focusedScale else 1f)
+    }
 
     return this
         // onFocusChanged 必须先于被观察的 focusable（调用方的 clickable 提供焦点节点）
         .onFocusChanged { isFocused = it.isFocused }
+        // 焦點放大只作用於明確指定 focusedScale 的元件，預設 1.0 不影響其他頁面。
+        .graphicsLayer {
+            scaleX = scale
+            scaleY = scale
+        }
         // ★ 修复1：裁剪内容到圆角，杜绝背景直角从边框四角外穿出
         .clip(shape)
         .drawWithContent {
