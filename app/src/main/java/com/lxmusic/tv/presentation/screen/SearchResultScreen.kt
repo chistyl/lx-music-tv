@@ -88,15 +88,8 @@ fun SearchResultScreen(
         )
     }
 
-    var placeholderFocused by remember { mutableStateOf(false) }
     val placeholderFocusModifier = Modifier
         .fillMaxSize()
-        .onFocusChanged { placeholderFocused = it.isFocused }
-        .border(
-            width = 3.dp,
-            color = if (placeholderFocused) LXPrimary else Color.Transparent,
-            shape = RoundedCornerShape(16.dp)
-        )
         .focusable()
         .onPreviewKeyEvent { event ->
             if (event.type == KeyEventType.KeyDown &&
