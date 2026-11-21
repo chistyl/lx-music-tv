@@ -111,6 +111,8 @@ fun MainScreen(
     currentSong: com.lxmusic.tv.data.model.Song? = null,
     isPlaying: Boolean = false,
     onPlayPause: () -> Unit = {},
+    onPrevious: () -> Unit = {},
+    onNext: () -> Unit = {},
     defaultPlatform: MusicPlatform = MusicPlatform.KW,
     onDefaultPlatformChange: (MusicPlatform) -> Unit = {},
     preferredQuality: AudioQuality = AudioQuality.FLAC,
@@ -272,6 +274,8 @@ fun MainScreen(
                 isPlaying = isPlaying,
                 onNavigateToPlayer = onNavigateToPlayer,
                 onPlayPause = onPlayPause,
+                onPrevious = onPrevious,
+                onNext = onNext,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(84.dp)
@@ -384,6 +388,8 @@ private fun LeftPlayerPanel(
     isPlaying: Boolean,
     onOpenPlayer: () -> Unit,
     onPlayPause: () -> Unit,
+    onPrevious: () -> Unit = {},
+    onNext: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -453,21 +459,41 @@ private fun LeftPlayerPanel(
                 modifier = Modifier.fillMaxWidth().padding(top = 7.dp)
             )
             Spacer(Modifier.height(24.dp))
-            Box(
-                modifier = Modifier
-                    .size(58.dp)
-                    .clip(CircleShape)
-                    .background(LXPrimary.copy(alpha = 0.16f))
-                    .lxCircleButtonFocus()
-                    .clickable { onPlayPause() },
-                contentAlignment = Alignment.Center
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(
-                    imageVector = if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
-                    contentDescription = if (isPlaying) "暂停" else "播放",
-                    tint = LXPrimary,
-                    modifier = Modifier.size(36.dp)
-                )
+                IconButton(
+                    onClick = onPrevious,
+                    modifier = Modifier.size(48.dp).lxCircleButtonFocus()
+                ) {
+                    Icon(Icons.Default.SkipPrevious, contentDescription = "上一首", tint = LXTextPrimary, modifier = Modifier.size(26.dp))
+                }
+                Spacer(Modifier.width(14.dp))
+                Box(
+                    modifier = Modifier
+                        .size(58.dp)
+                        .clip(CircleShape)
+                        .background(LXPrimary.copy(alpha = 0.16f))
+                        .lxCircleButtonFocus()
+                        .clickable { onPlayPause() },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
+                        contentDescription = if (isPlaying) "暂停" else "播放",
+                        tint = LXPrimary,
+                        modifier = Modifier.size(36.dp)
+                    )
+                }
+                Spacer(Modifier.width(14.dp))
+                IconButton(
+                    onClick = onNext,
+                    modifier = Modifier.size(48.dp).lxCircleButtonFocus()
+                ) {
+                    Icon(Icons.Default.SkipNext, contentDescription = "下一首", tint = LXTextPrimary, modifier = Modifier.size(26.dp))
+                }
             }
         } else {
             Text("尚未播放歌曲", color = LXTextSecondary, fontSize = 16.sp)
