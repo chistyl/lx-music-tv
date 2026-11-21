@@ -1811,11 +1811,19 @@ fun BrowseSongRow(
     onSongFocused: (Int) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
+    var rowFocused by remember { mutableStateOf(false) }
     Card(
-        // 根节点挂 onFocusChanged：本行任一按钮（播放/播放+跳转/收藏）获得焦点即上报行号，
-        // 用于「焦点接近列表末尾时触发加载更多」——不依赖列表滚动改 layoutInfo 被发现。
-        modifier = modifier.onFocusChanged { if (it.hasFocus) onSongFocused(index) },
-        // 点6：深色卡片（仿播放页播放列表暗色面板），去除边框，仅遥控器焦点选中内部按钮才有边框
+        // 根節點追蹤整列焦點：保留分頁觸底判斷，同時讓遙控器目前所在列清楚可辨。
+        modifier = modifier
+            .onFocusChanged {
+                rowFocused = it.hasFocus
+                if (it.hasFocus) onSongFocused(index)
+            }
+            .border(
+                width = if (rowFocused) 1.5.dp else 0.dp,
+                color = if (rowFocused) FocusBorder else Color.Transparent,
+                shape = RoundedCornerShape(10.dp)
+            ),
         colors = CardDefaults.cardColors(containerColor = LXCardDark),
         shape = RoundedCornerShape(10.dp)
     ) {
