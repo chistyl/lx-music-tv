@@ -1252,7 +1252,7 @@ fun BrowsePage(
     modifier: Modifier = Modifier
 ) {
     // 列表滚动状态（无限加载）
-    val gridState = rememberLazyGridState()
+    val categoryListState = rememberLazyListState()
     // 歌曲列表滚动状态：LazyColumn 必须绑定自己的 LazyListState，
     // 用于 scrollToItem(0) 重置位置与 firstVisibleSongIndex 焦点挂载；分页改由「焦点行号」驱动（见下方 onFocusChanged），
     // 不再依赖滚动改 layoutInfo 被监听（v107~v109 证明该路径在 TV 焦点停在按钮上时不可靠）。
@@ -1262,7 +1262,7 @@ fun BrowsePage(
     //（PlaylistScreen/RankingScreen 已重置 selected=null 并触发重新加载）
     LaunchedEffect(refreshTick) {
         if (refreshTick > 0) {
-            gridState.scrollToItem(0)
+            categoryListState.scrollToItem(0)
             songListState.scrollToItem(0)
         }
     }
@@ -1279,7 +1279,7 @@ fun BrowsePage(
     // 否则滚动到深处（如 index 100）后第 0 项未组合，焦点请求器不存在，
     // 用户「左键回 tab → 右键想回到列表」时 requestFocus 会失效，表现为按右键进不去。
     val firstVisibleCardIndex by remember {
-        derivedStateOf { gridState.layoutInfo.visibleItemsInfo.firstOrNull()?.index ?: 0 }
+        derivedStateOf { categoryListState.layoutInfo.visibleItemsInfo.firstOrNull()?.index ?: 0 }
     }
     val firstVisibleSongIndex by remember {
         derivedStateOf { songListState.layoutInfo.visibleItemsInfo.firstOrNull()?.index ?: 0 }
@@ -1340,7 +1340,7 @@ fun BrowsePage(
             cardFocusRequesters[target]?.requestFocus()
             // 兜底：目标卡片不在视口（未组合）时滚动过去再聚焦一次
             if (cardFocusRequesters[target] == null) {
-                gridState.scrollToItem(target)
+                categoryListState.scrollToItem(target)
                 withFrameNanos {}
                 withFrameNanos {}
                 cardFocusRequesters[target]?.requestFocus()
@@ -1463,12 +1463,18 @@ fun BrowsePage(
                         fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 12.dp))
                     if (items.isEmpty()) {
                         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                            Text("該平台暫不支持或暫無資料", color = LXTextSecondary, fontSize = 14.sp)
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Icon(Icons.Default.Inbox, contentDescription = null, tint = Color.Gray, modifier = Modifier.size(56.dp))
+                                Spacer(Modifier.height(12.dp))
+                                Text("該平台暫不支持或暫無資料", fontSize = 16.sp, color = Color.Gray)
+                                Spacer(Modifier.height(6.dp))
+                                Text("可在設定中切換預設音樂平台", fontSize = 13.sp, color = Color.Gray.copy(alpha = 0.7f))
+                            }
                         }
                     } else {
                         // 分類依直向文字清單呈現，避免封面網格擠壓電視上的瀏覽空間。
                         LazyColumn(
-                            state = rememberLazyListState(),
+                            state = categoryListState,
                             verticalArrangement = Arrangement.spacedBy(8.dp),
                             modifier = Modifier.fillMaxSize()
                         ) {
@@ -1545,10 +1551,21 @@ fun BrowsePage(
                             Text(if (isPlaylistMode) "請從左側選擇歌單" else "請從左側選擇排行榜", color = LXTextSecondary, fontSize = 15.sp)
                         }
                         loading && songs.isEmpty() -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                            CircularProgressIndicator(color = LXPrimary)
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                CircularProgressIndicator(color = LXPrimary)
+                                Spacer(Modifier.height(16.dp))
+                                Text("載入中...", fontSize = 15.sp, color = Color.Gray)
+                            }
                         }
                         songs.isEmpty() -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                            Text(browseSongsError ?: "暫無歌曲資料", color = LXTextSecondary, fontSize = 15.sp)
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Icon(Icons.Default.MusicOff, contentDescription = null, tint = Color.Gray, modifier = Modifier.size(56.dp))
+                                Spacer(Modifier.height(12.dp))
+                                Text(browseSongsError ?: "暫不支援取得歌曲清單", fontSize = 16.sp, color = Color.Gray)
+                                Spacer(Modifier.height(6.dp))
+                                Text(if (browseSongsError != null) "可返回重試" else "可在設定中切換預設音樂平台",
+                                    fontSize = 13.sp, color = Color.Gray.copy(alpha = 0.7f))
+                            }
                         }
                         else -> LazyColumn(state = songListState, verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxSize()) {
                             itemsIndexed(songs) { index, song ->
