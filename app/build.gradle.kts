@@ -8,7 +8,7 @@ plugins {
 
 android {
     namespace = "com.lxmusic.tv"
-    compileSdk = 37
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.lxmusic.tv"
