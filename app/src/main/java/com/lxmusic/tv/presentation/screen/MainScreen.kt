@@ -644,8 +644,10 @@ fun NavigationSidebar(
                 isSelected = selectedTab == index,
                 onClick = { onTabSelected(index) },
                 focusRequester = navRequesters.getOrNull(index),
-                // 从导航栏按右键：精确进入右侧内容第一项（而非空间最近项，避免落到第 N 项）
+                // 只有頂部導覽列最後一項才攔截右鍵進入內容區；
+                // 其餘項目保留 Compose 自然左右移動，避免每個 tab 都把右鍵吃掉。
                 onEnterContent = { contentEnterRequester.requestFocus() },
+                enterContentOnRight = index == navItems.lastIndex,
                 modifier = Modifier.weight(1f).fillMaxHeight()
             )
         }
@@ -794,8 +796,9 @@ fun NavigationItem(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     focusRequester: FocusRequester? = null,
-    // 从导航栏按右键：精确进入右侧内容第一项（而非空间最近项，避免落到第 N 项）
-    onEnterContent: () -> Unit = {}
+    // 從頂部導覽列最末項按右鍵時，精確進入內容區第一個可操作項目。
+    onEnterContent: () -> Unit = {},
+    enterContentOnRight: Boolean = false
 ) {
     // 选中态：品牌红图标+文字（2.6 窄栏：默认只显示图标，选中时图标底部才显示文字）；未选中深色
     val contentColor = if (isSelected) LXPrimary else LXTextPrimary
@@ -810,9 +813,14 @@ fun NavigationItem(
             .background(bgColor)
             // focusRequester 必须在 focusable(clickable) 之前
             .then(if (focusRequester != null) Modifier.focusRequester(focusRequester) else Modifier)
-            // 导航栏右键 → 进入右侧内容第一项（返回 true 拦截默认空间导航，自行聚焦内容首项）
+            // 導覽列中間項目不攔截左右鍵，讓焦點依序移動；
+            // 僅最末項右鍵才跨區進入內容，避免焦點被提前送離導覽列。
             .onPreviewKeyEvent { keyEvent ->
-                if (keyEvent.type == KeyEventType.KeyDown && keyEvent.key == Key.DirectionRight) {
+                if (
+                    enterContentOnRight &&
+                    keyEvent.type == KeyEventType.KeyDown &&
+                    keyEvent.key == Key.DirectionRight
+                ) {
                     onEnterContent()
                     true
                 } else false
