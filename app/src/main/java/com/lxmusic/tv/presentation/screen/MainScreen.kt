@@ -412,31 +412,27 @@ private fun LeftPlayerPanel(
                     true
                 } else false
             }
-            .background(Color(0xFF111519))
-            .padding(horizontal = 24.dp, vertical = 20.dp),
+            .background(Color(0xFF101519))
+            .padding(horizontal = 20.dp, vertical = 22.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
+        Text(
+            text = "正在播放",
+            color = LXTextSecondary,
+            fontSize = 13.sp,
+            fontWeight = FontWeight.SemiBold,
+            letterSpacing = 1.2.sp,
+            modifier = Modifier.padding(bottom = 20.dp)
+        )
         if (song != null) {
-            Text(
-                text = "NOW PLAYING",
-                color = LXPrimary,
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 2.sp,
-                modifier = Modifier.padding(bottom = 18.dp)
-            )
             Box(
                 modifier = Modifier
-                    .fillMaxWidth(0.78f)
+                    .fillMaxWidth(0.88f)
                     .aspectRatio(1f)
-                    .clip(CircleShape)
-                    .border(
-                        width = 2.dp,
-                        color = LXPrimary.copy(alpha = 0.9f),
-                        shape = CircleShape
-                    )
-                    .background(LXSurfaceVariant)
+                    .clip(RoundedCornerShape(18.dp))
+                    .border(1.dp, Color.White.copy(alpha = 0.12f), RoundedCornerShape(18.dp))
+                    .background(Color(0xFF20282D))
                     .focusRequester(playerEnterRequester)
                     .clickable { onOpenPlayer() },
                 contentAlignment = Alignment.Center
@@ -457,12 +453,12 @@ private fun LeftPlayerPanel(
                     )
                 }
             }
-            Spacer(Modifier.height(24.dp))
+            Spacer(Modifier.height(22.dp))
             Text(
                 text = song.name,
                 color = LXTextPrimary,
-                fontSize = 20.sp,
-                fontWeight = FontWeight.SemiBold,
+                fontSize = 19.sp,
+                fontWeight = FontWeight.Bold,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 textAlign = TextAlign.Center,
@@ -477,54 +473,45 @@ private fun LeftPlayerPanel(
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth().padding(top = 7.dp)
             )
-            Spacer(Modifier.height(24.dp))
+            Spacer(Modifier.height(26.dp))
             Row(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp),
-                horizontalArrangement = Arrangement.Center,
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 2.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                IconButton(
-                    onClick = onPrevious,
-                    modifier = Modifier.size(48.dp).lxCircleButtonFocus()
-                ) {
-                    Icon(Icons.Default.SkipPrevious, contentDescription = "上一首", tint = LXTextPrimary, modifier = Modifier.size(26.dp))
+                IconButton(onClick = onPrevious, modifier = Modifier.size(48.dp).lxCircleButtonFocus()) {
+                    Icon(Icons.Default.SkipPrevious, contentDescription = "上一首", tint = LXTextPrimary, modifier = Modifier.size(27.dp))
                 }
-                Spacer(Modifier.width(14.dp))
                 Box(
                     modifier = Modifier
-                        .size(58.dp)
+                        .size(60.dp)
                         .clip(CircleShape)
-                        .background(LXPrimary.copy(alpha = 0.16f))
+                        .background(LXPrimary)
                         .lxCircleButtonFocus()
                         .clickable { onPlayPause() },
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
-                        contentDescription = if (isPlaying) "暂停" else "播放",
-                        tint = LXPrimary,
-                        modifier = Modifier.size(36.dp)
+                        contentDescription = if (isPlaying) "暫停" else "播放",
+                        tint = Color.White,
+                        modifier = Modifier.size(34.dp)
                     )
                 }
-                Spacer(Modifier.width(14.dp))
-                IconButton(
-                    onClick = onNext,
-                    modifier = Modifier.size(48.dp).lxCircleButtonFocus()
-                ) {
-                    Icon(Icons.Default.SkipNext, contentDescription = "下一首", tint = LXTextPrimary, modifier = Modifier.size(26.dp))
+                IconButton(onClick = onNext, modifier = Modifier.size(48.dp).lxCircleButtonFocus()) {
+                    Icon(Icons.Default.SkipNext, contentDescription = "下一首", tint = LXTextPrimary, modifier = Modifier.size(27.dp))
                 }
             }
         } else {
-            Text(
-                "尚未播放歌曲",
-                color = LXTextSecondary,
-                fontSize = 16.sp,
-                modifier = Modifier.focusRequester(playerEnterRequester).focusable()
-            )
+            Box(
+                modifier = Modifier.fillMaxWidth().weight(1f).focusRequester(playerEnterRequester).focusable(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text("尚未播放歌曲", color = LXTextSecondary, fontSize = 16.sp)
+            }
         }
     }
 }
-
 /**
  * 左側導航欄
  */
