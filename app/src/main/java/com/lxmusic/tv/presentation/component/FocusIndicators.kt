@@ -123,140 +123,28 @@ fun Modifier.lxFocusBorder(
     glow: Boolean = true,
     animated: Boolean = true,
     shape: Shape = RoundedCornerShape(10.dp)
-): Modifier {
-    var isFocused by remember { mutableStateOf(false) }
-
-    val borderColor by if (animated) {
-        animateColorAsState(
-            targetValue = if (isFocused) focusedColor else unfocusedColor,
-            animationSpec = tween(durationMillis = 180),
-            label = "focus_border_color"
-        )
-    } else {
-        rememberUpdatedState(if (isFocused) focusedColor else unfocusedColor)
-    }
-    val borderWidth by if (animated) {
-        animateDpAsState(
-            targetValue = if (isFocused) focusedWidth else unfocusedWidth,
-            animationSpec = tween(durationMillis = 180),
-            label = "focus_border_width"
-        )
-    } else {
-        rememberUpdatedState(if (isFocused) focusedWidth else unfocusedWidth)
-    }
-    // focusedScale 原先僅保留參數但未實際套用；讓呼叫端可選擇輕微焦點放大。
-    val scale by if (animated) {
-        animateFloatAsState(
-            targetValue = if (isFocused) focusedScale else 1f,
-            animationSpec = tween(durationMillis = 180),
-            label = "focus_border_scale"
-        )
-    } else {
-        rememberUpdatedState(if (isFocused) focusedScale else 1f)
-    }
-
+): Modifier {    // 保留修飾符呼叫介面，但不再繪製焦點框、背景、縮放或動畫。
     return this
-        // onFocusChanged 必须先于被观察的 focusable（调用方的 clickable 提供焦点节点）
-        .onFocusChanged { isFocused = it.isFocused }
-        // 焦點放大只作用於明確指定 focusedScale 的元件，預設 1.0 不影響其他頁面。
-        .graphicsLayer {
-            scaleX = scale
-            scaleY = scale
-        }
-        // ★ 修复1：裁剪内容到圆角，杜绝背景直角从边框四角外穿出
-        .clip(shape)
-        .drawWithContent {
-            drawContent()
-            if (borderWidth > 0.dp) {
-                val stroke = borderWidth.toPx()
-                val outline = shape.createOutline(size, layoutDirection, this)
-                // ★ 修复2：传【正数】向内收缩 stroke/2，描边外边缘恰好贴合 shape 外边缘
-                val insetOutline = outline.insetBy(stroke / 2f)
-                drawPath(
-                    path = outlineToPath(insetOutline),
-                    color = borderColor,
-                    style = Stroke(
-                        width = stroke,
-                        cap = StrokeCap.Round,
-                        join = StrokeJoin.Round
-                    )
-                )
-            }
-        }
 }
 
-/**
- * 圆形按钮统一聚焦样式（一次性绘制填充 + 边框，根除「边框与中间色空带」）。
- *
- * 旧方案把填充圆（drawBehind）与焦点环（drawWithContent）分成两个修饰符、分属不同图形层，
- * 实测在部分按钮上填充圆与焦点环之间仍存在可见空带；且 IconButton 的最小交互尺寸会改写
- * size() 导致不同按钮实际尺寸/边框粗细不一致。
- *
- * 本修饰符改为在单个 drawWithContent 内、按同一圆心与同一半径绘制：
- *   ① 填充圆：半径 = 盒子短边/2，正好填满圆形裁剪区；
- *   ② 焦点环：描边居中在 (r - stroke/2)，外边缘恰好落在圆形盒子边缘，与填充圆完全重合，无间隙。
- * 未聚焦时不绘制，去除常驻背景。统一裁剪为圆形，内容（图标）超出圆范围被裁掉。
- *
- * @param fillColor 聚焦填充色（默认品牌红 0.18f）
- * @param strokeColor 焦点环颜色（默认 FocusBorder，黑半透明）
- * @param strokeWidth 焦点环线宽（默认 3.dp，所有圆形按钮统一，保证边框粗细一致）
- */
 @Composable
 fun Modifier.lxCircleButtonFocus(
     fillColor: Color = LXPrimary.copy(alpha = 0.18f),
     strokeColor: Color = FocusBorder,
     strokeWidth: Dp = 3.dp
-): Modifier {
-    var isFocused by remember { mutableStateOf(false) }
+): Modifier {    // 保留圓形按鈕的原始點擊與焦點節點，不呈現聚焦填色或焦點環。
     return this
-        // 统一裁剪为圆形：内容（图标）与填充/环都被裁进圆内，杜绝直角穿出
-        .clip(CircleShape)
-        .onFocusChanged { isFocused = it.isFocused }
-        .drawWithContent {
-            // ① 填充圆：先画在内容（图标）之下，避免遮住图标
-            if (isFocused) {
-                val r = size.minDimension / 2f
-                drawCircle(color = fillColor, radius = r)
-            }
-            // 图标内容（被圆形裁剪，居中显示）
-            drawContent()
-            // ② 焦点环：画在内容之上，描边居中在 (r - stroke/2)，外边缘 = r，
-            //    与填充圆边缘完全重合（无空带），且只在边缘、不遮挡中央图标
-            if (isFocused) {
-                val r = size.minDimension / 2f
-                val stroke = strokeWidth.toPx()
-                drawCircle(
-                    color = strokeColor,
-                    radius = r - stroke / 2f,
-                    style = Stroke(width = stroke)
-                )
-            }
-        }
 }
 
-/**
- * 左上角圆形返回按钮的统一焦点样式。
- */
 @Composable
 fun Modifier.lxBackButtonFocus(
     focusedColor: Color = FocusBorder,
     glow: Boolean = false,
     animated: Boolean = false
-): Modifier {
-    return lxFocusBorder(
-        focusedColor = focusedColor,
-        unfocusedColor = Color.Transparent,
-        unfocusedWidth = 0.dp,
-        focusedScale = 1.0f,
-        glow = glow,
-        animated = animated,
-        shape = CircleShape
-    )
+): Modifier {    // 返回按鈕不顯示焦點視覺狀態。
+    return this
 }
 
-/**
- * 单选标签 / 平台芯片 的统一焦点样式。
- */
 @Composable
 fun Modifier.lxSelectorFocus(
     focusedColor: Color = FocusBorder,
@@ -265,38 +153,6 @@ fun Modifier.lxSelectorFocus(
     glow: Boolean = true,
     animated: Boolean = true,
     shape: Shape = RoundedCornerShape(8.dp)
-): Modifier {
-    var isFocused by remember { mutableStateOf(false) }
-
-    val borderColor by if (animated) {
-        animateColorAsState(
-            targetValue = if (isFocused) focusedColor else Color.Transparent,
-            animationSpec = tween(durationMillis = 180),
-            label = "selector_focus_color"
-        )
-    } else {
-        rememberUpdatedState(if (isFocused) focusedColor else Color.Transparent)
-    }
-
+): Modifier {    // 選擇器不顯示焦點外框或動畫。
     return this
-        .onFocusChanged { isFocused = it.isFocused }
-        // ★ 同样：裁剪 + 向内收缩
-        .clip(shape)
-        .drawWithContent {
-            drawContent()
-            if (focusedWidth > 0.dp) {
-                val stroke = focusedWidth.toPx()
-                val outline = shape.createOutline(size, layoutDirection, this)
-                val insetOutline = outline.insetBy(stroke / 2f)
-                drawPath(
-                    path = outlineToPath(insetOutline),
-                    color = borderColor,
-                    style = Stroke(
-                        width = stroke,
-                        cap = StrokeCap.Round,
-                        join = StrokeJoin.Round
-                    )
-                )
-            }
-        }
 }
