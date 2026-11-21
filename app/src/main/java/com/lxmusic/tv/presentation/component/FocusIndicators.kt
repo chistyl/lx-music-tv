@@ -123,8 +123,8 @@ fun Modifier.lxFocusBorder(
     glow: Boolean = true,
     animated: Boolean = true,
     shape: Shape = RoundedCornerShape(10.dp)
-): Modifier {    // 保留修飾符呼叫介面，但不再繪製焦點框、背景、縮放或動畫。
-    return this
+): Modifier {    // 保留原有圓角裁切，只移除焦點框、背景、縮放與動畫。
+    return this.clip(shape)
 }
 
 @Composable
@@ -132,8 +132,8 @@ fun Modifier.lxCircleButtonFocus(
     fillColor: Color = LXPrimary.copy(alpha = 0.18f),
     strokeColor: Color = FocusBorder,
     strokeWidth: Dp = 3.dp
-): Modifier {    // 保留圓形按鈕的原始點擊與焦點節點，不呈現聚焦填色或焦點環。
-    return this
+): Modifier {    // 保留圓形裁切，不呈現聚焦填色或焦點環。
+    return this.clip(CircleShape)
 }
 
 @Composable
@@ -153,6 +153,6 @@ fun Modifier.lxSelectorFocus(
     glow: Boolean = true,
     animated: Boolean = true,
     shape: Shape = RoundedCornerShape(8.dp)
-): Modifier {    // 選擇器不顯示焦點外框或動畫。
-    return this
+): Modifier {    // 保留選擇器原有圓角裁切，不顯示焦點外框或動畫。
+    return this.clip(shape)
 }
