@@ -1488,6 +1488,7 @@ fun BrowsePage(
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(text = "加载中...", fontSize = 15.sp, color = Color.Gray)
                 }
+            }
         } else if (directSongs && loading && songs.isEmpty()) {
             // 直接展示歌曲模式（酷狗热门歌曲）的加载中转圈。
             // 加载期间没有歌曲行，暂由加载容器承接「从导航栏右键进入内容」的焦点；
@@ -1505,6 +1506,7 @@ fun BrowsePage(
                     Text(text = "加载中...", fontSize = 15.sp, color = Color.Gray)
                 }
             }
+        } else if (selected == null && !directSongs) {
             // 列表视图（榜单名 / 歌单列表）
             if (items.isEmpty()) {
                 Box(
