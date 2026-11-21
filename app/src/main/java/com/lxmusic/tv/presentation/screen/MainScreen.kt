@@ -1859,7 +1859,7 @@ fun BrowseCard(
         // 浅色主区上呈浅灰半透明磨砂质感；不画静态边框，与设置页卡片外观一致（聚焦时由 lxFocusBorder 显示焦点框）。
         // 注：此前用 LXSurfaceCard.copy(alpha=0.72f) 白 72% 叠近白底，实测等于没改，故对齐 LXCardDark。
         colors = CardDefaults.cardColors(containerColor = Color(0xFF171D21)),
-        shape = RoundedCornerShape(12.dp)
+        shape = RoundedCornerShape(16.dp)
     ) {
         Column(modifier = Modifier.padding(14.dp)) {
             // TV 卡片加大封面與文字層級，保持五列網格和既有資料／焦點流程不變。
