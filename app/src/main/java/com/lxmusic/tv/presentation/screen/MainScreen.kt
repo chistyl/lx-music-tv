@@ -574,7 +574,6 @@ fun NavigationSidebar(
         // Logo区域（窄栏：小图标 + 底部显示当前音乐平台名；2.8 可点击弹出下拉菜单切换平台）
         // 焦点样式与下方 tab 项（NavigationItem）完全一致：聚焦 LXFocusFill 背景 + 同款边框，
         // modifier 顺序也对齐（lxFocusBorder 在 clickable 之前）
-        var logoFocused by remember { mutableStateOf(false) }
         // 2.8 下拉菜单展开状态（点击 logo 弹出，选中/失焦关闭）
         var logoMenuExpanded by remember { mutableStateOf(false) }
         Box {
@@ -583,10 +582,7 @@ fun NavigationSidebar(
                     .fillMaxWidth()
                     .height(64.dp)
                     .clip(RoundedCornerShape(10.dp))
-                    .onFocusChanged {
-                        logoFocused = it.isFocused
-                        onLogoFocusChanged(it.isFocused)
-                    }
+                    .onFocusChanged { onLogoFocusChanged(it.isFocused) }
                     .lxFocusBorder(
                         shape = RoundedCornerShape(10.dp),
                         glow = false,
@@ -835,13 +831,10 @@ fun NavigationItem(
     val contentColor = LXTextSecondary
 
     // 選取與遙控器焦點分開呈現，並沿用使用者目前選擇的主題強調色。
-    var isFocused by remember { mutableStateOf(false) }
-    val bgColor = Color.Transparent
 
     Column(
         modifier = modifier
             .clip(RoundedCornerShape(10.dp))
-            .background(bgColor)
             // focusRequester 必须在 focusable(clickable) 之前
             .then(if (focusRequester != null) Modifier.focusRequester(focusRequester) else Modifier)
             // 导航栏右键 → 进入右侧内容第一项（返回 true 拦截默认空间导航，自行聚焦内容首项）
@@ -851,7 +844,6 @@ fun NavigationItem(
                     true
                 } else false
             }
-            .onFocusChanged { isFocused = it.isFocused }
             // 未选中且无焦点：无边框（纯图标）；仅焦点选中才显示背景+边框
             .lxFocusBorder(
                 shape = RoundedCornerShape(10.dp),
@@ -877,7 +869,7 @@ fun NavigationItem(
             text = item.title,
             color = contentColor,
             fontSize = 12.sp,
-            fontWeight = FontWeight.Medium
+            fontWeight = FontWeight.Medium,
             modifier = Modifier.padding(top = 5.dp),
             maxLines = 1
         )
@@ -1312,12 +1304,10 @@ fun BrowsePage(
 ) {
     // 列表滚动状态（无限加载）
     val gridState = rememberLazyGridState()
-    var placeholderFocused by remember { mutableStateOf(false) }
     // 没有可见卡片时，加载／空状态也要承接内容区焦点，左键可回到目前选中的导航项。
     val placeholderFocusModifier = Modifier
         .fillMaxSize()
         .focusRequester(contentEnterRequester)
-        .onFocusChanged { placeholderFocused = it.isFocused }
         .focusable()
         .onPreviewKeyEvent { event ->
             if (event.type == KeyEventType.KeyDown && event.key == Key.DirectionLeft) {
@@ -3173,7 +3163,6 @@ fun CacheActionButton(
     enabled: Boolean = true,
     modifier: Modifier = Modifier
 ) {
-    var isFocused by remember { mutableStateOf(false) }
     val bgColor = if (highlighted) LXPrimary else LXSurfaceVariant
     val textColor = if (highlighted) Color.White else LXTextPrimary
     val hintColor = if (highlighted) Color.White.copy(alpha = 0.8f) else LXTextSecondary
@@ -3264,7 +3253,6 @@ fun QualitySelectDialog(
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 qualities.forEachIndexed { index, quality ->
-                    val isSelected = quality == currentQuality
                     Surface(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -3284,7 +3272,7 @@ fun QualitySelectDialog(
                             Text(
                                 text = qualityShortName(quality),
                                 fontSize = 16.sp,
-                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                fontWeight = FontWeight.Normal,
                                 // 灰白底深色文字
                                 color = LXTextPrimary
                             )
@@ -3348,7 +3336,6 @@ fun PlatformSelectDialog(
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 platforms.forEachIndexed { index, platform ->
-                    val isSelected = platform == currentPlatform
                     Surface(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -3368,7 +3355,7 @@ fun PlatformSelectDialog(
                             Text(
                                 text = platform.displayName,
                                 fontSize = 16.sp,
-                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                fontWeight = FontWeight.Normal,
                                 // 灰白底深色文字
                                 color = LXTextPrimary
                             )
@@ -3430,7 +3417,6 @@ fun StartupTabSelectDialog(
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 tabs.forEachIndexed { index, (tabIndex, tabName) ->
-                    val isSelected = tabIndex == currentTab
                     Surface(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -3447,7 +3433,7 @@ fun StartupTabSelectDialog(
                             Text(
                                 text = tabName,
                                 fontSize = 16.sp,
-                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                fontWeight = FontWeight.Normal,
                                 color = LXTextPrimary
                             )
                         }
