@@ -666,6 +666,11 @@ fun DiscCoverButton(
             .clip(CircleShape)
             // 深色圆环（黑胶边缘，固定深色不随主题）；聚焦时主题色发光
             .background(if (focused) LXPrimary.copy(alpha = 0.40f) else Color(0xFF3A3A40))
+            // 遙控器聚焦時補上清楚可見的圓形焦點描邊；保留原本主題色填充與黑膠外觀
+            .then(
+                if (focused) Modifier.border(width = 2.dp, color = FocusBorder, shape = CircleShape)
+                else Modifier
+            )
             .clickable { onClick() }
     ) {
         Box(
