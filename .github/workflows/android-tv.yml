@@ -19,6 +19,7 @@ on:
       - fix/lx-tv-nav-tile-compact-run153
       - fix/lx-tv-remove-source-quick-add-run154
       - fix/lx-tv-quickbase64-arm-abi-run239
+      - feature/lx-tv-mymusic-layout-redesign-run260
   workflow_dispatch:
 
 permissions:
