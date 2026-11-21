@@ -303,14 +303,7 @@ fun SearchScreen(
                                 .weight(0.7f)
                                 .height(58.dp)
                                 .clip(RoundedCornerShape(12.dp))
-                                .background(
-                                    if (searchBoxFocused) LXPrimary.copy(alpha = 0.35f) else LXSurfaceVariant
-                                )
-                                .border(
-                                    width = if (searchBoxFocused) 3.dp else 0.dp,
-                                    color = if (searchBoxFocused) FocusBorder else Color.Transparent,
-                                    shape = RoundedCornerShape(12.dp)
-                                )
+                                .background(LXSurfaceVariant)
                                 .padding(horizontal = 16.dp),
                             contentAlignment = Alignment.CenterStart
                         ) {
@@ -321,7 +314,7 @@ fun SearchScreen(
                                 Icon(
                                     imageVector = Icons.Default.Search,
                                     contentDescription = "搜索",
-                                    tint = if (searchBoxFocused) Color.White else LXTextPrimary,
+                                    tint = LXTextPrimary,
                                     modifier = Modifier.size(20.dp)
                                 )
                                 Spacer(modifier = Modifier.width(10.dp))
@@ -464,14 +457,7 @@ fun SearchScreen(
                                 .focusRequester(qrBtnRequester)
                                 .onFocusChanged { qrBtnFocused = it.isFocused }
                                 .clip(RoundedCornerShape(12.dp))
-                                .background(
-                                    if (qrBtnFocused) LXPrimary.copy(alpha = 0.35f) else LXSurfaceVariant
-                                )
-                                .border(
-                                    width = if (qrBtnFocused) 3.dp else 0.dp,
-                                    color = if (qrBtnFocused) FocusBorder else Color.Transparent,
-                                    shape = RoundedCornerShape(12.dp)
-                                )
+                                .background(LXSurfaceVariant)
                                 // 2.9 显式按键分流：左键精确回搜索框，下键精确去类型选择器
                                 .onPreviewKeyEvent { event ->
                                     if (event.type == KeyEventType.KeyDown) {
