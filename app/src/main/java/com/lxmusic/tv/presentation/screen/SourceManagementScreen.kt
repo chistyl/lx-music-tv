@@ -709,6 +709,18 @@ fun DeleteConfirmDialog(
     onConfirm: () -> Unit,
     onDismiss: () -> Unit
 ) {
+    // 預設焦點放在取消，避免 TV 遙控器剛開啟視窗時誤觸刪除。
+    val cancelFocusRequester = remember { FocusRequester() }
+    var initialFocusRequested by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        requestInitialFocus(
+            focusRequester = cancelFocusRequester,
+            attempted = { initialFocusRequested },
+            markAttempted = { initialFocusRequested = true }
+        )
+    }
+
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(text = "确认删除", fontWeight = FontWeight.Bold) },
@@ -721,7 +733,10 @@ fun DeleteConfirmDialog(
         },
         dismissButton = {
             // 取消：与「后台播放」一致的无背景文本按钮
-            TextButton(onClick = onDismiss) {
+            TextButton(
+                onClick = onDismiss,
+                modifier = Modifier.focusRequester(cancelFocusRequester)
+            ) {
                 Text("取消", color = LXTextPrimary)
             }
         },
