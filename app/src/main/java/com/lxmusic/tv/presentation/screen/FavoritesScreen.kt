@@ -158,6 +158,7 @@ fun FavoritesScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f)
+                        .fillMaxHeight()
                         .onFocusChanged { loadingStateFocused = it.isFocused }
                         .border(
                             width = if (loadingStateFocused) 3.dp else 0.dp,
@@ -717,6 +718,7 @@ fun FavoriteEmptyState(
     Box(
         modifier = modifier
             .fillMaxWidth()
+            .fillMaxHeight()
             .onFocusChanged { focused = it.isFocused }
             .border(
                 width = if (focused) 3.dp else 0.dp,
