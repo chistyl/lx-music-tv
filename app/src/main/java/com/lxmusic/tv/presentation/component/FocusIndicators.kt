@@ -199,17 +199,18 @@ fun Modifier.lxFocusBorder(
                 // ★ 修复2：传【正数】向内收缩 stroke/2，描边外边缘恰好贴合 shape 外边缘
                 val insetOutline = outline.insetBy(stroke / 2f)
                 val focusPath = outlineToPath(insetOutline)
-                val haloStrength = if (glow) 0.16f else 0.08f
-                drawPath(
-                    path = focusPath,
-                    color = borderColor.copy(alpha = haloStrength * 0.55f),
-                    style = Stroke(width = 9.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round)
-                )
-                drawPath(
-                    path = focusPath,
-                    color = borderColor.copy(alpha = haloStrength),
-                    style = Stroke(width = 5.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round)
-                )
+                if (glow) {
+                    drawPath(
+                        path = focusPath,
+                        color = borderColor.copy(alpha = 0.088f),
+                        style = Stroke(width = 9.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round)
+                    )
+                    drawPath(
+                        path = focusPath,
+                        color = borderColor.copy(alpha = 0.16f),
+                        style = Stroke(width = 5.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round)
+                    )
+                }
                 drawPath(path = focusPath, color = borderColor.copy(alpha = 0.07f), style = Fill)
                 drawPath(
                     path = focusPath,
