@@ -152,18 +152,11 @@ fun FavoritesScreen(
                 )
             } else if (favoritePlaylistLoading) {
                 // 歌单歌曲加载中：立即显示转圈动画（网易云等平台接口较慢，避免点击后空白跳变）
-                var loadingStateFocused by remember { mutableStateOf(false) }
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f)
                         .fillMaxHeight()
-                        .onFocusChanged { loadingStateFocused = it.isFocused }
-                        .border(
-                            width = if (loadingStateFocused) 3.dp else 0.dp,
-                            color = if (loadingStateFocused) LXPrimary else Color.Transparent,
-                            shape = RoundedCornerShape(16.dp)
-                        )
                         .focusable()
                         .onPreviewKeyEvent { event ->
                             if (event.type == KeyEventType.KeyDown && event.key == Key.DirectionLeft) {
@@ -713,17 +706,10 @@ fun FavoriteEmptyState(
     onExitToNav: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
-    var focused by remember { mutableStateOf(false) }
     Box(
         modifier = modifier
             .fillMaxWidth()
             .fillMaxHeight()
-            .onFocusChanged { focused = it.isFocused }
-            .border(
-                width = if (focused) 3.dp else 0.dp,
-                color = if (focused) LXPrimary else Color.Transparent,
-                shape = RoundedCornerShape(16.dp)
-            )
             .focusable()
             .onPreviewKeyEvent { event ->
                 if (event.type == KeyEventType.KeyDown && event.key == Key.DirectionLeft && onExitToNav != null) {
