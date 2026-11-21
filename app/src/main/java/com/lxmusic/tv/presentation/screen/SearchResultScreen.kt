@@ -1,6 +1,8 @@
 package com.lxmusic.tv.presentation.screen
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -12,6 +14,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -79,6 +87,27 @@ fun SearchResultScreen(
             markAttempted = { initialFocusRequested = true }
         )
     }
+
+    var placeholderFocused by remember { mutableStateOf(false) }
+    val placeholderFocusModifier = Modifier
+        .fillMaxSize()
+        .onFocusChanged { placeholderFocused = it.isFocused }
+        .border(
+            width = 3.dp,
+            color = if (placeholderFocused) LXPrimary else Color.Transparent,
+            shape = RoundedCornerShape(16.dp)
+        )
+        .focusable()
+        .onPreviewKeyEvent { event ->
+            if (event.type == KeyEventType.KeyDown &&
+                event.key == Key.DirectionLeft
+            ) {
+                backFocusRequester.requestFocus()
+                true
+            } else {
+                false
+            }
+        }
 
     // 歌单歌曲列表层级：遥控器返回键优先回到「歌单结果列表」（退一级），
     // 否则会冒泡到 nav 返回栈直接退出搜索页，跳过歌单结果层。
@@ -218,7 +247,7 @@ fun SearchResultScreen(
                     // 加载中
                     isSearching -> {
                         Box(
-                            modifier = Modifier.fillMaxSize(),
+                            modifier = placeholderFocusModifier,
                             contentAlignment = Alignment.Center
                         ) {
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
