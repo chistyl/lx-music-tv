@@ -10,6 +10,11 @@ android {
     namespace = "com.lxmusic.tv"
     compileSdk = 37
 
+    // AGP 9 內建 Kotlin：將既有 Kotlin 原始碼目錄納入 Kotlin source set。
+    sourceSets.named("main") {
+        kotlin.directories += "src/main/java"
+    }
+
     defaultConfig {
         applicationId = "com.lxmusic.tv"
         minSdk = 23
