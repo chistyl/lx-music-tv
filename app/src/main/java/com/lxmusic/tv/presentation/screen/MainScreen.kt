@@ -929,6 +929,66 @@ fun MainContent(
                 .matchParentSize()
                 .background(LXAccentGradientBrush)
         )
+        if (selectedTab == 1 || selectedTab == 2) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(64.dp)
+                    .padding(horizontal = 24.dp, vertical = 6.dp)
+                    .focusGroup(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                listOf(
+                    MusicPlatform.KW,
+                    MusicPlatform.KG,
+                    MusicPlatform.TX,
+                    MusicPlatform.WY,
+                    MusicPlatform.MG
+                ).forEach { platformOption ->
+                    val isSelected = platformOption == defaultPlatform
+                    Surface(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight()
+                            .lxSelectorFocus(
+                                focusedColor = FocusBorder,
+                                focusedWidth = 3.dp,
+                                glow = false,
+                                animated = false,
+                                shape = RoundedCornerShape(10.dp)
+                            )
+                            .clickable {
+                                if (!isSelected) onDefaultPlatformChange(platformOption)
+                            },
+                        color = if (isSelected) LXPrimary.copy(alpha = 0.22f) else LXSurfaceVariant,
+                        shape = RoundedCornerShape(10.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = when (platformOption) {
+                                    MusicPlatform.KW -> "酷我音樂"
+                                    MusicPlatform.KG -> "酷狗音樂"
+                                    MusicPlatform.TX -> "QQ音樂"
+                                    MusicPlatform.WY -> "網易雲"
+                                    MusicPlatform.MG -> "咪咕音樂"
+                                    else -> platformOption.name
+                                },
+                                color = if (isSelected) LXPrimary else LXTextPrimary,
+                                fontSize = 18.sp,
+                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
         when (selectedTab) {
             0 -> SearchScreen(
                 // 2.6 搜索页内嵌为 tab（保留左侧导航栏），不再跳转独立页面；2.9 调整至 Logo 下方（索引 0）
