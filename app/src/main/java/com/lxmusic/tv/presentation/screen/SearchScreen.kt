@@ -861,10 +861,13 @@ fun SearchResults(
     loadingMore: Boolean = false,
     modifier: Modifier = Modifier
 ) {
-    // 焦点驱动续拉：TV 上滚动不触发重组，用「焦点所在行号」判断是否接近列表末尾（与首页 BrowsePage 一致）
+    // 焦点驱动续拉：必须先确认列表项真实取得焦点，避免短列表在页面初次组合时误触发加载。
     var focusedIndex by remember { mutableStateOf(0) }
-    LaunchedEffect(focusedIndex) {
-        if (hasMore && !loadingMore && results.isNotEmpty() && focusedIndex >= results.size - 8) {
+    var hasFocusedItem by remember { mutableStateOf(false) }
+    LaunchedEffect(focusedIndex, hasFocusedItem, results.size, hasMore, loadingMore) {
+        if (hasFocusedItem && hasMore && !loadingMore &&
+            results.isNotEmpty() && focusedIndex >= results.size - 8
+        ) {
             onLoadMore?.invoke()
         }
     }
@@ -882,7 +885,10 @@ fun SearchResults(
                 onToggleFavorite = onToggleFavorite?.let { { it(song) } },
                 onPlayStay = { onPlaySongStay(song) },
                 onPlayOpen = { onSongClick(song) },
-                onSongFocused = { idx -> focusedIndex = idx }
+                onSongFocused = { idx ->
+                    focusedIndex = idx
+                    hasFocusedItem = true
+                }
             )
         }
     }
