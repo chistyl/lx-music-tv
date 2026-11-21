@@ -832,9 +832,14 @@ private fun PlayerProgressBar(
                 )
             }
 
-            // thumb：未聚焦小白点 / 聚焦 白色描边圆 + 中心红点(15dp) + 红色光晕（仿菠萝）
+            // 固定白色進度點，不隨遙控器焦點改變外觀
             val thumbR = 5.dp.toPx()
             val cx = (size.width * p).coerceIn(thumbR, size.width - thumbR)
+            drawCircle(
+                color = Color.White,
+                radius = thumbR,
+                center = Offset(cx, trackY)
+            )
 
         }
 
