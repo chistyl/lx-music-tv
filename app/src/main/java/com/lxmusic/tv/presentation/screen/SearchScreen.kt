@@ -242,7 +242,6 @@ fun SearchScreen(
             .fillMaxSize()
             // 2.5 浅色主题：实色基底 + 顶部氛围渐变（仿 EchoMusic）
             .background(LXSurfaceMain)
-            .background(LXAccentGradientBrush)
             .padding(24.dp)
         ) {
             // ===== 三栏布局：左键盘 + 中联想 + 右热门 =====
