@@ -429,9 +429,9 @@ fun SearchScreen(
                                         if (editText.hint != hintText) {
                                             editText.hint = hintText
                                         }
-                                        val textColor = if (searchBoxFocused) android.graphics.Color.WHITE else textColorArgb
+                                        val textColor = textColorArgb
                                         editText.setTextColor(textColor)
-                                        val hintColor = if (searchBoxFocused) 0xB3FFFFFF.toInt() else hintColorArgb
+                                        val hintColor = hintColorArgb
                                         editText.setHintTextColor(hintColor)
 
                                         val textInView = editText.text?.toString().orEmpty()
@@ -485,7 +485,7 @@ fun SearchScreen(
                             Icon(
                                 imageVector = Icons.Default.QrCode,
                                 contentDescription = "扫码推送搜索文字",
-                                tint = if (qrBtnFocused) Color.White else LXTextPrimary,
+                                tint = LXTextPrimary,
                                 modifier = Modifier.size(30.dp)
                             )
                         }
