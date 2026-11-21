@@ -737,7 +737,7 @@ fun FavoriteEmptyState(
             Icon(
                 imageVector = Icons.Default.FavoriteBorder,
                 contentDescription = null,
-                tint = Color(0xFF999999),
+                tint = LXTextSecondary,
                 modifier = Modifier.size(56.dp)
             )
             Spacer(modifier = Modifier.height(12.dp))
