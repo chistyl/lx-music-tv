@@ -33,6 +33,7 @@ import com.lxmusic.tv.presentation.component.lxFocusBorder
 import com.lxmusic.tv.presentation.component.requestInitialFocus
 import com.lxmusic.tv.presentation.theme.LXAccentGradientBrush
 import com.lxmusic.tv.presentation.theme.LXSurfaceMain
+import com.lxmusic.tv.presentation.theme.LXSurfaceCard
 import com.lxmusic.tv.presentation.theme.LXTextPrimary
 import com.lxmusic.tv.presentation.theme.LXTextSecondary
 import com.lxmusic.tv.presentation.theme.LXPrimary
@@ -197,9 +198,9 @@ fun SearchResultScreen(
             if (searchError != null) {
                 Card(
                     modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
-                    // 2.5 浅色主题：浅红底 + 红字（替代原暗红卡片）
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFFFDECEA)),
-                    shape = RoundedCornerShape(8.dp)
+                    // 错誤提示沿用全站深色卡片表面，錯誤語意由圖示與主題強調色表達
+                    colors = CardDefaults.cardColors(containerColor = LXSurfaceCard),
+                    shape = RoundedCornerShape(12.dp)
                 ) {
                     Row(
                         modifier = Modifier.padding(14.dp),
@@ -253,7 +254,7 @@ fun SearchResultScreen(
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                 CircularProgressIndicator(color = LXPrimary)
                                 Spacer(modifier = Modifier.height(16.dp))
-                                Text(text = "搜索中...", fontSize = 16.sp, color = Color.Gray)
+                                Text(text = "搜索中...", fontSize = 16.sp, color = LXTextSecondary)
                             }
                         }
                     }
@@ -295,7 +296,7 @@ fun SearchResultScreen(
                                 Icon(
                                     imageVector = Icons.Default.SearchOff,
                                     contentDescription = "无结果",
-                                    tint = Color.Gray,
+                                    tint = LXTextSecondary,
                                     modifier = Modifier.size(64.dp)
                                 )
                                 Spacer(modifier = Modifier.height(16.dp))
