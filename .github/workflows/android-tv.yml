@@ -20,6 +20,7 @@ on:
       - fix/lx-tv-remove-source-quick-add-run154
       - fix/lx-tv-quickbase64-arm-abi-run239
       - fix/lx-tv-focus-rounded-run261
+      - fix/lx-tv-remove-all-focus-visuals-run307
   workflow_dispatch:
 
 permissions:
