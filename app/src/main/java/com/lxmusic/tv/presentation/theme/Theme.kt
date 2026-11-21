@@ -13,17 +13,11 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 
 /**
- * LX Music TV 主题（2.5 重构；默认深色 + 赤焰红，主题色可切换）
- *
- * 2.5 起整体界面参照 https://github.com/hoowhoami/EchoMusic 的浅色/深色表面系统：
- * - 侧栏 #FFFFFF 纯白
- * - 主区 #F5F5F7 浅灰白
- * - 卡片/输入框 #FFFFFF 白；对话框 #F0F0F2 灰白（LXSurfaceDialog）
- * - 主文本 #1D1D1F 深色，次文本 #4B5563
- * - 边框 #E5E5EA
- * - 主题色可切换：赤焰红（默认 #E94560）/ 暮色紫 / 靛青，参考 EchoMusic 主题色预设；切换后全站强调色随之改变
- *
- * 播放页（PlayerScreen）保持原有的暗色毛玻璃风格不动。
+ * LX Music TV 主題系統：保留淺色／深色切換與三組強調色，TV 深色介面採中性黑色層次。
+ * - 深色主背景、側欄、播放器與內容卡片使用一致的黑／炭灰表面階層
+ * - 文字使用高對比淺色，次要資訊使用柔和灰階
+ * - 赤焰紅／暮色紫／靛青仍作為可切換的品牌強調色，不覆寫使用者選擇
+ * - 淺色主題維持原有設定，不因 TV 深色介面調整而改變
  */
 
 // =================== 品牌色（主 / 次强调色实际取自所选主题色，定义见下方 LXPrimary / LXSecondary getter） ===================
@@ -178,25 +172,25 @@ data class LXThemeColors(
             secondary = cfg.secondary,
             primaryContainer = cfg.primaryContainerDark,
             onPrimaryContainer = cfg.onPrimaryContainerDark,
-            surfaceSidebar = Color(0xFF1A1A22),
-            surfaceMain = Color(0xFF14141A),
-            surfaceCard = Color(0xFF20202A),
-            surfaceDialog = Color(0xFF20202A),
-            surfaceVariant = Color(0xFF2A2A36),
-            background = Color(0xFF14141A),
-            surface = Color(0xFF20202A),
+            surfaceSidebar = Color(0xFF0D1013),
+            surfaceMain = Color(0xFF090B0D),
+            surfaceCard = Color(0xFF171D21),
+            surfaceDialog = Color(0xFF1A2024),
+            surfaceVariant = Color(0xFF242A2E),
+            background = Color(0xFF090B0D),
+            surface = Color(0xFF111519),
             onPrimary = Color.White,
-            onBackground = Color(0xFFECECF1),
-            onSurface = Color(0xFFECECF1),
-            onSurfaceVariant = Color(0xFFA6A6B2),
-            textPrimary = Color(0xFFECECF1),
-            textSecondary = Color(0xFFA6A6B2),
-            textDisabled = Color(0xFF6A6A78),
-            border = Color(0xFF2E2E3A),
-            divider = Color(0xFF26262F),
-            cardDark = Color(0x20ECECF1),          // 深色模式下卡片用 #1A1A1A 配 0x50≈31% alpha（用户最终决定）
-            onCardDark = Color(0xFFECECF1),
-            onCardDarkSecondary = Color(0xFFA6A6B2),
+            onBackground = Color(0xFFF3F5F6),
+            onSurface = Color(0xFFF3F5F6),
+            onSurfaceVariant = Color(0xFFAAB3B8),
+            textPrimary = Color(0xFFF3F5F6),
+            textSecondary = Color(0xFFAAB3B8),
+            textDisabled = Color(0xFF69747B),
+            border = Color(0xFF2B343A),
+            divider = Color(0xFF20282D),
+            cardDark = Color(0xFF171D21),
+            onCardDark = Color(0xFFF3F5F6),
+            onCardDarkSecondary = Color(0xFFAAB3B8),
             accentGradient = Brush.verticalGradient(
                 0.0f to cfg.primary.copy(alpha = 0.28f),
                 0.6f to cfg.primary.copy(alpha = 0.1f),
@@ -398,14 +392,14 @@ private fun darkColorSchemeFor(
     onSecondaryContainer = Color(0xFFD6F0FF),
     tertiary = LXSuccess,
     onTertiary = Color.Black,
-    background = Color(0xFF1A1A2E),
-    onBackground = Color.White,
-    surface = Color(0xFF16213E),
-    onSurface = Color.White,
-    surfaceVariant = Color(0xFF16213E),
-    onSurfaceVariant = Color(0xFFB0B0B0),
-    outline = Color(0xFF333333),
-    outlineVariant = Color(0xFF444444),
+    background = Color(0xFF090B0D),
+    onBackground = Color(0xFFF3F5F6),
+    surface = Color(0xFF111519),
+    onSurface = Color(0xFFF3F5F6),
+    surfaceVariant = Color(0xFF242A2E),
+    onSurfaceVariant = Color(0xFFAAB3B8),
+    outline = Color(0xFF2B343A),
+    outlineVariant = Color(0xFF343D43),
     error = LXError,
     onError = Color.White,
     errorContainer = Color(0xFF3D1515),
@@ -480,10 +474,10 @@ object LXColors {
     val CardBackground get() = LXSurfaceCard       // 白
     val CardBorder get() = LXBorder
 
-    // 深色卡片（仿播放页播放列表，点6）——用户已把 LXCardDark 调极淡透明，故 on 色为深色
-    val CardDark get() = LXCardDark                 // 黑色半透明 0x201A1A1A
-    val OnCardDark get() = LXOnCardDark             // 黑 #1D1D1F
-    val OnCardDarkSecondary get() = LXOnCardDarkSecondary // 深灰 #4B5563
+    // 深色模式卡片：中性炭灰表面，文字維持高對比
+    val CardDark get() = LXCardDark
+    val OnCardDark get() = LXOnCardDark
+    val OnCardDarkSecondary get() = LXOnCardDarkSecondary
     val AccentGradientBrush get() = LXAccentGradientBrush    // 主区顶部氛围渐变
     val SidebarGradientBrush get() = LXSidebarGradientBrush  // 侧栏顶部氛围渐变（略轻柔）
 
@@ -498,9 +492,9 @@ object LXColors {
     val InputFocusBorder get() = LXPrimary
 
     // 播放器颜色（2.5 不动播放页，保持原暗色）
-    val PlayerBackground = Color(0xFF1A1A2E)
+    val PlayerBackground = Color(0xFF101519)
     val PlayerProgress get() = LXPrimary
-    val PlayerProgressBackground = Color(0xFF16213E)
+    val PlayerProgressBackground = Color(0xFF242A2E)
 }
 
 /**
