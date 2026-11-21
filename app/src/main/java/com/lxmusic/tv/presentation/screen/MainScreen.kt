@@ -955,6 +955,7 @@ fun MainContent(
             )
             1 -> PlaylistScreen(
                 platform = defaultPlatform,
+                onDefaultPlatformChange = onDefaultPlatformChange,
                 items = browseItems,
                 songs = browseSongs,
                 loading = browseLoading,
@@ -978,6 +979,7 @@ fun MainContent(
             )
             2 -> RankingScreen(
                 platform = defaultPlatform,
+                onDefaultPlatformChange = onDefaultPlatformChange,
                 items = browseItems,
                 songs = browseSongs,
                 loading = browseLoading,
