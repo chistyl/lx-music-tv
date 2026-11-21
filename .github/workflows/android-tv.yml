@@ -1,5 +1,4 @@
 name: Android TV build
-# Rebuild after reducing the selected navigation tile height and width.
 
 on:
   push:
@@ -29,32 +28,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout TV project and pinned upstream
+      - name: Checkout LX Music TV project
         uses: actions/checkout@v4
         with:
           submodules: recursive
-
-      - name: Apply requested feature removals
-        run: python3 scripts/patch-lx-tv-features.py
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 18
-          cache: npm
-          cache-dependency-path: upstream/lx-music-mobile-auto-source/package-lock.json
-
-      - name: Add Traditional Chinese conversion dependency
-        working-directory: upstream/lx-music-mobile-auto-source
-        run: npm install --package-lock-only opencc-js@1.4.2
-
-      - name: Install JavaScript dependencies
-        working-directory: upstream/lx-music-mobile-auto-source
-        run: npm ci
-
-      - name: Run upstream custom-source tests
-        working-directory: upstream/lx-music-mobile-auto-source
-        run: npm run test:custom-sources
 
       - name: Set up Java
         uses: actions/setup-java@v4
@@ -69,38 +46,10 @@ jobs:
           test -n "$SDKMANAGER"
           echo "Using SDK manager: $SDKMANAGER"
           yes | "$SDKMANAGER" --licenses
-          "$SDKMANAGER" --install "platform-tools" "platforms;android-34" "build-tools;34.0.0"
+          "$SDKMANAGER" --install "platform-tools" "platforms;android-37" "build-tools;37.0.0"
 
-      - name: Prepare Android TV manifest
-        run: |
-          python3 scripts/prepare-android-tv.py
-          python3 scripts/patch-tv-controls.py
-          python3 scripts/patch-lx-tv-polish.py
-          python3 scripts/patch-lx-tv-conversion-language-gate.py
-          python3 scripts/patch-lx-tv-defaults.py
-          python3 scripts/patch-lx-tv-remove-sync-settings.py
-          python3 scripts/patch-lx-tv-remove-error-log-settings.py
-          python3 scripts/patch-lx-tv-theme-nav-black-bg.py
-          grep -n "LEANBACK_LAUNCHER\\|android.software.leanback\\|screenOrientation" upstream/lx-music-mobile-auto-source/android/app/src/main/AndroidManifest.xml
-
-      - name: Generate Android JS bundle
-        working-directory: upstream/lx-music-mobile-auto-source
-        run: npm run bundle-android
-
-      - name: Assemble debug APK
-        working-directory: upstream/lx-music-mobile-auto-source/android
-        run: |
-          for attempt in 1 2 3; do
-            echo "Gradle build attempt ${attempt}/3"
-            if ./gradlew --no-daemon --refresh-dependencies -PreactNativeArchitectures=armeabi-v7a,arm64-v8a,x86,x86_64 assembleDebug; then
-              exit 0
-            fi
-            if [ "$attempt" -lt 3 ]; then
-              echo "Gradle dependency/build attempt failed; retrying in 20 seconds."
-              sleep 20
-            fi
-          done
-          exit 1
+      - name: Compile and assemble native Android TV app
+        run: ./gradlew --no-daemon --stacktrace :app:assembleDebug
 
       - name: Package complete source tree
         run: |
@@ -113,7 +62,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: lx-music-tv-apk-armeabi-v7a
-          path: upstream/lx-music-mobile-auto-source/android/app/build/outputs/apk/debug/*armeabi-v7a.apk
+          path: app/build/outputs/apk/debug/*armeabi-v7a*.apk
           if-no-files-found: error
           retention-days: 30
 
@@ -121,7 +70,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: lx-music-tv-apk-arm64-v8a
-          path: upstream/lx-music-mobile-auto-source/android/app/build/outputs/apk/debug/*arm64-v8a.apk
+          path: app/build/outputs/apk/debug/*arm64-v8a*.apk
           if-no-files-found: error
           retention-days: 30
 
@@ -129,7 +78,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: lx-music-tv-apk-x86
-          path: upstream/lx-music-mobile-auto-source/android/app/build/outputs/apk/debug/*x86.apk
+          path: app/build/outputs/apk/debug/*x86*.apk
           if-no-files-found: error
           retention-days: 30
 
@@ -137,7 +86,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: lx-music-tv-apk-x86_64
-          path: upstream/lx-music-mobile-auto-source/android/app/build/outputs/apk/debug/*x86_64.apk
+          path: app/build/outputs/apk/debug/*x86_64*.apk
           if-no-files-found: error
           retention-days: 30
 
@@ -145,7 +94,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: lx-music-tv-apk-universal
-          path: upstream/lx-music-mobile-auto-source/android/app/build/outputs/apk/debug/*universal*.apk
+          path: app/build/outputs/apk/debug/*universal*.apk
           if-no-files-found: error
           retention-days: 30
 
