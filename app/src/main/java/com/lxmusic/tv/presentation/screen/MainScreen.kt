@@ -399,6 +399,11 @@ private fun LeftPlayerPanel(
                     .fillMaxWidth(0.82f)
                     .aspectRatio(1f)
                     .clip(CircleShape)
+                    .border(
+                        width = 1.5.dp,
+                        color = LXPrimary.copy(alpha = 0.85f),
+                        shape = CircleShape
+                    )
                     .background(LXSurfaceVariant)
                     .clickable { onOpenPlayer() },
                 contentAlignment = Alignment.Center
