@@ -10,7 +10,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
@@ -63,7 +63,10 @@ private fun Modifier.lxRoundedFocusVisual(
     this
         .onFocusChanged { isFocused = it.isFocused }
         .clip(shape)
-        .drawBehind {
+        .drawWithContent {
+            // 必須在元件本身內容繪製完成後再畫焦點效果，
+            // 否則按鈕／卡片的不透明背景會把 drawBehind 的外框蓋掉。
+            drawContent()
             if (isFocused) {
                 val outline = shape.createOutline(size, layoutDirection, this)
                 drawOutline(outline, fillColor)
