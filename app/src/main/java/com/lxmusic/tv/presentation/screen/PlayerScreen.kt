@@ -888,7 +888,6 @@ private fun ControlCircleButton(
     content: @Composable (isFocused: Boolean) -> Unit
 ) {
     val interactionSource = remember { MutableInteractionSource() }
-    val isFocused by interactionSource.collectIsFocusedAsState()
     Box(
         modifier = modifier
             .size(size)
@@ -999,7 +998,6 @@ private fun PlayModeItem(
     onClick: () -> Unit
 ) {
     val interactionSource = remember { MutableInteractionSource() }
-    val isFocused by interactionSource.collectIsFocusedAsState()
     Row(
         modifier = Modifier
             .width(200.dp)
@@ -1016,7 +1014,7 @@ private fun PlayModeItem(
         Icon(
             imageVector = icon,
             contentDescription = null,
-            tint = LXTextPrimary
+            tint = LXTextPrimary,
             modifier = Modifier.size(22.dp)
         )
         Spacer(Modifier.width(14.dp))
@@ -1026,15 +1024,6 @@ private fun PlayModeItem(
             color = Color.White,
             fontWeight = FontWeight.Normal
         )
-        Spacer(Modifier.weight(1f))
-        if (selected) {
-            Icon(
-                imageVector = Icons.Default.Check,
-                contentDescription = null,
-                tint = LXPrimary,
-                modifier = Modifier.size(18.dp)
-            )
-        }
     }
 }
 
@@ -1158,7 +1147,6 @@ private fun DrawerSongRow(
     focusRequester: FocusRequester? = null
 ) {
     val interactionSource = remember { MutableInteractionSource() }
-    val isFocused by interactionSource.collectIsFocusedAsState()
 
     Row(
         modifier = Modifier
