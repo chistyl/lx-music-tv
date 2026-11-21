@@ -1405,14 +1405,7 @@ fun BrowsePage(
                     ) {
                         Box(Modifier.fillMaxSize().padding(horizontal = 8.dp), contentAlignment = Alignment.Center) {
                             Text(
-                                text = when (option) {
-                                    MusicPlatform.KW -> "酷我音樂"
-                                    MusicPlatform.KG -> "酷狗音樂"
-                                    MusicPlatform.TX -> "QQ音樂"
-                                    MusicPlatform.WY -> "網易雲"
-                                    MusicPlatform.MG -> "咪咕音樂"
-                                    else -> option.name
-                                },
+                                text = option.displayName,
                                 color = if (active) LXPrimary else LXTextPrimary,
                                 fontSize = 18.sp,
                                 fontWeight = if (active) FontWeight.Bold else FontWeight.Medium,
