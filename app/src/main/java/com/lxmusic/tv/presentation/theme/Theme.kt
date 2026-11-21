@@ -5,6 +5,8 @@ import android.util.Log
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.material.ripple.RippleAlpha
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -439,12 +441,29 @@ fun LXMusicTheme(
         currentLXTheme = theme
         Log.d("LX-Theme", "LXMusicTheme SideEffect: isDark=$isDark color=${currentThemeColor}")
     }
+    // 關閉 Material3 的滑鼠 Hover 狀態層，但保留原本 Press / Focus / Drag 回饋。
+    // RippleDefaults.RippleAlpha 取用目前 Material3 預設值，只將 hoveredAlpha 設為 0。
+    val defaultRippleAlpha = RippleDefaults.RippleAlpha
+    val noHoverRippleConfiguration = RippleConfiguration(
+        rippleAlpha = RippleAlpha(
+            draggedAlpha = defaultRippleAlpha.draggedAlpha,
+            focusedAlpha = defaultRippleAlpha.focusedAlpha,
+            hoveredAlpha = 0f,
+            pressedAlpha = defaultRippleAlpha.pressedAlpha
+        )
+    )
+
     MaterialTheme(
         colorScheme = colorScheme,
         typography = LXTypography,
-        shapes = LXShapes,
-        content = content
-    )
+        shapes = LXShapes
+    ) {
+        CompositionLocalProvider(
+            LocalRippleConfiguration provides noHoverRippleConfiguration
+        ) {
+            content()
+        }
+    }
 }
 
 /**
