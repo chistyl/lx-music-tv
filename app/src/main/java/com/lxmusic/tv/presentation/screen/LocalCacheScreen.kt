@@ -109,7 +109,7 @@ fun LocalCacheScreen(
             }
             songs.isEmpty() -> {
                 Box(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = emptyStateFocusModifier,
                     contentAlignment = Alignment.Center
                 ) {
                     Column(
