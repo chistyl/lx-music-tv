@@ -558,7 +558,8 @@ private fun PlayerBottomBar(
             totalDurationMs = totalDurationMs,
             onSeek = onSeek,
             onRequestHide = onRequestHide,
-            focusRequester = progressFocusRequester
+            focusRequester = progressFocusRequester,
+            onMoveToControls = { playPauseFocusRequester.requestFocus() }
         )
 
         Spacer(modifier = Modifier.height(22.dp))
@@ -571,6 +572,9 @@ private fun PlayerBottomBar(
                     // 按钮排是最底一行：再按「下」键收起控制栏（事件在子节点导航前拦截）
                     if (ev.type == KeyEventType.KeyDown && ev.key == Key.DirectionDown) {
                         onRequestHide()
+                        true
+                    } else if (ev.type == KeyEventType.KeyDown && ev.key == Key.DirectionUp) {
+                        progressFocusRequester.requestFocus()
                         true
                     } else {
                         false
@@ -687,7 +691,8 @@ private fun PlayerProgressBar(
     totalDurationMs: Long,
     onSeek: (Float) -> Unit,
     onRequestHide: () -> Unit,
-    focusRequester: FocusRequester
+    focusRequester: FocusRequester,
+    onMoveToControls: () -> Unit
 ) {
     val stepMs = max(10000L, totalDurationMs.coerceAtLeast(1L) / 30)
     val isSeekable = totalDurationMs > 0L
@@ -781,9 +786,13 @@ private fun PlayerProgressBar(
                             )
                             true
                         }
-                        // 「上」键：收起控制栏
+                        // 「上」键：收起控制栏；「下」键进入播放控制列
                         Key.DirectionUp -> {
                             onRequestHide()
+                            true
+                        }
+                        Key.DirectionDown -> {
+                            onMoveToControls()
                             true
                         }
                         else -> false
