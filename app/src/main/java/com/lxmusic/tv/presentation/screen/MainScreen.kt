@@ -1836,7 +1836,7 @@ fun BrowseCard(
         modifier = modifier.onFocusChanged { if (it.hasFocus) onCardFocused(index) }
             // 网格卡片密集排列，滚动时焦点快速移动；关闭发光与过渡动画，避免逐卡跑阴影动画导致首页滚动掉帧
             .lxFocusBorder(
-                shape = RoundedCornerShape(12.dp),
+                shape = RoundedCornerShape(16.dp),
                 focusedScale = 1.025f,
                 glow = false,
                 animated = false
@@ -1858,16 +1858,16 @@ fun BrowseCard(
         // 与「设置」页卡片同色（SettingsItem 用 LXCardDark，用户手调的极淡黑半透明），
         // 浅色主区上呈浅灰半透明磨砂质感；不画静态边框，与设置页卡片外观一致（聚焦时由 lxFocusBorder 显示焦点框）。
         // 注：此前用 LXSurfaceCard.copy(alpha=0.72f) 白 72% 叠近白底，实测等于没改，故对齐 LXCardDark。
-        colors = CardDefaults.cardColors(containerColor = LXCardDark),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF171D21)),
         shape = RoundedCornerShape(12.dp)
     ) {
-        Column(modifier = Modifier.padding(12.dp)) {
+        Column(modifier = Modifier.padding(14.dp)) {
             // TV 卡片加大封面與文字層級，保持五列網格和既有資料／焦點流程不變。
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(150.dp)
-                    .clip(RoundedCornerShape(8.dp))
+                    .height(156.dp)
+                    .clip(RoundedCornerShape(12.dp))
             ) {
                 if (!item.coverUrl.isNullOrBlank()) {
                     RemoteImage(
@@ -1913,7 +1913,7 @@ fun BrowseCard(
                 fontSize = 15.sp,
                 fontWeight = FontWeight.Medium,
                 // TV 卡片標題提高字級，確保遠距離觀看清晰。（与设置页卡片文字一致）
-                color = LXOnCardDark,
+                color = Color(0xFFF1F4F5),
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis
             )
@@ -1922,7 +1922,7 @@ fun BrowseCard(
                 Text(
                     text = "${item.songCount} 首",
                     fontSize = 12.sp,
-                    color = LXOnCardDarkSecondary
+                    color = Color(0xFF9AA7AE)
                 )
             }
         }
@@ -1990,17 +1990,17 @@ fun BrowseSongRow(
         // 用于「焦点接近列表末尾时触发加载更多」——不依赖列表滚动改 layoutInfo 被发现。
         modifier = modifier.onFocusChanged { if (it.hasFocus) onSongFocused(index) },
         // 点6：深色卡片（仿播放页播放列表暗色面板），去除边框，仅遥控器焦点选中内部按钮才有边框
-        colors = CardDefaults.cardColors(containerColor = LXCardDark),
-        shape = RoundedCornerShape(10.dp)
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF171D21)),
+        shape = RoundedCornerShape(14.dp)
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(12.dp),
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
                 text = "${index + 1}",
                 fontSize = 14.sp,
-                color = LXOnCardDarkSecondary,
+                color = Color(0xFF9AA7AE),
                 modifier = Modifier.width(36.dp)
             )
             // 封面
@@ -2052,7 +2052,7 @@ Text(
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Medium,
                 // TV 歌曲列提高歌名層級，保留原有資料與播放操作。
-                color = LXOnCardDark,
+                color = Color(0xFFF1F4F5),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
