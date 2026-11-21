@@ -997,17 +997,17 @@ fun PlaylistItem(
         // 点6：深色卡片（仿播放页播放列表暗色面板）；卡片本身不再作为焦点目标，
         // 焦点落在卡片上的操作按钮（仿 SongItem：选中按钮而非整行）
         colors = CardDefaults.cardColors(containerColor = LXCardDark),
-        shape = RoundedCornerShape(8.dp)
+        shape = RoundedCornerShape(14.dp)
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(12.dp),
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             // 封面
             Box(
                 modifier = Modifier
-                    .size(48.dp)
-                    .clip(RoundedCornerShape(8.dp))
+                    .size(52.dp)
+                    .clip(RoundedCornerShape(10.dp))
                     .background(brandColor.copy(alpha = 0.25f)),
                 contentAlignment = Alignment.Center
             ) {
@@ -1265,10 +1265,10 @@ fun SongItem(
             .fillMaxWidth()
             .onFocusChanged { if (it.hasFocus) onSongFocused?.invoke(index) },
         colors = CardDefaults.cardColors(containerColor = LXCardDark),
-        shape = RoundedCornerShape(8.dp)
+        shape = RoundedCornerShape(14.dp)
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(12.dp),
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             // 序号（与首页歌单歌曲列表统一）
@@ -1282,8 +1282,8 @@ fun SongItem(
             val brandColor = platformBrandColor(song.platform)
             Box(
                 modifier = Modifier
-                    .size(48.dp)
-                    .clip(RoundedCornerShape(8.dp))
+                    .size(52.dp)
+                    .clip(RoundedCornerShape(10.dp))
                     .background(brandColor.copy(alpha = 0.25f)),
                 contentAlignment = Alignment.Center
             ) {
@@ -1606,7 +1606,7 @@ fun SearchHistoryItem(
             .then(if (focusRequester != null) Modifier.focusRequester(focusRequester) else Modifier)
             // 通用卡片样式：未聚焦无边框，仅焦点选中显示 FocusBorder（与设置项一致）
             .lxFocusBorder(
-                shape = RoundedCornerShape(8.dp),
+                shape = RoundedCornerShape(12.dp),
                 unfocusedColor = Color.Transparent,
                 unfocusedWidth = 0.dp
             )
@@ -1616,7 +1616,7 @@ fun SearchHistoryItem(
         shape = RoundedCornerShape(8.dp)
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
@@ -1654,7 +1654,7 @@ fun SuggestionItem(
             .then(if (focusRequester != null) Modifier.focusRequester(focusRequester) else Modifier)
             // 通用卡片样式：未聚焦无边框，仅焦点选中显示 FocusBorder（与设置项一致）；shape 与容器 8.dp 对齐，杜绝圆角异常
             .lxFocusBorder(
-                shape = RoundedCornerShape(8.dp),
+                shape = RoundedCornerShape(12.dp),
                 unfocusedColor = Color.Transparent,
                 unfocusedWidth = 0.dp
             )
@@ -1664,7 +1664,7 @@ fun SuggestionItem(
         shape = RoundedCornerShape(8.dp)
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
@@ -1702,7 +1702,7 @@ fun HotSearchItem(
             .then(if (focusRequester != null) Modifier.focusRequester(focusRequester) else Modifier)
             // 通用卡片样式：未聚焦无边框，仅焦点选中显示 FocusBorder（与设置项一致）；shape 与容器 8.dp 对齐，杜绝圆角异常
             .lxFocusBorder(
-                shape = RoundedCornerShape(8.dp),
+                shape = RoundedCornerShape(12.dp),
                 unfocusedColor = Color.Transparent,
                 unfocusedWidth = 0.dp
             )
@@ -1712,7 +1712,7 @@ fun HotSearchItem(
         shape = RoundedCornerShape(8.dp)
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
