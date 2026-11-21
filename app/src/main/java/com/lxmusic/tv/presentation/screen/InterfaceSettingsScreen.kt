@@ -56,7 +56,6 @@ fun InterfaceSettingsScreen(
 
     Box(modifier = Modifier.fillMaxSize().background(LXSurfaceMain)) {
         // 顶部氛围渐变（与全站主区一致，主题切换自动适配）
-        Box(modifier = Modifier.matchParentSize().background(LXAccentGradientBrush))
 
         Column(modifier = Modifier.fillMaxSize().padding(24.dp)) {
             // 顶部：返回箭头 + 标题
