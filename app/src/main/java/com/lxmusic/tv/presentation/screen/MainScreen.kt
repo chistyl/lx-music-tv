@@ -1495,7 +1495,7 @@ fun BrowsePage(
                         Text(selected?.name ?: if (isPlaylistMode) "選擇歌單" else "選擇排行榜",
                             color = LXTextPrimary, fontSize = 18.sp, fontWeight = FontWeight.Bold,
                             modifier = Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis)
-                        if (selected != null && songs.isNotEmpty()) PlayAllButton(songs = songs, onClick = { onPlayAll(songs) })
+                        if (selected != null && songs.isNotEmpty()) PlayAllButton(onClick = { onPlayAll(songs) })
                     }
                     when {
                         selected == null -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
