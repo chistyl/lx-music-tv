@@ -395,12 +395,26 @@ private fun LeftPlayerPanel(
         verticalArrangement = Arrangement.Center
     ) {
         if (song != null) {
+            Text(
+                text = "正在播放",
+                color = LXTextSecondary,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.SemiBold,
+                letterSpacing = 2.sp,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 14.dp)
+            )
             Box(
                 modifier = Modifier
                     .fillMaxWidth(0.90f)
                     .aspectRatio(1f)
-                    .clip(CircleShape)
+                    .clip(RoundedCornerShape(22.dp))
                     .background(LXSurfaceVariant)
+                    .border(
+                        BorderStroke(1.dp, LXBorder.copy(alpha = 0.65f)),
+                        RoundedCornerShape(22.dp)
+                    )
                     .clickable { onOpenPlayer() },
                 contentAlignment = Alignment.Center
             ) {
@@ -428,6 +442,7 @@ private fun LeftPlayerPanel(
                 fontWeight = FontWeight.Medium,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
+                textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth().clickable { onOpenPlayer() }
             )
             Text(
@@ -436,6 +451,7 @@ private fun LeftPlayerPanel(
                 fontSize = 17.sp,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
+                textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth().padding(top = 7.dp)
             )
             Spacer(Modifier.height(24.dp))
