@@ -400,6 +400,14 @@ private fun LeftPlayerPanel(
                     .aspectRatio(1f)
                     .clip(CircleShape)
                     .background(LXSurfaceVariant)
+                    // 左側播放器封面焦點框固定為正圓形
+                    .lxFocusBorder(
+                        shape = CircleShape,
+                        glow = false,
+                        animated = false,
+                        unfocusedColor = Color.Transparent,
+                        unfocusedWidth = 0.dp
+                    )
                     .clickable { onOpenPlayer() },
                 contentAlignment = Alignment.Center
             ) {
