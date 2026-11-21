@@ -311,6 +311,8 @@ fun LXMusicApp() {
                 currentSong = currentSong,
                 isPlaying = isPlaying,
                 onPlayPause = { viewModel.togglePlayPause() },
+                onPrevious = { viewModel.playPrevious() },
+                onNext = { viewModel.playNext() },
                 defaultPlatform = defaultPlatform,
                 onDefaultPlatformChange = { viewModel.setDefaultPlatform(it) },
                 preferredQuality = preferredQuality,
