@@ -22,6 +22,7 @@ on:
       - feature/lx-tv-full-tv-ui-run248
       - feature/lx-tv-complete-tv-optimization-run268
       - fix/lx-tv-search-pagination-focus-run276
+      - fix/lx-tv-focus-shape-alignment-run284
   workflow_dispatch:
 
 permissions:
