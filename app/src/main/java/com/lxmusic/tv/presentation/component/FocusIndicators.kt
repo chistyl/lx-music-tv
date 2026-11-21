@@ -199,19 +199,16 @@ fun Modifier.lxFocusBorder(
                 // ★ 修复2：传【正数】向内收缩 stroke/2，描边外边缘恰好贴合 shape 外边缘
                 val insetOutline = outline.insetBy(stroke / 2f)
                 val focusPath = outlineToPath(insetOutline)
+                // 單一輪廓優先：不再疊加多層描邊，避免圓形元件出現方框感或雙層框。
+                drawPath(path = focusPath, color = borderColor.copy(alpha = 0.055f), style = Fill)
                 if (glow) {
+                    // 僅保留極淡的柔化光暈，不形成第二道可辨識外框。
                     drawPath(
                         path = focusPath,
-                        color = borderColor.copy(alpha = 0.088f),
-                        style = Stroke(width = 9.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round)
-                    )
-                    drawPath(
-                        path = focusPath,
-                        color = borderColor.copy(alpha = 0.16f),
-                        style = Stroke(width = 5.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round)
+                        color = borderColor.copy(alpha = 0.045f),
+                        style = Stroke(width = 7.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round)
                     )
                 }
-                drawPath(path = focusPath, color = borderColor.copy(alpha = 0.07f), style = Fill)
                 drawPath(
                     path = focusPath,
                     color = borderColor,
@@ -261,16 +258,7 @@ fun Modifier.lxCircleButtonFocus(
             if (isFocused) {
                 val r = size.minDimension / 2f
                 val stroke = strokeWidth.toPx()
-                drawCircle(
-                    color = strokeColor.copy(alpha = 0.10f),
-                    radius = r - stroke / 2f,
-                    style = Stroke(width = 9.dp.toPx())
-                )
-                drawCircle(
-                    color = strokeColor.copy(alpha = 0.18f),
-                    radius = r - stroke / 2f,
-                    style = Stroke(width = 5.dp.toPx())
-                )
+                // 圓形控制項只繪製一條真正的圓形焦點線，不疊加同心雙框。
                 drawCircle(
                     color = strokeColor,
                     radius = r - stroke / 2f,
@@ -336,15 +324,11 @@ fun Modifier.lxSelectorFocus(
                 val insetOutline = outline.insetBy(stroke / 2f)
                 val selectorPath = outlineToPath(insetOutline)
                 if (isFocused && glow) {
+                    // 柔化單層光暈，避免與主輪廓形成第二圈焦點框。
                     drawPath(
                         path = selectorPath,
-                        color = borderColor.copy(alpha = 0.10f),
-                        style = Stroke(width = 9.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round)
-                    )
-                    drawPath(
-                        path = selectorPath,
-                        color = borderColor.copy(alpha = 0.18f),
-                        style = Stroke(width = 5.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round)
+                        color = borderColor.copy(alpha = 0.045f),
+                        style = Stroke(width = 7.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round)
                     )
                 }
                 drawPath(
