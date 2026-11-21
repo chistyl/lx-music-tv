@@ -38,7 +38,6 @@ import com.lxmusic.tv.presentation.component.RemoteImage
 import com.lxmusic.tv.presentation.component.lxBackButtonFocus
 import com.lxmusic.tv.presentation.component.lxSelectorFocus
 import com.lxmusic.tv.presentation.component.lxCircleButtonFocus
-import com.lxmusic.tv.presentation.theme.FocusBorder
 import com.lxmusic.tv.presentation.theme.LXCardDark
 import com.lxmusic.tv.presentation.theme.LXOnCardDark
 import com.lxmusic.tv.presentation.theme.LXOnCardDarkSecondary
@@ -162,7 +161,7 @@ fun FavoritesScreen(
                         .onFocusChanged { loadingStateFocused = it.isFocused }
                         .border(
                             width = if (loadingStateFocused) 3.dp else 0.dp,
-                            color = if (loadingStateFocused) FocusBorder else Color.Transparent,
+                            color = if (loadingStateFocused) LXPrimary else Color.Transparent,
                             shape = RoundedCornerShape(16.dp)
                         )
                         .focusable()
@@ -722,7 +721,7 @@ fun FavoriteEmptyState(
             .onFocusChanged { focused = it.isFocused }
             .border(
                 width = if (focused) 3.dp else 0.dp,
-                color = if (focused) FocusBorder else Color.Transparent,
+                color = if (focused) LXPrimary else Color.Transparent,
                 shape = RoundedCornerShape(16.dp)
             )
             .focusable()
