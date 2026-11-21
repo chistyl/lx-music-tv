@@ -243,7 +243,7 @@ fun MainScreen(
     Row(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF090B0D))
+            .background(LXSurfaceMain)
             // 2.8 记录用户「上键」时间（区分「用户方向键主动聚焦 logo」与「系统默认分配」）：
             // 聚焦 logo 的唯一方向键路径是「上键」（从选中 tab 按上），进详情/切页用的是右/下/确定键；
             // 故仅上键会触发用户主动聚焦 logo 的判定，系统分配落 logo 时距上次上键必然 > 300ms
@@ -278,7 +278,7 @@ fun MainScreen(
                 onPrevious = onPrevious,
                 onNext = onNext,
                 modifier = Modifier
-                    .width(88.dp)
+                    .width(96.dp)
                     .fillMaxHeight()
             )
 
@@ -412,7 +412,7 @@ private fun LeftPlayerPanel(
                     true
                 } else false
             }
-            .background(Color(0xFF101519))
+            .background(LXSurfaceCard)
             .padding(horizontal = 20.dp, vertical = 22.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
@@ -432,7 +432,7 @@ private fun LeftPlayerPanel(
                     .aspectRatio(1f)
                     .clip(RoundedCornerShape(18.dp))
                     .border(1.dp, Color.White.copy(alpha = 0.12f), RoundedCornerShape(18.dp))
-                    .background(Color(0xFF20282D))
+                    .background(LXSurfaceVariant)
                     .focusRequester(playerEnterRequester)
                     .clickable { onOpenPlayer() },
                 contentAlignment = Alignment.Center
@@ -562,7 +562,7 @@ fun NavigationSidebar(
         Box(
             modifier = Modifier
                 .matchParentSize()
-                .background(Color(0xFF0D1013))
+                .background(LXSurfaceSidebar)
         )
         Column(
             modifier = Modifier
@@ -834,11 +834,15 @@ fun NavigationItem(
     onEnterContent: () -> Unit = {}
 ) {
     // 选中态：品牌红图标+文字（2.6 窄栏：默认只显示图标，选中时图标底部才显示文字）；未选中深色
-    val contentColor = if (isSelected) LXPrimary else LXTextPrimary
+    val contentColor = if (isSelected) LXPrimary else LXTextSecondary
 
-    // 聚焦态：背景轻微变深（仿 EchoMusic 左侧菜单：焦点选中才加背景色 + 边框色）
+    // 選取與遙控器焦點分開呈現，並沿用使用者目前選擇的主題強調色。
     var isFocused by remember { mutableStateOf(false) }
-    val bgColor = if (isFocused) LXFocusFill else Color.Transparent
+    val bgColor = when {
+        isFocused -> LXFocusFill
+        isSelected -> LXPrimary.copy(alpha = 0.12f)
+        else -> Color.Transparent
+    }
 
     Column(
         modifier = modifier
@@ -863,7 +867,7 @@ fun NavigationItem(
                 unfocusedWidth = 0.dp
             )
             .clickable { onClick() }
-            .padding(horizontal = 6.dp, vertical = 10.dp),
+            .padding(horizontal = 5.dp, vertical = 11.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
@@ -871,19 +875,18 @@ fun NavigationItem(
             imageVector = item.icon,
             contentDescription = item.description,
             tint = contentColor,
-            modifier = Modifier.size(24.dp)
+            modifier = Modifier.size(25.dp)
         )
 
-        // 仅选中时在图标底部显示文字，否则只显示图标（参考 blbl/BBLL 窄侧栏）
-        if (isSelected) {
-            Text(
-                text = item.title,
-                color = contentColor,
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(top = 3.dp)
-            )
-        }
+        // 電視遠距觀看時固定顯示文字，避免未選取項目只剩圖示而難以辨識。
+        Text(
+            text = item.title,
+            color = contentColor,
+            fontSize = 12.sp,
+            fontWeight = if (isSelected || isFocused) FontWeight.SemiBold else FontWeight.Medium,
+            modifier = Modifier.padding(top = 5.dp),
+            maxLines = 1
+        )
     }
 }
 
@@ -982,7 +985,7 @@ fun MainContent(
         Box(
             modifier = Modifier
                 .matchParentSize()
-                .background(Color(0xFF111519))
+                .background(LXSurfaceMain)
         )
         when (selectedTab) {
             0 -> SearchScreen(
@@ -1450,7 +1453,7 @@ fun BrowsePage(
                     .height(60.dp)
                     .padding(bottom = 10.dp)
                     .clip(RoundedCornerShape(14.dp))
-                    .background(Color(0xFF171D21))
+                    .background(LXSurfaceCard)
                     .padding(5.dp)
                     .focusGroup(),
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
@@ -1478,14 +1481,14 @@ fun BrowsePage(
                                 } else Modifier
                             )
                             .lxSelectorFocus(
-                                focusedColor = Color(0xFFE8F0EC),
-                                focusedWidth = 3.dp,
+                                focusedColor = LXPrimary,
+                                focusedWidth = 2.dp,
                                 glow = false,
                                 animated = false,
                                 shape = RoundedCornerShape(10.dp)
                             )
                             .clickable { if (!active) onDefaultPlatformChange(option) },
-                        color = if (active) LXPrimary.copy(alpha = 0.24f) else Color.Transparent,
+                        color = if (active) LXPrimary.copy(alpha = 0.16f) else Color.Transparent,
                         shape = RoundedCornerShape(10.dp)
                     ) {
                         Box(
@@ -1494,7 +1497,7 @@ fun BrowsePage(
                         ) {
                             Text(
                                 text = option.displayName,
-                                color = if (active) Color.White else Color(0xFFB9C2C8),
+                                color = if (active) LXPrimary else LXTextSecondary,
                                 fontSize = 17.sp,
                                 fontWeight = if (active) FontWeight.Bold else FontWeight.Medium,
                                 maxLines = 1,
@@ -3547,7 +3550,7 @@ fun SettingsItem(
             )
             // 点6：未聚焦无边框，仅焦点选中才显示边框
             .lxFocusBorder(
-                shape = RoundedCornerShape(12.dp),
+                shape = RoundedCornerShape(16.dp),
                 unfocusedColor = Color.Transparent,
                 unfocusedWidth = 0.dp
             )
@@ -3556,13 +3559,13 @@ fun SettingsItem(
             // 深色卡片（仿播放页播放列表暗色面板），去除边框——用户明确要求保持原样，勿改背景
             containerColor = LXCardDark
         ),
-        shape = RoundedCornerShape(12.dp)
+        shape = RoundedCornerShape(16.dp)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .heightIn(min = 92.dp)
-                .padding(horizontal = 20.dp, vertical = 18.dp),
+                .heightIn(min = 100.dp)
+                .padding(horizontal = 22.dp, vertical = 20.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
